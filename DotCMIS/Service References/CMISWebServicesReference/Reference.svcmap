@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="3d5abe42-7fbf-4694-8527-bfbf3463347e" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>true</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="C:\projects\opencmis\DotCMIS\DotCMIS\wsdl\CMISWS-Service.wsdl" Protocol="file" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="CMIS-Messaging.xsd" MetadataType="Schema" ID="a67cdce6-4ed5-4a16-9a77-3681a58e7436" SourceId="1" SourceUrl="file:///C:/projects/opencmis/DotCMIS/DotCMIS/wsdl/CMIS-Messaging.xsd" />
+    <MetadataFile FileName="CMIS-Core.xsd" MetadataType="Schema" ID="308bb947-3023-485c-aa3d-1b44b4f62b3e" SourceId="1" SourceUrl="file:///C:/projects/opencmis/DotCMIS/DotCMIS/wsdl/CMIS-Core.xsd" />
+    <MetadataFile FileName="CMISWebServices.wsdl" MetadataType="Wsdl" ID="51836210-8920-4bad-af93-ce566d98ae3a" SourceId="1" SourceUrl="file:///C:/projects/opencmis/DotCMIS/DotCMIS/wsdl/CMISWS-Service.wsdl" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

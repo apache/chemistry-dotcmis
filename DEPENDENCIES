@@ -1,0 +1,3 @@
+DotCMIS requires .NET Framework 3.5 or higher.
+
+The DotCMIS unit tests require NUnit 2.5.
