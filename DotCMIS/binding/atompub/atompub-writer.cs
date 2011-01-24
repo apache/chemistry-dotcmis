@@ -193,13 +193,13 @@ namespace DotCMIS.Binding.AtomPub
         private string statement;
         private bool? searchAllVersions;
         private bool? includeAllowableActions;
-        private IncludeRelationships? includeRelationships;
+        private IncludeRelationshipsFlag? includeRelationships;
         private string renditionFilter;
         private long? maxItems;
         private long? skipCount;
 
         public AtomQueryWriter(string statement, bool? searchAllVersions,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             long? maxItems, long? skipCount)
         {
             this.statement = statement;

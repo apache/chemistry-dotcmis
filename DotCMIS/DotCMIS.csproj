@@ -53,6 +53,7 @@
     <Compile Include="binding\services.cs" />
     <Compile Include="binding\converter.cs" />
     <Compile Include="binding\webservices\webservices.cs" />
+    <Compile Include="client\client-caches.cs" />
     <Compile Include="client\client-intf.cs" />
     <Compile Include="client\client-impl.cs" />
     <Compile Include="const.cs" />

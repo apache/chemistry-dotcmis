@@ -480,7 +480,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IObjectInFolderList GetChildren(string repositoryId, string folderId, string filter, string orderBy,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, long? maxItems, long? skipCount, IExtensionsData extension)
         {
             NavigationServicePortClient port = Provider.GetNavigationService();
@@ -502,7 +502,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IList<IObjectInFolderContainer> GetDescendants(string repositoryId, string folderId, long? depth, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, IExtensionsData extension)
         {
             NavigationServicePortClient port = Provider.GetNavigationService();
@@ -537,7 +537,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IList<IObjectInFolderContainer> GetFolderTree(string repositoryId, string folderId, long? depth, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, IExtensionsData extension)
         {
             NavigationServicePortClient port = Provider.GetNavigationService();
@@ -572,7 +572,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IList<IObjectParentData> GetObjectParents(string repositoryId, string objectId, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includeRelativePathSegment, IExtensionsData extension)
         {
             NavigationServicePortClient port = Provider.GetNavigationService();
@@ -625,7 +625,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IObjectList GetCheckedOutDocs(string repositoryId, string folderId, string filter, string orderBy,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             long? maxItems, long? skipCount, IExtensionsData extension)
         {
             NavigationServicePortClient port = Provider.GetNavigationService();
@@ -858,7 +858,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IObjectData GetObject(string repositoryId, string objectId, string filter, bool? includeAllowableActions,
-            IncludeRelationships? includeRelationships, string renditionFilter, bool? includePolicyIds,
+            IncludeRelationshipsFlag? includeRelationships, string renditionFilter, bool? includePolicyIds,
             bool? includeAcl, IExtensionsData extension)
         {
             ObjectServicePortClient port = Provider.GetObjectService();
@@ -880,7 +880,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IObjectData GetObjectByPath(string repositoryId, string path, string filter, bool? includeAllowableActions,
-            IncludeRelationships? includeRelationships, string renditionFilter, bool? includePolicyIds, bool? includeAcl,
+            IncludeRelationshipsFlag? includeRelationships, string renditionFilter, bool? includePolicyIds, bool? includeAcl,
             IExtensionsData extension)
         {
             ObjectServicePortClient port = Provider.GetObjectService();
@@ -1136,7 +1136,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IObjectData GetObjectOfLatestVersion(string repositoryId, string objectId, string versionSeriesId, bool major,
-            string filter, bool? includeAllowableActions, IncludeRelationships? includeRelationships,
+            string filter, bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships,
             string renditionFilter, bool? includePolicyIds, bool? includeAcl, IExtensionsData extension)
         {
             VersioningServicePortClient port = Provider.GetVersioningService();
@@ -1252,7 +1252,7 @@ namespace DotCMIS.Binding.WebServices
         }
 
         public IObjectList Query(string repositoryId, string statement, bool? searchAllVersions,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             long? maxItems, long? skipCount, IExtensionsData extension)
         {
             DiscoveryServicePortClient port = Provider.GetDiscoveryService();

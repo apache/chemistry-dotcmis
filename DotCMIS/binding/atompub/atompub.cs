@@ -696,7 +696,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         protected IObjectData GetObjectInternal(string repositoryId, IdentifierType idOrPath, string objectIdOrPath,
-            ReturnVersion? returnVersion, string filter, bool? includeAllowableActions, IncludeRelationships? includeRelationships,
+            ReturnVersion? returnVersion, string filter, bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships,
             string renditionFilter, bool? includePolicyIds, bool? includeAcl, IExtensionsData extension)
         {
             IObjectData result = null;
@@ -1012,7 +1012,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IObjectInFolderList GetChildren(string repositoryId, string folderId, string filter, string orderBy,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, long? maxItems, long? skipCount, IExtensionsData extension)
         {
             ObjectInFolderList result = new ObjectInFolderList();
@@ -1103,7 +1103,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IList<IObjectInFolderContainer> GetDescendants(string repositoryId, string folderId, long? depth, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, IExtensionsData extension)
         {
             IList<IObjectInFolderContainer> result = new List<IObjectInFolderContainer>();
@@ -1135,7 +1135,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IList<IObjectInFolderContainer> GetFolderTree(string repositoryId, string folderId, long? depth, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, IExtensionsData extension)
         {
             IList<IObjectInFolderContainer> result = new List<IObjectInFolderContainer>();
@@ -1167,7 +1167,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IList<IObjectParentData> GetObjectParents(string repositoryId, string objectId, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includeRelativePathSegment, IExtensionsData extension)
         {
             IList<IObjectParentData> result = new List<IObjectParentData>();
@@ -1333,7 +1333,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IObjectList GetCheckedOutDocs(string repositoryId, string folderId, string filter, string orderBy,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             long? maxItems, long? skipCount, IExtensionsData extension)
         {
             ObjectList result = new ObjectList();
@@ -1674,7 +1674,7 @@ namespace DotCMIS.Binding.AtomPub
         public IProperties GetProperties(string repositoryId, string objectId, string filter, IExtensionsData extension)
         {
             IObjectData obj = GetObjectInternal(repositoryId, IdentifierType.Id, objectId, ReturnVersion.This, filter,
-                    false, IncludeRelationships.None, "cmis:none", false, false, extension);
+                    false, IncludeRelationshipsFlag.None, "cmis:none", false, false, extension);
 
             return obj.Properties;
         }
@@ -1683,7 +1683,7 @@ namespace DotCMIS.Binding.AtomPub
             long? maxItems, long? skipCount, IExtensionsData extension)
         {
             IObjectData obj = GetObjectInternal(repositoryId, IdentifierType.Id, objectId, ReturnVersion.This,
-                PropertyIds.ObjectId, false, IncludeRelationships.None, renditionFilter, false, false, extension);
+                PropertyIds.ObjectId, false, IncludeRelationshipsFlag.None, renditionFilter, false, false, extension);
 
             IList<IRenditionData> result = obj.Renditions;
             if (result == null)
@@ -1695,7 +1695,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IObjectData GetObject(string repositoryId, string objectId, string filter, bool? includeAllowableActions,
-            IncludeRelationships? includeRelationships, string renditionFilter, bool? includePolicyIds,
+            IncludeRelationshipsFlag? includeRelationships, string renditionFilter, bool? includePolicyIds,
             bool? includeAcl, IExtensionsData extension)
         {
             return GetObjectInternal(repositoryId, IdentifierType.Id, objectId, ReturnVersion.This, filter, includeAllowableActions,
@@ -1703,7 +1703,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IObjectData GetObjectByPath(string repositoryId, string path, string filter, bool? includeAllowableActions,
-            IncludeRelationships? includeRelationships, string renditionFilter, bool? includePolicyIds, bool? includeAcl,
+            IncludeRelationshipsFlag? includeRelationships, string renditionFilter, bool? includePolicyIds, bool? includeAcl,
             IExtensionsData extension)
         {
             return GetObjectInternal(repositoryId, IdentifierType.Path, path, ReturnVersion.This, filter, includeAllowableActions,
@@ -2217,7 +2217,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IObjectData GetObjectOfLatestVersion(string repositoryId, string objectId, string versionSeriesId, bool major,
-            string filter, bool? includeAllowableActions, IncludeRelationships? includeRelationships,
+            string filter, bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships,
             string renditionFilter, bool? includePolicyIds, bool? includeAcl, IExtensionsData extension)
         {
             ReturnVersion returnVersion = ReturnVersion.Latest;
@@ -2240,7 +2240,7 @@ namespace DotCMIS.Binding.AtomPub
             }
 
             IObjectData objectData = GetObjectInternal(repositoryId, IdentifierType.Id, objectId, returnVersion, filter,
-                    false, IncludeRelationships.None, "cmis:none", false, false, extension);
+                    false, IncludeRelationshipsFlag.None, "cmis:none", false, false, extension);
 
             return objectData.Properties;
         }
@@ -2410,7 +2410,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public IObjectList Query(string repositoryId, string statement, bool? searchAllVersions,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             long? maxItems, long? skipCount, IExtensionsData extension)
         {
             ObjectList result = new ObjectList();

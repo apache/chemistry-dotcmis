@@ -23,10 +23,115 @@ using System.Text;
 using DotCMIS.Data;
 using DotCMIS.Enums;
 using DotCMIS.Data.Extensions;
+using DotCMIS.Binding;
 
 namespace DotCMIS.Client
 {
-    public interface IOperationContext { }
+    public interface ISessionFactory
+    {
+        ISession CreateSession(IDictionary<string, string> parameters);
+        IList<IRepository> GetRepositories(IDictionary<string, string> parameters);
+    }
+
+    public interface IRepository : IRepositoryInfo
+    {
+        ISession CreateSession();
+    }
+
+    public interface ISession
+    {
+        void Clear();
+
+        // session context
+
+        ICmisBinding Binding { get; }
+
+        IOperationContext DefaultContext { get; set; }
+        IOperationContext CreateOperationContext();
+        IOperationContext CreateOperationContext(HashSet<string> filter, bool includeAcls, bool includeAllowableActions, bool includePolicies,
+            IncludeRelationshipsFlag includeRelationships, HashSet<string> renditionFilter, bool includePathSegments, string orderBy, 
+            bool cacheEnabled, int maxItemsPerPage);
+        IObjectId CreateObjectId(string id);
+
+        // services
+
+        IRepositoryInfo RepositoryInfo { get; }
+        IObjectFactory ObjectFactory { get; }
+
+        // types
+
+        IObjectType GetTypeDefinition(string typeId);
+        IItemIterable<IObjectType> GetTypeChildren(string typeId, bool includePropertyDefinitions);
+        IList<ITree<IObjectType>> GetTypeDescendants(string typeId, int depth, bool includePropertyDefinitions);
+
+        // navigation
+
+        IFolder GetRootFolder();
+        IFolder GetRootFolder(IOperationContext context);
+        IItemIterable<IDocument> GetCheckedOutDocs();
+        IItemIterable<IDocument> GetCheckedOutDocs(IOperationContext context);
+        ICmisObject GetObject(IObjectId objectId);
+        ICmisObject GetObject(IObjectId objectId, IOperationContext context);
+        ICmisObject GetObjectByPath(string path);
+        ICmisObject GetObjectByPath(string path, IOperationContext context);
+
+        // discovery
+
+        IItemIterable<IQueryResult> Query(string statement, bool searchAllVersions);
+        IItemIterable<IQueryResult> query(string statement, bool searchAllVersions, IOperationContext context);
+        IChangeEvents getContentChanges(string changeLogToken, bool includeProperties, long maxNumItems);
+        IChangeEvents getContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
+                IOperationContext context);
+
+        // create
+
+        IObjectId CreateDocument(IDictionary<string, string> properties, IObjectId folderId, IContentStream contentStream,
+                VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces);
+        IObjectId CreateDocument(IDictionary<string, string> properties, IObjectId folderId, IContentStream contentStream,
+                VersioningState? versioningState);
+        IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, string> properties, IObjectId folderId,
+                VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces);
+        IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, string> properties, IObjectId folderId,
+                VersioningState? versioningState);
+        IObjectId CreateFolder(IDictionary<string, string> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
+                IList<IAce> removeAces);
+        IObjectId CreateFolder(IDictionary<string, string> properties, IObjectId folderId);
+        IObjectId CreatePolicy(IDictionary<string, string> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
+                IList<IAce> removeAces);
+        IObjectId CreatePolicy(IDictionary<string, string> properties, IObjectId folderId);
+        IObjectId CreateRelationship(IDictionary<string, string> properties, IList<IPolicy> policies, IList<IAce> addAces,
+                IList<IAce> removeAces);
+        IObjectId CreateRelationship(IDictionary<string, string> properties);
+
+        IItemIterable<IRelationship> GetRelationships(IObjectId objectId, bool includeSubRelationshipTypes,
+                RelationshipDirection? relationshipDirection, IObjectType type, IOperationContext context);
+
+        // permissions
+
+        IAcl GetAcl(IObjectId objectId, bool onlyBasicPermissions);
+        IAcl ApplyAcl(IObjectId objectId, IList<IAce> addAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
+        void ApplyPolicy(IObjectId objectId, IObjectId policyIds);
+        void RemovePolicy(IObjectId objectId, IObjectId policyIds);
+    }
+
+    public interface IObjectFactory { }
+
+    public interface IOperationContext
+    {
+        HashSet<string> Filter { get; set; }
+        string FilterString { get; set; }
+        bool IncludeAllowableActions { get; set; }
+        bool IncludeAcls { get; set; }
+        IncludeRelationshipsFlag? IncludeRelationships { get; set; }
+        bool IncludePolicies { get; set; }
+        HashSet<string> RenditionFilter { get; set; }
+        string RenditionFilterString { get; set; }
+        bool IncludePathSegments { get; set; }
+        string OrderBy { get; set; }
+        bool CacheEnabled { get; set; }
+        string CacheKey { get; }
+        int MaxItemsPerPage { get; set; }
+    }
 
     public interface ITree<T>
     {
@@ -70,16 +175,16 @@ namespace DotCMIS.Client
         bool IsMultiValued { get; }
         PropertyType PropertyType { get; }
         PropertyDefinition PropertyDefinition { get; }
-        V getValue<V>();
+        V GetValue<V>();
         string GetValueAsString();
-        string getValuesAsString();
+        string GetValuesAsString();
     }
 
     public interface ICmisObjectProperties
     {
         IList<IProperty> Properties { get; }
         IProperty GetProperty(string id);
-        T getPropertyValue<T>(string id);
+        T GetPropertyValue<T>(string id);
 
         // convenience accessors
         string Name { get; }
@@ -102,48 +207,48 @@ namespace DotCMIS.Client
     public interface ICmisObject : IObjectId, ICmisObjectProperties
     {
         // object
-        IAllowableActions getAllowableActions();
-        IList<IRelationship> getRelationships();
-        IAcl getAcl();
+        IAllowableActions GetAllowableActions();
+        IList<IRelationship> GetRelationships();
+        IAcl GetAcl();
 
         // object service
-        void delete(bool allVersions);
-        ICmisObject updateProperties(IDictionary<string, object> properties);
-        IObjectId updateProperties(IDictionary<string, object> properties, bool refresh);
+        void Delete(bool allVersions);
+        ICmisObject UpdateProperties(IDictionary<string, object> properties);
+        IObjectId UpdateProperties(IDictionary<string, object> properties, bool refresh);
 
         // renditions
-        IList<IRendition> getRenditions();
+        IList<IRendition> GetRenditions();
 
         // policy service
-        void applyPolicy(IObjectId policyId);
-        void removePolicy(IObjectId policyIds);
-        IList<IPolicy> getPolicies();
+        void ApplyPolicy(IObjectId policyId);
+        void RemovePolicy(IObjectId policyIds);
+        IList<IPolicy> GetPolicies();
 
         // ACL service
-        IAcl applyAcl(IList<Ace> addAces, IList<Ace> removeAces, AclPropagation? aclPropagation);
-        IAcl addAcl(IList<Ace> addAces, AclPropagation? aclPropagation);
-        IAcl removeAcl(IList<Ace> removeAces, AclPropagation? aclPropagation);
+        IAcl applyAcl(IList<IAce> AddAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
+        IAcl addAcl(IList<IAce> AddAces, AclPropagation? aclPropagation);
+        IAcl removeAcl(IList<IAce> RemoveAces, AclPropagation? aclPropagation);
 
         // extensions
-        IList<ICmisExtensionElement> getExtensions(ExtensionLevel level);
+        IList<ICmisExtensionElement> GetExtensions(ExtensionLevel level);
 
-        long getRefreshTimestamp();
-        void refresh();
-        void refreshIfOld(long durationInMillis);
+        long GetRefreshTimestamp();
+        void Refresh();
+        void RefreshIfOld(long durationInMillis);
     }
 
     public interface IFileableCmisObject : ICmisObject
     {
         // object service
-        IFileableCmisObject move(IObjectId sourceFolderId, IObjectId targetFolderId);
+        IFileableCmisObject Move(IObjectId sourceFolderId, IObjectId targetFolderId);
 
         // navigation service
         IList<IFolder> GetParents();
         IList<string> GetPaths();
 
         // multifiling service
-        void addToFolder(IObjectId folderId, bool allVersions);
-        void removeFromFolder(IObjectId folderId);
+        void AddToFolder(IObjectId folderId, bool allVersions);
+        void RemoveFromFolder(IObjectId folderId);
     }
 
     public interface IDocumentProperties
@@ -194,19 +299,19 @@ namespace DotCMIS.Client
 
     public interface IFolder : IFileableCmisObject, IFolderProperties
     {
-        IDocument createDocument(IDictionary<string, object> properties, IContentStream contentStream, VersioningState? versioningState,
+        IDocument CreateDocument(IDictionary<string, object> properties, IContentStream contentStream, VersioningState? versioningState,
                 IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces, IOperationContext context);
-        IDocument createDocument(IDictionary<string, object> properties, IContentStream contentStream, VersioningState? versioningState);
-        IDocument createDocumentFromSource(IObjectId source, IDictionary<string, object> properties, VersioningState? versioningState,
+        IDocument CreateDocument(IDictionary<string, object> properties, IContentStream contentStream, VersioningState? versioningState);
+        IDocument CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, VersioningState? versioningState,
                 IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces, IOperationContext context);
-        IDocument createDocumentFromSource(IObjectId source, IDictionary<string, object> properties, VersioningState? versioningState);
-        IFolder createFolder(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces,
+        IDocument CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, VersioningState? versioningState);
+        IFolder CreateFolder(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces,
                 IOperationContext context);
-        IFolder createFolder(IDictionary<string, object> properties);
-        IPolicy createPolicy(IDictionary<string, object> properties, List<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces,
+        IFolder CreateFolder(IDictionary<string, object> properties);
+        IPolicy CreatePolicy(IDictionary<string, object> properties, List<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces,
                 IOperationContext context);
-        IPolicy createPolicy(IDictionary<string, object> properties);
-        IList<string> deleteTree(bool allversions, UnfileObject? unfile, bool continueOnFailure);
+        IPolicy CreatePolicy(IDictionary<string, object> properties);
+        IList<string> DeleteTree(bool allversions, UnfileObject? unfile, bool continueOnFailure);
         IList<ITree<IFileableCmisObject>> GetFolderTree(int depth);
         IList<ITree<IFileableCmisObject>> GetFolderTree(int depth, IOperationContext context);
         IList<ITree<IFileableCmisObject>> GetDescendants(int depth);
@@ -241,5 +346,13 @@ namespace DotCMIS.Client
         ICmisObject GetSource(IOperationContext context);
         ICmisObject GetTarget();
         ICmisObject GetTarget(IOperationContext context);
+    }
+
+    public interface IQueryResult
+    {
+    }
+
+    public interface IChangeEvents
+    {
     }
 }

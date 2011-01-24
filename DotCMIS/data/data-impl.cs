@@ -27,6 +27,30 @@ namespace DotCMIS.Data
 {
     public class RepositoryInfo : ExtensionsData, IRepositoryInfo
     {
+        public RepositoryInfo()
+        {
+        }
+
+        public RepositoryInfo(IRepositoryInfo source)
+        {
+            Id = source.Id;
+            Name = source.Name;
+            Description = source.Description;
+            VendorName = source.VendorName;
+            ProductName = source.ProductName;
+            ProductVersion = source.ProductVersion;
+            RootFolderId = source.RootFolderId;
+            Capabilities = source.Capabilities;
+            AclCapabilities = source.AclCapabilities;
+            LatestChangeLogToken = source.LatestChangeLogToken;
+            CmisVersionSupported = source.CmisVersionSupported;
+            ThinClientUri = source.ThinClientUri;
+            ChangesIncomplete = source.ChangesIncomplete;
+            ChangesOnType = source.ChangesOnType;
+            PrincipalIdAnonymous = source.PrincipalIdAnonymous;
+            PrincipalIdAnyone = source.PrincipalIdAnyone;
+        }
+
         public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

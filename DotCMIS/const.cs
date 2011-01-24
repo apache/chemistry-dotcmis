@@ -60,12 +60,17 @@ namespace DotCMIS
 
         // message size
         public const string MessageSize = "org.apache.chemistry.dotcmis.binding.message.size";
+
+        // session parameter
+        public const string CacheClass = "org.apache.chemistry.dotcmis.cache.classname";
+        public const string RepositoryId = "org.apache.chemistry.dotcmis.session.repository.id";
     }
 
     public static class BindingType
     {
         public const string AtomPub = "atompub";
         public const string WebServices = "webservices";
+        public const string Custom = "custom";
     }
 
     public static class PropertyIds

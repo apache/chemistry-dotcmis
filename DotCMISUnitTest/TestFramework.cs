@@ -17,15 +17,15 @@
  * under the License.
  */
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Text;
 using DotCMIS;
 using DotCMIS.Binding;
-using NUnit.Framework;
 using DotCMIS.Data;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
-using System.Text;
-using System.IO;
+using NUnit.Framework;
 
 namespace DotCMISUnitTest
 {
@@ -108,7 +108,7 @@ namespace DotCMISUnitTest
 
         public IObjectData GetFullObject(string objectId)
         {
-            IObjectData result = Binding.GetObjectService().GetObject(RepositoryInfo.Id, objectId, "*", true, IncludeRelationships.Both, "*", true, true, null);
+            IObjectData result = Binding.GetObjectService().GetObject(RepositoryInfo.Id, objectId, "*", true, IncludeRelationshipsFlag.Both, "*", true, true, null);
 
             Assert.NotNull(result);
             Assert.NotNull(result.Id);

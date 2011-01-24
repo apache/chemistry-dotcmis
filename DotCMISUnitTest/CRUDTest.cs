@@ -39,7 +39,7 @@ namespace DotCMISUnitTest
             IObjectData rootFolder = GetFullObject(RepositoryInfo.RootFolderId);
             Assert.AreEqual(BaseTypeId.CmisFolder, rootFolder.BaseTypeId);
 
-            IObjectData rootFolder2 = Binding.GetObjectService().GetObjectByPath(RepositoryInfo.Id, "/", null, true, IncludeRelationships.Both, null, true, true, null);
+            IObjectData rootFolder2 = Binding.GetObjectService().GetObjectByPath(RepositoryInfo.Id, "/", null, true, IncludeRelationshipsFlag.Both, null, true, true, null);
             Assert.AreEqual(BaseTypeId.CmisFolder, rootFolder2.BaseTypeId);
 
             Assert.AreEqual(rootFolder.Id, rootFolder2.Id);
@@ -48,7 +48,7 @@ namespace DotCMISUnitTest
         [Test]
         public void TestCreateDocument()
         {
-               string content1 = "my content";
+            string content1 = "my content";
 
             IObjectData doc = CreateDocument(RepositoryInfo.RootFolderId, "dottest", content1);
 

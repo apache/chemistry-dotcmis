@@ -42,25 +42,25 @@ namespace DotCMIS.Binding.Services
     public interface INavigationService
     {
         IObjectInFolderList GetChildren(string repositoryId, string folderId, string filter, string orderBy,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, long? maxItems, long? skipCount, IExtensionsData extension);
 
         IList<IObjectInFolderContainer> GetDescendants(string repositoryId, string folderId, long? depth, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, IExtensionsData extension);
 
         IList<IObjectInFolderContainer> GetFolderTree(string repositoryId, string folderId, long? depth, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includePathSegment, IExtensionsData extension);
 
         IList<IObjectParentData> GetObjectParents(string repositoryId, string objectId, string filter,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             bool? includeRelativePathSegment, IExtensionsData extension);
 
         IObjectData GetFolderParent(string repositoryId, string folderId, string filter, ExtensionsData extension);
 
         IObjectList GetCheckedOutDocs(string repositoryId, string folderId, string filter, string orderBy,
-            bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+            bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
             long? maxItems, long? skipCount, IExtensionsData extension);
     }
 
@@ -89,11 +89,11 @@ namespace DotCMIS.Binding.Services
             long? maxItems, long? skipCount, IExtensionsData extension);
 
         IObjectData GetObject(string repositoryId, string objectId, string filter, bool? includeAllowableActions,
-            IncludeRelationships? includeRelationships, string renditionFilter, bool? includePolicyIds,
+            IncludeRelationshipsFlag? includeRelationships, string renditionFilter, bool? includePolicyIds,
             bool? includeAcl, IExtensionsData extension);
 
         IObjectData GetObjectByPath(string repositoryId, string path, string filter, bool? includeAllowableActions,
-            IncludeRelationships? includeRelationships, string renditionFilter, bool? includePolicyIds, bool? includeAcl,
+            IncludeRelationshipsFlag? includeRelationships, string renditionFilter, bool? includePolicyIds, bool? includeAcl,
             IExtensionsData extension);
 
         IContentStream GetContentStream(string repositoryId, string objectId, string streamId, long? offset, long? length,
@@ -127,7 +127,7 @@ namespace DotCMIS.Binding.Services
             IExtensionsData extension);
 
         IObjectData GetObjectOfLatestVersion(string repositoryId, string objectId, string versionSeriesId, bool major,
-            string filter, bool? includeAllowableActions, IncludeRelationships? includeRelationships,
+            string filter, bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships,
             string renditionFilter, bool? includePolicyIds, bool? includeAcl, IExtensionsData extension);
 
         IProperties GetPropertiesOfLatestVersion(string repositoryId, string objectId, string versionSeriesId, bool major,
@@ -147,7 +147,7 @@ namespace DotCMIS.Binding.Services
     public interface IDiscoveryService
     {
         IObjectList Query(string repositoryId, string statement, bool? searchAllVersions,
-           bool? includeAllowableActions, IncludeRelationships? includeRelationships, string renditionFilter,
+           bool? includeAllowableActions, IncludeRelationshipsFlag? includeRelationships, string renditionFilter,
            long? maxItems, long? skipCount, IExtensionsData extension);
 
         IObjectList GetContentChanges(string repositoryId, ref string changeLogToken, bool? includeProperties,

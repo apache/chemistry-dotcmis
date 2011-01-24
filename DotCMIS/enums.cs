@@ -227,7 +227,7 @@ namespace DotCMIS.Enums
         Bits64
     }
 
-    public enum IncludeRelationships
+    public enum IncludeRelationshipsFlag
     {
         [CmisValue("none")]
         None,
@@ -346,7 +346,7 @@ namespace DotCMIS.Enums
             MapEnums(typeof(Updatability), typeof(enumUpdatability));
             MapEnums(typeof(DateTimeResolution), typeof(enumDateTimeResolution));
             MapEnums(typeof(DecimalPrecision), typeof(enumDecimalPrecision));
-            MapEnums(typeof(IncludeRelationships), typeof(enumIncludeRelationships));
+            MapEnums(typeof(IncludeRelationshipsFlag), typeof(enumIncludeRelationships));
             MapEnums(typeof(ChangeType), typeof(enumTypeOfChanges));
         }
 
