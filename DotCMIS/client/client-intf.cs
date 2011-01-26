@@ -18,12 +18,11 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DotCMIS.Data;
-using DotCMIS.Enums;
-using DotCMIS.Data.Extensions;
 using DotCMIS.Binding;
+using DotCMIS.Data;
+using DotCMIS.Data.Extensions;
+using DotCMIS.Enums;
+using System.IO;
 
 namespace DotCMIS.Client
 {
@@ -49,7 +48,7 @@ namespace DotCMIS.Client
         IOperationContext DefaultContext { get; set; }
         IOperationContext CreateOperationContext();
         IOperationContext CreateOperationContext(HashSet<string> filter, bool includeAcls, bool includeAllowableActions, bool includePolicies,
-            IncludeRelationshipsFlag includeRelationships, HashSet<string> renditionFilter, bool includePathSegments, string orderBy, 
+            IncludeRelationshipsFlag includeRelationships, HashSet<string> renditionFilter, bool includePathSegments, string orderBy,
             bool cacheEnabled, int maxItemsPerPage);
         IObjectId CreateObjectId(string id);
 
@@ -114,7 +113,41 @@ namespace DotCMIS.Client
         void RemovePolicy(IObjectId objectId, IObjectId policyIds);
     }
 
-    public interface IObjectFactory { }
+    public interface IObjectFactory
+    {
+        void Initialize(ISession session, IDictionary<string, string> parameters);
+
+        // ACL and ACE
+        IAcl ConvertAces(IList<IAce> aces);
+        IAcl CreateAcl(IList<IAce> aces);
+        IAce CreateAce(string principal, List<string> permissions);
+
+        // policies
+        IList<string> ConvertPolicies(IList<IPolicy> policies);
+
+        // renditions
+        IRendition ConvertRendition(string objectId, IRenditionData rendition);
+
+        // content stream
+        IContentStream CreateContentStream(string filename, long length, string mimetype, Stream stream);
+        IContentStream ConvertContentStream(IContentStream contentStream);
+
+        // types
+        IObjectType ConvertTypeDefinition(ITypeDefinition typeDefinition);
+        IObjectType GetTypeFromObjectData(IObjectData objectData);
+
+        // properties
+        IProperty CreateProperty(IPropertyDefinition type, IList<object> values);
+        IDictionary<string, IProperty> ConvertProperties(IObjectType objectType, IProperties properties);
+        IProperties ConvertProperties(IDictionary<string, object> properties, IObjectType type, HashSet<Updatability> updatabilityFilter);
+        IList<IPropertyData> ConvertQueryProperties(IProperties properties);
+
+        // objects
+        ICmisObject ConvertObject(IObjectData objectData, IOperationContext context);
+        IQueryResult ConvertQueryResult(IObjectData objectData);
+        IChangeEvent ConvertChangeEvent(IObjectData objectData);
+        IChangeEvents ConvertChangeEvents(String changeLogToken, IObjectList objectList);
+    }
 
     public interface IOperationContext
     {
@@ -175,23 +208,23 @@ namespace DotCMIS.Client
         bool IsMultiValued { get; }
         PropertyType PropertyType { get; }
         PropertyDefinition PropertyDefinition { get; }
-        V GetValue<V>();
-        string GetValueAsString();
-        string GetValuesAsString();
+        object Value { get; }
+        string ValueAsString { get; }
+        string ValuesAsString { get; }
     }
 
     public interface ICmisObjectProperties
     {
         IList<IProperty> Properties { get; }
-        IProperty GetProperty(string id);
-        T GetPropertyValue<T>(string id);
+        IProperty this[string propertyId] { get; }
+        object GetPropertyValue(string propertyId);
 
         // convenience accessors
         string Name { get; }
         string CreatedBy { get; }
-        DateTime CreationDate { get; }
+        DateTime? CreationDate { get; }
         string LastModifiedBy { get; }
-        DateTime LastModificationDate { get; }
+        DateTime? LastModificationDate { get; }
         BaseTypeId BaseTypeId { get; }
         IObjectType BaseType { get; }
         IObjectType Type { get; }
@@ -207,9 +240,9 @@ namespace DotCMIS.Client
     public interface ICmisObject : IObjectId, ICmisObjectProperties
     {
         // object
-        IAllowableActions GetAllowableActions();
-        IList<IRelationship> GetRelationships();
-        IAcl GetAcl();
+        IAllowableActions AllowableActions { get; }
+        IList<IRelationship> Relationships { get; }
+        IAcl Acl { get; }
 
         // object service
         void Delete(bool allVersions);
@@ -217,22 +250,22 @@ namespace DotCMIS.Client
         IObjectId UpdateProperties(IDictionary<string, object> properties, bool refresh);
 
         // renditions
-        IList<IRendition> GetRenditions();
+        IList<IRendition> Renditions { get; }
 
         // policy service
         void ApplyPolicy(IObjectId policyId);
-        void RemovePolicy(IObjectId policyIds);
-        IList<IPolicy> GetPolicies();
+        void RemovePolicy(IObjectId policyId);
+        IList<IPolicy> Policies { get; }
 
         // ACL service
-        IAcl applyAcl(IList<IAce> AddAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
-        IAcl addAcl(IList<IAce> AddAces, AclPropagation? aclPropagation);
-        IAcl removeAcl(IList<IAce> RemoveAces, AclPropagation? aclPropagation);
+        IAcl ApplyAcl(IList<IAce> AddAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
+        IAcl AddAcl(IList<IAce> AddAces, AclPropagation? aclPropagation);
+        IAcl RemoveAcl(IList<IAce> RemoveAces, AclPropagation? aclPropagation);
 
         // extensions
         IList<ICmisExtensionElement> GetExtensions(ExtensionLevel level);
 
-        long GetRefreshTimestamp();
+        DateTime RefreshTimestamp { get; }
         void Refresh();
         void RefreshIfOld(long durationInMillis);
     }
@@ -349,6 +382,10 @@ namespace DotCMIS.Client
     }
 
     public interface IQueryResult
+    {
+    }
+
+    public interface IChangeEvent
     {
     }
 

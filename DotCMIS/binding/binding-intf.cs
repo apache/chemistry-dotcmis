@@ -30,38 +30,24 @@ namespace DotCMIS.Binding
     public interface ICmisBinding
     {
         IRepositoryService GetRepositoryService();
-
         INavigationService GetNavigationService();
-
         IObjectService GetObjectService();
-
         IVersioningService GetVersioningService();
-
         IRelationshipService GetRelationshipService();
-
         IDiscoveryService GetDiscoveryService();
-
         IMultiFilingService GetMultiFilingService();
-
         IAclService GetAclService();
-
         IPolicyService GetPolicyService();
-
         IBindingsObjectFactory GetObjectFactory();
-
         void ClearAllCaches();
-
         void ClearRepositoryCache(string repositoryId);
-
         void Close();
     }
 
     public interface IBindingSession
     {
         object GetValue(string key);
-
         object GetValue(string key, object defValue);
-
         int GetValue(string key, int defValue);
     }
 

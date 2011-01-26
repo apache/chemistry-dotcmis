@@ -25,6 +25,7 @@ using DotCMIS.Data;
 using DotCMIS.Exceptions;
 using System.Threading;
 using DotCMIS.Enums;
+using DotCMIS.Data.Extensions;
 
 namespace DotCMIS.Client
 {
@@ -459,6 +460,22 @@ namespace DotCMIS.Client
             orderBy = null;
             cacheEnabled = false;
             maxItemsPerPage = 100;
+
+            GenerateCacheKey();
+        }
+
+        public OperationContext(IOperationContext source)
+        {
+            filter = new HashSet<string>(source.Filter);
+            includeAcls = source.IncludeAcls;
+            includeAllowableActions = source.IncludeAllowableActions;
+            includePolicies = source.IncludePolicies;
+            includeRelationships = source.IncludeRelationships;
+            renditionFilter = new HashSet<string>(source.RenditionFilter);
+            includePathSegments = source.IncludePathSegments;
+            orderBy = source.OrderBy;
+            cacheEnabled = source.CacheEnabled;
+            maxItemsPerPage = source.MaxItemsPerPage;
 
             GenerateCacheKey();
         }
