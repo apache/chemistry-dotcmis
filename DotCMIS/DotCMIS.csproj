@@ -56,7 +56,9 @@
     <Compile Include="client\client-caches.cs" />
     <Compile Include="client\client-intf.cs" />
     <Compile Include="client\client-impl.cs" />
+    <Compile Include="client\client-objectfactory.cs" />
     <Compile Include="client\client-objects.cs" />
+    <Compile Include="client\client-types.cs" />
     <Compile Include="const.cs" />
     <Compile Include="data\data-impl.cs" />
     <Compile Include="data\data-intf.cs" />

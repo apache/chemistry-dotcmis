@@ -62,6 +62,7 @@ namespace DotCMIS
         public const string MessageSize = "org.apache.chemistry.dotcmis.binding.message.size";
 
         // session parameter
+        public const string ObjectFactoryClass = "org.apache.chemistry.dotcmis.objectfactory.classname";
         public const string CacheClass = "org.apache.chemistry.dotcmis.cache.classname";
         public const string RepositoryId = "org.apache.chemistry.dotcmis.session.repository.id";
     }

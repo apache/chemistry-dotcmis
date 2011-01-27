@@ -152,15 +152,18 @@ namespace DotCMIS.Client
     public class Session : ISession
     {
         protected static IOperationContext FallbackContext = new OperationContext(null, false, true, false, IncludeRelationshipsFlag.None, null, true, null, true, 100);
-        protected IOperationContext context = FallbackContext;
 
         protected IDictionary<string, string> parameters;
-        protected ICache cache;
-
         private object sessionLock = new object();
 
         public ICmisBinding Binding { get; protected set; }
         public IRepositoryInfo RepositoryInfo { get; protected set; }
+        public string RepositoryId { get { return RepositoryInfo.Id; } }
+
+        public IObjectFactory ObjectFactory { get; protected set; }
+        protected ICache Cache { get; set; }
+
+        private IOperationContext context = FallbackContext;
         public IOperationContext DefaultContext
         {
             get
@@ -198,7 +201,8 @@ namespace DotCMIS.Client
 
             this.parameters = parameters;
 
-            cache = CreateCache();
+            ObjectFactory = CreateObjectFactory();
+            Cache = CreateCache();
         }
 
         public void Connect()
@@ -254,12 +258,44 @@ namespace DotCMIS.Client
             }
         }
 
+        protected IObjectFactory CreateObjectFactory()
+        {
+            try
+            {
+                string ofName;
+                Type ofType;
+
+                if (parameters.TryGetValue(SessionParameter.ObjectFactoryClass, out ofName))
+                {
+                    ofType = Type.GetType(ofName);
+                }
+                else
+                {
+                    ofType = typeof(ObjectFactory);
+                }
+
+                object ofObject = Activator.CreateInstance(ofType);
+                if (!(ofObject is IObjectFactory))
+                {
+                    throw new Exception("Class does not implement IObjectFactory!");
+                }
+
+                ((IObjectFactory)ofObject).Initialize(this, parameters);
+
+                return (IObjectFactory)ofObject;
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("Unable to create object factory: " + e, e);
+            }
+        }
+
         public void Clear()
         {
             Lock();
             try
             {
-                cache = CreateCache();
+                Cache = CreateCache();
                 Binding.ClearAllCaches();
             }
             finally
@@ -288,14 +324,13 @@ namespace DotCMIS.Client
             return new ObjectId(id);
         }
 
-        // services
-
-        public IObjectFactory ObjectFactory { get; protected set; }
-
         // types
 
         public IObjectType GetTypeDefinition(string typeId)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            ITypeDefinition typeDefinition = Binding.GetRepositoryService().GetTypeDefinition(RepositoryId, typeId, null);
+            return ObjectFactory.ConvertTypeDefinition(typeDefinition);
+        }
 
         public IItemIterable<IObjectType> GetTypeChildren(string typeId, bool includePropertyDefinitions)
         { throw new CmisNotSupportedException("Client not implemented!"); }

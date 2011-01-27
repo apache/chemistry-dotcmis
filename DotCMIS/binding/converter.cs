@@ -162,7 +162,7 @@ namespace DotCMIS.Binding
                 return null;
             }
 
-            TypeDefinition result = null;
+            AbstractTypeDefinition result = null;
             if (typeDef is cmisTypeDocumentDefinitionType)
             {
                 DocumentTypeDefinition docType = new DocumentTypeDefinition();
@@ -213,7 +213,7 @@ namespace DotCMIS.Binding
             result.DisplayName = typeDef.displayName;
             result.QueryName = typeDef.queryName;
             result.Description = typeDef.description;
-            result.BaseTypeId = (BaseTypeId?)CmisValue.SerializerToCmisEnum(typeDef.baseId);
+            result.BaseTypeId = (BaseTypeId)CmisValue.SerializerToCmisEnum(typeDef.baseId);
             result.ParentTypeId = typeDef.parentId;
             result.IsCreatable = typeDef.creatable;
             result.IsFileable = typeDef.fileable;

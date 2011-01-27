@@ -175,10 +175,30 @@ namespace DotCMIS.Client
     public interface IObjectType : ITypeDefinition
     {
         bool IsBaseType { get; }
-        IObjectType BaseType { get; }
-        IObjectType ParentType { get; }
+        IObjectType GetBaseType();
+        IObjectType GetParentType();
         IItemIterable<IObjectType> GetChildren();
         IList<ITree<IObjectType>> GetDescendants(int depth);
+    }
+
+    public interface IDocumentType : IObjectType
+    {
+        bool? IsVersionable { get; }
+        ContentStreamAllowed? ContentStreamAllowed { get; }
+    }
+
+    public interface IFolderType : IObjectType
+    {
+    }
+
+    public interface IRelationshipType : IObjectType
+    {
+        IList<IObjectType> GetAllowedSourceTypes { get; }
+        IList<IObjectType> GetAllowedTargetTypes { get; }
+    }
+
+    public interface IPolicyType : IObjectType
+    {
     }
 
     public interface IItemIterable<T>

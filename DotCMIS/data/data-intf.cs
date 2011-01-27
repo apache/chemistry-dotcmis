@@ -91,7 +91,7 @@ namespace DotCMIS.Data
         string DisplayName { get; }
         string QueryName { get; }
         string Description { get; }
-        BaseTypeId? BaseTypeId { get; }
+        BaseTypeId BaseTypeId { get; }
         string ParentTypeId { get; }
         bool? IsCreatable { get; }
         bool? IsFileable { get; }

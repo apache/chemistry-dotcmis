@@ -107,7 +107,7 @@ namespace DotCMIS.Data
         public IList<string> Permissions { get; set; }
     }
 
-    public abstract class TypeDefinition : ExtensionsData, ITypeDefinition
+    public abstract class AbstractTypeDefinition : ExtensionsData, ITypeDefinition
     {
         private List<IPropertyDefinition> propertyDefintionList = new List<IPropertyDefinition>();
         private Dictionary<string, IPropertyDefinition> propertyDefintionDict = new Dictionary<string, IPropertyDefinition>();
@@ -118,7 +118,7 @@ namespace DotCMIS.Data
         public string DisplayName { get; set; }
         public string QueryName { get; set; }
         public string Description { get; set; }
-        public BaseTypeId? BaseTypeId { get; set; }
+        public BaseTypeId BaseTypeId { get; set; }
         public string ParentTypeId { get; set; }
         public bool? IsCreatable { get; set; }
         public bool? IsFileable { get; set; }
@@ -144,6 +144,34 @@ namespace DotCMIS.Data
             }
         }
 
+        public void Initialize(ITypeDefinition typeDefinition)
+        {
+            Id = typeDefinition.Id;
+            LocalName = typeDefinition.LocalName;
+            LocalNamespace = typeDefinition.LocalNamespace;
+            DisplayName = typeDefinition.DisplayName;
+            QueryName = typeDefinition.QueryName;
+            Description = typeDefinition.Description;
+            BaseTypeId = typeDefinition.BaseTypeId;
+            ParentTypeId = typeDefinition.ParentTypeId;
+            IsCreatable = typeDefinition.IsCreatable;
+            IsFileable = typeDefinition.IsFileable;
+            IsQueryable = typeDefinition.IsQueryable;
+            IsFulltextIndexed = typeDefinition.IsFulltextIndexed;
+            IsIncludedInSupertypeQuery = typeDefinition.IsIncludedInSupertypeQuery;
+            IsControllablePolicy = typeDefinition.IsControllablePolicy;
+            IsControllableAcl = typeDefinition.IsControllableAcl;
+
+
+            if (typeDefinition.PropertyDefintions != null)
+            {
+                foreach (IPropertyDefinition propDef in typeDefinition.PropertyDefintions)
+                {
+                    AddPropertyDefinition(propDef);
+                }
+            }
+        }
+
         public void AddPropertyDefinition(IPropertyDefinition propertyDefinition)
         {
             if (propertyDefinition == null || propertyDefinition.Id == null)
@@ -156,21 +184,21 @@ namespace DotCMIS.Data
         }
     }
 
-    public class DocumentTypeDefinition : TypeDefinition, IDocumentTypeDefinition
+    public class DocumentTypeDefinition : AbstractTypeDefinition, IDocumentTypeDefinition
     {
         public bool? IsVersionable { get; set; }
         public ContentStreamAllowed? ContentStreamAllowed { get; set; }
     }
 
-    public class FolderTypeDefinition : TypeDefinition, IFolderTypeDefinition
+    public class FolderTypeDefinition : AbstractTypeDefinition, IFolderTypeDefinition
     {
     }
 
-    public class PolicyTypeDefinition : TypeDefinition, IPolicyTypeDefinition
+    public class PolicyTypeDefinition : AbstractTypeDefinition, IPolicyTypeDefinition
     {
     }
 
-    public class RelationshipTypeDefinition : TypeDefinition, IRelationshipTypeDefinition
+    public class RelationshipTypeDefinition : AbstractTypeDefinition, IRelationshipTypeDefinition
     {
         public IList<string> AllowedSourceTypeIds { get; set; }
         public IList<string> AllowedTargetTypeIds { get; set; }
