@@ -60,15 +60,15 @@ namespace DotCMIS.Client
         // types
 
         IObjectType GetTypeDefinition(string typeId);
-        IItemIterable<IObjectType> GetTypeChildren(string typeId, bool includePropertyDefinitions);
+        IItemEnumerable<IObjectType> GetTypeChildren(string typeId, bool includePropertyDefinitions);
         IList<ITree<IObjectType>> GetTypeDescendants(string typeId, int depth, bool includePropertyDefinitions);
 
         // navigation
 
         IFolder GetRootFolder();
         IFolder GetRootFolder(IOperationContext context);
-        IItemIterable<IDocument> GetCheckedOutDocs();
-        IItemIterable<IDocument> GetCheckedOutDocs(IOperationContext context);
+        IItemEnumerable<IDocument> GetCheckedOutDocs();
+        IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context);
         ICmisObject GetObject(IObjectId objectId);
         ICmisObject GetObject(IObjectId objectId, IOperationContext context);
         ICmisObject GetObjectByPath(string path);
@@ -76,33 +76,33 @@ namespace DotCMIS.Client
 
         // discovery
 
-        IItemIterable<IQueryResult> Query(string statement, bool searchAllVersions);
-        IItemIterable<IQueryResult> query(string statement, bool searchAllVersions, IOperationContext context);
-        IChangeEvents getContentChanges(string changeLogToken, bool includeProperties, long maxNumItems);
-        IChangeEvents getContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
+        IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions);
+        IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions, IOperationContext context);
+        IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems);
+        IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
                 IOperationContext context);
 
         // create
 
-        IObjectId CreateDocument(IDictionary<string, string> properties, IObjectId folderId, IContentStream contentStream,
+        IObjectId CreateDocument(IDictionary<string, object> properties, IObjectId folderId, IContentStream contentStream,
                 VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces);
-        IObjectId CreateDocument(IDictionary<string, string> properties, IObjectId folderId, IContentStream contentStream,
+        IObjectId CreateDocument(IDictionary<string, object> properties, IObjectId folderId, IContentStream contentStream,
                 VersioningState? versioningState);
-        IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, string> properties, IObjectId folderId,
+        IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, IObjectId folderId,
                 VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces);
-        IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, string> properties, IObjectId folderId,
+        IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, IObjectId folderId,
                 VersioningState? versioningState);
-        IObjectId CreateFolder(IDictionary<string, string> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
+        IObjectId CreateFolder(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
                 IList<IAce> removeAces);
-        IObjectId CreateFolder(IDictionary<string, string> properties, IObjectId folderId);
-        IObjectId CreatePolicy(IDictionary<string, string> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
+        IObjectId CreateFolder(IDictionary<string, object> properties, IObjectId folderId);
+        IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
                 IList<IAce> removeAces);
-        IObjectId CreatePolicy(IDictionary<string, string> properties, IObjectId folderId);
-        IObjectId CreateRelationship(IDictionary<string, string> properties, IList<IPolicy> policies, IList<IAce> addAces,
+        IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId);
+        IObjectId CreateRelationship(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces,
                 IList<IAce> removeAces);
-        IObjectId CreateRelationship(IDictionary<string, string> properties);
+        IObjectId CreateRelationship(IDictionary<string, object> properties);
 
-        IItemIterable<IRelationship> GetRelationships(IObjectId objectId, bool includeSubRelationshipTypes,
+        IItemEnumerable<IRelationship> GetRelationships(IObjectId objectId, bool includeSubRelationshipTypes,
                 RelationshipDirection? relationshipDirection, IObjectType type, IOperationContext context);
 
         // permissions
@@ -169,7 +169,7 @@ namespace DotCMIS.Client
     public interface ITree<T>
     {
         T Item { get; }
-        IList<ITree<T>> GetChildren();
+        IList<ITree<T>> Children { get; }
     }
 
     public interface IObjectType : ITypeDefinition
@@ -177,7 +177,7 @@ namespace DotCMIS.Client
         bool IsBaseType { get; }
         IObjectType GetBaseType();
         IObjectType GetParentType();
-        IItemIterable<IObjectType> GetChildren();
+        IItemEnumerable<IObjectType> GetChildren();
         IList<ITree<IObjectType>> GetDescendants(int depth);
     }
 
@@ -201,11 +201,11 @@ namespace DotCMIS.Client
     {
     }
 
-    public interface IItemIterable<T>
+    public interface IItemEnumerable<T> : IEnumerable<T>
     {
-        IItemIterable<T> SkipTo(long position);
-        IItemIterable<T> GetPage();
-        IItemIterable<T> GetPage(int maxNumItems);
+        IItemEnumerable<T> SkipTo(long position);
+        IItemEnumerable<T> GetPage();
+        IItemEnumerable<T> GetPage(int maxNumItems);
         long PageNumItems { get; }
         bool HasMoreItems { get; }
         long TotalNumItems { get; }
@@ -369,13 +369,13 @@ namespace DotCMIS.Client
         IList<ITree<IFileableCmisObject>> GetFolderTree(int depth, IOperationContext context);
         IList<ITree<IFileableCmisObject>> GetDescendants(int depth);
         IList<ITree<IFileableCmisObject>> GetDescendants(int depth, IOperationContext context);
-        IItemIterable<ICmisObject> GetChildren();
-        IItemIterable<ICmisObject> GetChildren(IOperationContext context);
+        IItemEnumerable<ICmisObject> GetChildren();
+        IItemEnumerable<ICmisObject> GetChildren(IOperationContext context);
         bool IsRootFolder { get; }
         IFolder FolderParent { get; }
         string Path { get; }
-        IItemIterable<IDocument> GetCheckedOutDocs();
-        IItemIterable<IDocument> GetCheckedOutDocs(IOperationContext context);
+        IItemEnumerable<IDocument> GetCheckedOutDocs();
+        IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context);
     }
 
     public interface IPolicyProperties

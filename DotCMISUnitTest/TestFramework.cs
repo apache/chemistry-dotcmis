@@ -26,6 +26,7 @@ using DotCMIS.Data;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
 using NUnit.Framework;
+using DotCMIS.Client;
 
 namespace DotCMISUnitTest
 {
@@ -33,7 +34,8 @@ namespace DotCMISUnitTest
     {
         private IRepositoryInfo repositoryInfo;
 
-        public ICmisBinding Binding { get; set; }
+        public ISession Session { get; set; }
+        public ICmisBinding Binding { get { return Session.Binding; } }
         public IRepositoryInfo RepositoryInfo
         {
             get
@@ -59,51 +61,59 @@ namespace DotCMISUnitTest
             DefaultDocumentType = "cmis:document";
             DefaultFolderType = "cmis:folder";
 
-            Binding = ConnectAtomPub();
+            Session = ConnectAtomPub();
         }
 
-        public ICmisBinding ConnectAtomPub()
+        public ISession ConnectAtomPub()
         {
-            Dictionary<string, string> parametersAtom = new Dictionary<string, string>();
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
 
-            string baseUrlAtom = "http://localhost:8080/alfresco/opencmis-atom";
+            string baseUrlAtom = "http://localhost:8080/alfresco/service/cmis";
 
-            parametersAtom[SessionParameter.AtomPubUrl] = baseUrlAtom;
-            parametersAtom[SessionParameter.User] = "admin";
-            parametersAtom[SessionParameter.Password] = "admin";
+            parameters[SessionParameter.BindingType] = BindingType.AtomPub;
+            parameters[SessionParameter.AtomPubUrl] = baseUrlAtom;
+            parameters[SessionParameter.User] = "admin";
+            parameters[SessionParameter.Password] = "admin";
 
-            CmisBindingFactory factory = CmisBindingFactory.NewInstance();
-            ICmisBinding binding = factory.CreateCmisAtomPubBinding(parametersAtom);
+            SessionFactory factory = SessionFactory.NewInstance();
+            ISession session = factory.GetRepositories(parameters)[0].CreateSession();
 
-            Assert.NotNull(binding);
+            Assert.NotNull(session);
+            Assert.NotNull(session.Binding);
+            Assert.NotNull(session.RepositoryInfo);
+            Assert.NotNull(session.RepositoryInfo.Id);
 
-            return binding;
+            return session;
         }
 
-        public ICmisBinding ConnectWebServices()
+        public ISession ConnectWebServices()
         {
-            Dictionary<string, string> parametersWS = new Dictionary<string, string>();
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
 
-            string baseUrlWS = "https://localhost:8443/alfresco/opencmis-ws";
+            string baseUrlWS = "http://localhost:8080/alfresco/cmis";
 
-            parametersWS[SessionParameter.WebServicesRepositoryService] = baseUrlWS + "/RepositoryService?wsdl";
-            parametersWS[SessionParameter.WebServicesAclService] = baseUrlWS + "/AclService?wsdl";
-            parametersWS[SessionParameter.WebServicesDiscoveryService] = baseUrlWS + "/DiscoveryService?wsdl";
-            parametersWS[SessionParameter.WebServicesMultifilingService] = baseUrlWS + "/MultifilingService?wsdl";
-            parametersWS[SessionParameter.WebServicesNavigationService] = baseUrlWS + "/NavigationService?wsdl";
-            parametersWS[SessionParameter.WebServicesObjectService] = baseUrlWS + "/ObjectService?wsdl";
-            parametersWS[SessionParameter.WebServicesPolicyService] = baseUrlWS + "/PolicyService?wsdl";
-            parametersWS[SessionParameter.WebServicesRelationshipService] = baseUrlWS + "/RelationshipService?wsdl";
-            parametersWS[SessionParameter.WebServicesVersioningService] = baseUrlWS + "/VersioningService?wsdl";
-            parametersWS[SessionParameter.User] = "admin";
-            parametersWS[SessionParameter.Password] = "admin";
+            parameters[SessionParameter.BindingType] = BindingType.WebServices;
+            parameters[SessionParameter.WebServicesRepositoryService] = baseUrlWS + "/RepositoryService?wsdl";
+            parameters[SessionParameter.WebServicesAclService] = baseUrlWS + "/AclService?wsdl";
+            parameters[SessionParameter.WebServicesDiscoveryService] = baseUrlWS + "/DiscoveryService?wsdl";
+            parameters[SessionParameter.WebServicesMultifilingService] = baseUrlWS + "/MultifilingService?wsdl";
+            parameters[SessionParameter.WebServicesNavigationService] = baseUrlWS + "/NavigationService?wsdl";
+            parameters[SessionParameter.WebServicesObjectService] = baseUrlWS + "/ObjectService?wsdl";
+            parameters[SessionParameter.WebServicesPolicyService] = baseUrlWS + "/PolicyService?wsdl";
+            parameters[SessionParameter.WebServicesRelationshipService] = baseUrlWS + "/RelationshipService?wsdl";
+            parameters[SessionParameter.WebServicesVersioningService] = baseUrlWS + "/VersioningService?wsdl";
+            parameters[SessionParameter.User] = "admin";
+            parameters[SessionParameter.Password] = "admin";
 
-            CmisBindingFactory factory = CmisBindingFactory.NewInstance();
-            ICmisBinding binding = factory.CreateCmisWebServicesBinding(parametersWS);
+            SessionFactory factory = SessionFactory.NewInstance();
+            ISession session = factory.GetRepositories(parameters)[0].CreateSession();
 
-            Assert.NotNull(binding);
+            Assert.NotNull(session);
+            Assert.NotNull(session.Binding);
+            Assert.NotNull(session.RepositoryInfo);
+            Assert.NotNull(session.RepositoryInfo.Id);
 
-            return binding;
+            return session;
         }
 
         public IObjectData GetFullObject(string objectId)
@@ -310,6 +320,29 @@ namespace DotCMISUnitTest
             string result = Encoding.UTF8.GetString(memStream.GetBuffer(), 0, (int)memStream.Length);
 
             return result;
+        }
+
+        // ---- asserts ----
+
+        public void AssertAreEqual(IObjectType expected, IObjectType actual)
+        {
+            if (expected == null && actual == null)
+            {
+                return;
+            }
+
+            Assert.NotNull(expected);
+            Assert.NotNull(actual);
+
+            Assert.AreEqual(expected.Id, actual.Id);
+            Assert.AreEqual(expected.IsBaseType, actual.IsBaseType);
+            Assert.AreEqual(expected.BaseTypeId, actual.BaseTypeId);
+            Assert.AreEqual(expected.DisplayName, actual.DisplayName);
+            Assert.AreEqual(expected.Description, actual.Description);
+            Assert.AreEqual(expected.LocalName, actual.LocalName);
+            Assert.AreEqual(expected.LocalNamespace, actual.LocalNamespace);
+            Assert.AreEqual(expected.QueryName, actual.QueryName);
+            Assert.AreEqual(expected.PropertyDefintions.Count, actual.PropertyDefintions.Count);
         }
     }
 }

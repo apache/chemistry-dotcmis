@@ -352,7 +352,7 @@ namespace DotCMIS.Binding
 
     internal abstract class AbstractDictionaryCacheLevel : ICacheLevel
     {
-        private static string NullKey = "";
+        protected static string NullKey = "";
 
         private IDictionary<string, object> dict;
         private bool fallbackEnabled = false;

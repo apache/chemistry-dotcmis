@@ -59,6 +59,7 @@
     <Compile Include="client\client-objectfactory.cs" />
     <Compile Include="client\client-objects.cs" />
     <Compile Include="client\client-types.cs" />
+    <Compile Include="client\client-utils.cs" />
     <Compile Include="const.cs" />
     <Compile Include="data\data-impl.cs" />
     <Compile Include="data\data-intf.cs" />

@@ -25,6 +25,9 @@ using DotCMIS.Data;
 
 namespace DotCMIS.Client
 {
+    /// <summary>
+    /// Helper for all type implementations.
+    /// </summary>
     internal class ObjectTypeHelper
     {
         private ISession session;
@@ -62,7 +65,7 @@ namespace DotCMIS.Client
             return parentType;
         }
 
-        public IItemIterable<IObjectType> GetChildren()
+        public IItemEnumerable<IObjectType> GetChildren()
         {
             return session.GetTypeChildren(objectType.Id, true);
         }
@@ -73,6 +76,9 @@ namespace DotCMIS.Client
         }
     }
 
+    /// <summary>
+    /// Document type implementation.
+    /// </summary>
     public class DocumentType : DocumentTypeDefinition, IDocumentType
     {
         private ObjectTypeHelper helper;
@@ -87,7 +93,7 @@ namespace DotCMIS.Client
 
         public IObjectType GetBaseType() { return helper.GetBaseType(); }
 
-        public IItemIterable<IObjectType> GetChildren() { return helper.GetChildren(); }
+        public IItemEnumerable<IObjectType> GetChildren() { return helper.GetChildren(); }
 
         public IList<ITree<IObjectType>> GetDescendants(int depth) { return helper.GetDescendants(depth); }
 
@@ -96,6 +102,9 @@ namespace DotCMIS.Client
         public bool IsBaseType { get { return helper.IsBaseType; } }
     }
 
+    /// <summary>
+    /// Folder type implementation.
+    /// </summary>
     public class FolderType : FolderTypeDefinition, IFolderType
     {
         private ObjectTypeHelper helper;
@@ -108,7 +117,7 @@ namespace DotCMIS.Client
 
         public IObjectType GetBaseType() { return helper.GetBaseType(); }
 
-        public IItemIterable<IObjectType> GetChildren() { return helper.GetChildren(); }
+        public IItemEnumerable<IObjectType> GetChildren() { return helper.GetChildren(); }
 
         public IList<ITree<IObjectType>> GetDescendants(int depth) { return helper.GetDescendants(depth); }
 
@@ -117,6 +126,9 @@ namespace DotCMIS.Client
         public bool IsBaseType { get { return helper.IsBaseType; } }
     }
 
+    /// <summary>
+    /// Relationship type implementation.
+    /// </summary>
     public class RelationshipType : RelationshipTypeDefinition, IRelationshipType
     {
         private ObjectTypeHelper helper;
@@ -131,7 +143,7 @@ namespace DotCMIS.Client
 
         public IObjectType GetBaseType() { return helper.GetBaseType(); }
 
-        public IItemIterable<IObjectType> GetChildren() { return helper.GetChildren(); }
+        public IItemEnumerable<IObjectType> GetChildren() { return helper.GetChildren(); }
 
         public IList<ITree<IObjectType>> GetDescendants(int depth) { return helper.GetDescendants(depth); }
 
@@ -182,6 +194,9 @@ namespace DotCMIS.Client
         }
     }
 
+    /// <summary>
+    /// Policy type implementation.
+    /// </summary>
     public class PolicyType : PolicyTypeDefinition, IPolicyType
     {
         private ObjectTypeHelper helper;
@@ -194,7 +209,7 @@ namespace DotCMIS.Client
 
         public IObjectType GetBaseType() { return helper.GetBaseType(); }
 
-        public IItemIterable<IObjectType> GetChildren() { return helper.GetChildren(); }
+        public IItemEnumerable<IObjectType> GetChildren() { return helper.GetChildren(); }
 
         public IList<ITree<IObjectType>> GetDescendants(int depth) { return helper.GetDescendants(depth); }
 

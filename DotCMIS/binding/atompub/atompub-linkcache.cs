@@ -256,7 +256,7 @@ namespace DotCMIS.Binding.AtomPub
     {
         public ContentTypeCacheLevel()
         {
-            EnableKeyFallback(null);
+            EnableKeyFallback(NullKey);
         }
 
         public override object this[string key]

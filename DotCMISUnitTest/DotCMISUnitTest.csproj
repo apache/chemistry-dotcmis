@@ -44,7 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CRUDTest.cs" />
+    <Compile Include="EnumeratorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SmokeTest.cs" />
     <Compile Include="TestFramework.cs" />
     <Compile Include="TypeTest.cs" />
   </ItemGroup>

@@ -26,6 +26,7 @@ using DotCMIS.Exceptions;
 using System.Threading;
 using DotCMIS.Enums;
 using DotCMIS.Data.Extensions;
+using DotCMIS.Binding.Services;
 
 namespace DotCMIS.Client
 {
@@ -332,11 +333,51 @@ namespace DotCMIS.Client
             return ObjectFactory.ConvertTypeDefinition(typeDefinition);
         }
 
-        public IItemIterable<IObjectType> GetTypeChildren(string typeId, bool includePropertyDefinitions)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        public IItemEnumerable<IObjectType> GetTypeChildren(string typeId, bool includePropertyDefinitions)
+        {
+            IRepositoryService repositoryService = Binding.GetRepositoryService();
+
+            PageFetcher<IObjectType>.FetchPage fetchPageDelegate = delegate(long maxNumItems, long skipCount)
+            {
+                // fetch the data
+                ITypeDefinitionList tdl = repositoryService.GetTypeChildren(RepositoryId, typeId, includePropertyDefinitions, maxNumItems, skipCount, null);
+
+                // convert type definitions
+                IList<IObjectType> page = new List<IObjectType>(tdl.List.Count);
+                foreach (ITypeDefinition typeDefinition in tdl.List)
+                {
+                    page.Add(ObjectFactory.ConvertTypeDefinition(typeDefinition));
+                }
+
+                return new PageFetcher<IObjectType>.Page<IObjectType>(page, tdl.NumItems, tdl.HasMoreItems);
+            };
+
+            return new CollectionEnumerable<IObjectType>(new PageFetcher<IObjectType>(DefaultContext.MaxItemsPerPage, fetchPageDelegate));
+        }
 
         public IList<ITree<IObjectType>> GetTypeDescendants(string typeId, int depth, bool includePropertyDefinitions)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            IList<ITypeDefinitionContainer> descendants = Binding.GetRepositoryService().GetTypeDescendants(
+            RepositoryId, typeId, depth, includePropertyDefinitions, null);
+
+            return ConvertTypeDescendants(descendants);
+        }
+
+        private IList<ITree<IObjectType>> ConvertTypeDescendants(IList<ITypeDefinitionContainer> descendantsList)
+        {
+            IList<ITree<IObjectType>> result = new List<ITree<IObjectType>>();
+
+            foreach (ITypeDefinitionContainer container in descendantsList)
+            {
+                Tree<IObjectType> tree = new Tree<IObjectType>();
+                tree.Item = ObjectFactory.ConvertTypeDefinition(container.TypeDefinition);
+                tree.Children = ConvertTypeDescendants(container.Children);
+
+                result.Add(tree);
+            }
+
+            return result;
+        }
 
         // navigation
 
@@ -347,9 +388,7 @@ namespace DotCMIS.Client
 
         public IFolder GetRootFolder(IOperationContext context)
         {
-            string rootFolderId = RepositoryInfo.RootFolderId;
-
-            ICmisObject rootFolder = GetObject(CreateObjectId(rootFolderId), context);
+            ICmisObject rootFolder = GetObject(CreateObjectId(RepositoryInfo.RootFolderId), context);
             if (!(rootFolder is IFolder))
             {
                 throw new CmisRuntimeException("Root folder object is not a folder!");
@@ -358,10 +397,10 @@ namespace DotCMIS.Client
             return (IFolder)rootFolder;
         }
 
-        public IItemIterable<IDocument> GetCheckedOutDocs()
+        public IItemEnumerable<IDocument> GetCheckedOutDocs()
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IItemIterable<IDocument> GetCheckedOutDocs(IOperationContext context)
+        public IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
         public ICmisObject GetObject(IObjectId objectId)
@@ -382,59 +421,59 @@ namespace DotCMIS.Client
 
         // discovery
 
-        public IItemIterable<IQueryResult> Query(string statement, bool searchAllVersions)
+        public IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IItemIterable<IQueryResult> query(string statement, bool searchAllVersions, IOperationContext context)
+        public IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions, IOperationContext context)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IChangeEvents getContentChanges(string changeLogToken, bool includeProperties, long maxNumItems)
+        public IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IChangeEvents getContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
+        public IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
                 IOperationContext context)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
         // create
 
-        public IObjectId CreateDocument(IDictionary<string, string> properties, IObjectId folderId, IContentStream contentStream,
+        public IObjectId CreateDocument(IDictionary<string, object> properties, IObjectId folderId, IContentStream contentStream,
                 VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreateDocument(IDictionary<string, string> properties, IObjectId folderId, IContentStream contentStream,
+        public IObjectId CreateDocument(IDictionary<string, object> properties, IObjectId folderId, IContentStream contentStream,
                 VersioningState? versioningState)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, string> properties, IObjectId folderId,
+        public IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, IObjectId folderId,
                 VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, string> properties, IObjectId folderId,
+        public IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, IObjectId folderId,
                 VersioningState? versioningState)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreateFolder(IDictionary<string, string> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
+        public IObjectId CreateFolder(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
                 IList<IAce> removeAces)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreateFolder(IDictionary<string, string> properties, IObjectId folderId)
+        public IObjectId CreateFolder(IDictionary<string, object> properties, IObjectId folderId)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreatePolicy(IDictionary<string, string> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
+        public IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
                 IList<IAce> removeAces)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreatePolicy(IDictionary<string, string> properties, IObjectId folderId)
+        public IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreateRelationship(IDictionary<string, string> properties, IList<IPolicy> policies, IList<IAce> addAces,
+        public IObjectId CreateRelationship(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces,
                 IList<IAce> removeAces)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IObjectId CreateRelationship(IDictionary<string, string> properties)
+        public IObjectId CreateRelationship(IDictionary<string, object> properties)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
-        public IItemIterable<IRelationship> GetRelationships(IObjectId objectId, bool includeSubRelationshipTypes,
+        public IItemEnumerable<IRelationship> GetRelationships(IObjectId objectId, bool includeSubRelationshipTypes,
                 RelationshipDirection? relationshipDirection, IObjectType type, IOperationContext context)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
@@ -460,337 +499,6 @@ namespace DotCMIS.Client
         protected void Unlock()
         {
             Monitor.Exit(sessionLock);
-        }
-    }
-
-    /// <summary>
-    /// Operation context implementation.
-    /// </summary>
-    public class OperationContext : IOperationContext
-    {
-        public const string PropertiesStar = "*";
-        public const string RenditionNone = "cmis:none";
-
-        private HashSet<string> filter;
-        private bool includeAllowableActions;
-        private bool includeAcls;
-        private IncludeRelationshipsFlag? includeRelationships;
-        private bool includePolicies;
-        private HashSet<string> renditionFilter;
-        private bool includePathSegments;
-        private string orderBy;
-        private bool cacheEnabled;
-        private string cacheKey;
-        private int maxItemsPerPage;
-
-        public OperationContext()
-        {
-            filter = null;
-            includeAcls = false;
-            includeAllowableActions = true;
-            includePolicies = false;
-            includeRelationships = IncludeRelationshipsFlag.None;
-            renditionFilter = null;
-            includePathSegments = true;
-            orderBy = null;
-            cacheEnabled = false;
-            maxItemsPerPage = 100;
-
-            GenerateCacheKey();
-        }
-
-        public OperationContext(IOperationContext source)
-        {
-            filter = new HashSet<string>(source.Filter);
-            includeAcls = source.IncludeAcls;
-            includeAllowableActions = source.IncludeAllowableActions;
-            includePolicies = source.IncludePolicies;
-            includeRelationships = source.IncludeRelationships;
-            renditionFilter = new HashSet<string>(source.RenditionFilter);
-            includePathSegments = source.IncludePathSegments;
-            orderBy = source.OrderBy;
-            cacheEnabled = source.CacheEnabled;
-            maxItemsPerPage = source.MaxItemsPerPage;
-
-            GenerateCacheKey();
-        }
-
-        public OperationContext(HashSet<string> filter, bool includeAcls, bool includeAllowableActions,
-            bool includePolicies, IncludeRelationshipsFlag includeRelationships, HashSet<string> renditionFilter,
-            bool includePathSegments, String orderBy, bool cacheEnabled, int maxItemsPerPage)
-        {
-            this.filter = filter;
-            this.includeAcls = includeAcls;
-            this.includeAllowableActions = includeAllowableActions;
-            this.includePolicies = includePolicies;
-            this.includeRelationships = includeRelationships;
-            this.renditionFilter = renditionFilter;
-            this.includePathSegments = includePathSegments;
-            this.orderBy = orderBy;
-            this.cacheEnabled = cacheEnabled;
-            this.maxItemsPerPage = maxItemsPerPage;
-
-            GenerateCacheKey();
-        }
-
-        public HashSet<string> Filter
-        {
-            get { return new HashSet<string>(filter); }
-            set
-            {
-                if (value != null)
-                {
-                    HashSet<string> tempSet = new HashSet<string>();
-                    foreach (string oid in value)
-                    {
-                        if (oid == null) { continue; }
-
-                        string toid = oid.Trim();
-                        if (toid.Length == 0) { continue; }
-                        if (toid == PropertiesStar)
-                        {
-                            tempSet = new HashSet<string>();
-                            tempSet.Add(PropertiesStar);
-                            break;
-                        }
-                        if (toid.IndexOf(',') > -1)
-                        {
-                            throw new ArgumentException("Query id must not contain a comma!");
-                        }
-
-                        tempSet.Add(toid);
-                    }
-
-                    if (tempSet.Count == 0) { filter = null; }
-                    else { filter = tempSet; }
-                }
-                else
-                {
-                    filter = null;
-                }
-
-                GenerateCacheKey();
-            }
-        }
-
-        public string FilterString
-        {
-            get
-            {
-                if (filter == null) { return null; }
-
-                if (filter.Contains(PropertiesStar))
-                {
-                    return PropertiesStar;
-                }
-
-                this.filter.Add(PropertyIds.ObjectId);
-                this.filter.Add(PropertyIds.BaseTypeId);
-                this.filter.Add(PropertyIds.ObjectTypeId);
-
-                StringBuilder sb = new StringBuilder();
-
-                foreach (String oid in filter)
-                {
-                    if (sb.Length > 0) { sb.Append(','); }
-                    sb.Append(oid);
-                }
-
-                return sb.ToString();
-            }
-
-            set
-            {
-                if (value == null || value.Trim().Length == 0)
-                {
-                    Filter = null;
-                    return;
-                }
-
-                string[] ids = value.Split(',');
-                HashSet<string> tempSet = new HashSet<string>();
-                foreach (string qid in ids)
-                {
-                    tempSet.Add(qid);
-                }
-
-                Filter = tempSet;
-            }
-        }
-
-        public bool IncludeAllowableActions
-        {
-            get { return includeAllowableActions; }
-            set { includeAllowableActions = value; GenerateCacheKey(); }
-        }
-
-        public bool IncludeAcls
-        {
-            get { return includeAcls; }
-            set { includeAcls = value; GenerateCacheKey(); }
-        }
-
-        public IncludeRelationshipsFlag? IncludeRelationships
-        {
-            get { return includeRelationships; }
-            set { includeRelationships = value; GenerateCacheKey(); }
-        }
-
-        public bool IncludePolicies
-        {
-            get { return includePolicies; }
-            set { includePolicies = value; GenerateCacheKey(); }
-        }
-
-        public HashSet<string> RenditionFilter
-        {
-            get { return new HashSet<string>(renditionFilter); }
-            set
-            {
-                HashSet<string> tempSet = new HashSet<string>();
-                if (value != null)
-                {
-                    foreach (String rf in value)
-                    {
-                        if (rf == null) { continue; }
-
-                        String trf = rf.Trim();
-                        if (trf.Length == 0) { continue; }
-                        if (trf.IndexOf(',') > -1)
-                        {
-                            throw new ArgumentException("Rendition must not contain a comma!");
-                        }
-
-                        tempSet.Add(trf);
-                    }
-
-                    if (tempSet.Count == 0)
-                    {
-                        tempSet.Add(RenditionNone);
-                    }
-                }
-                else
-                {
-                    tempSet.Add(RenditionNone);
-                }
-
-                renditionFilter = tempSet;
-
-                GenerateCacheKey();
-            }
-        }
-
-        public string RenditionFilterString
-        {
-            get
-            {
-                if (renditionFilter == null) { return null; }
-
-                StringBuilder sb = new StringBuilder();
-                foreach (string rf in renditionFilter)
-                {
-                    if (sb.Length > 0) { sb.Append(','); }
-                    sb.Append(rf);
-                }
-
-                return sb.ToString();
-            }
-
-            set
-            {
-                if (value == null || value.Trim().Length == 0)
-                {
-                    RenditionFilter = null;
-                    return;
-                }
-
-                string[] renditions = value.Split(',');
-                HashSet<string> tempSet = new HashSet<string>();
-                foreach (string rend in renditions)
-                {
-                    tempSet.Add(rend);
-                }
-
-                RenditionFilter = tempSet;
-            }
-        }
-
-        public bool IncludePathSegments
-        {
-            get { return includePathSegments; }
-            set { includePathSegments = value; GenerateCacheKey(); }
-        }
-
-        public string OrderBy
-        {
-            get { return orderBy; }
-            set { orderBy = value; GenerateCacheKey(); }
-        }
-
-        public bool CacheEnabled
-        {
-            get { return cacheEnabled; }
-            set { cacheEnabled = value; GenerateCacheKey(); }
-        }
-
-        public string CacheKey
-        {
-            get { return cacheKey; }
-        }
-
-        public int MaxItemsPerPage
-        {
-            get { return maxItemsPerPage; }
-            set { maxItemsPerPage = value; }
-        }
-
-        protected void GenerateCacheKey()
-        {
-            if (!cacheEnabled)
-            {
-                cacheKey = null;
-            }
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(includeAcls ? "1" : "0");
-            sb.Append(includeAllowableActions ? "1" : "0");
-            sb.Append(includePolicies ? "1" : "0");
-            sb.Append("|");
-            sb.Append(filter == null ? "" : FilterString);
-            sb.Append("|");
-            sb.Append(includeRelationships == null ? "" : includeRelationships.GetCmisValue());
-
-            sb.Append("|");
-            sb.Append(renditionFilter == null ? "" : RenditionFilterString);
-
-            cacheKey = sb.ToString();
-        }
-    }
-
-    /// <summary>
-    /// Object id implementation.
-    /// </summary>
-    public class ObjectId : IObjectId
-    {
-        private string id;
-        public string Id
-        {
-            get { return id; }
-            set
-            {
-                if (value == null || value.Length == 0)
-                {
-                    throw new ArgumentException("Id must be set!");
-                }
-
-                id = value;
-            }
-        }
-
-        public ObjectId(string id)
-        {
-            Id = id;
         }
     }
 }
