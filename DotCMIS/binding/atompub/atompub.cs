@@ -113,7 +113,7 @@ namespace DotCMIS.Binding.AtomPub
             // nothing to do
         }
 
-        public void Close()
+        public void Dispose()
         {
             // nothing to do
         }
@@ -2118,7 +2118,7 @@ namespace DotCMIS.Binding.AtomPub
         }
 
         public void CheckIn(string repositoryId, ref string objectId, bool? major, IProperties properties,
-            IContentStream contentStream, string checkinComment, List<string> policies, IAcl addAces, IAcl removeAces,
+            IContentStream contentStream, string checkinComment, IList<string> policies, IAcl addAces, IAcl removeAces,
             IExtensionsData extension)
         {
             // we need an object id

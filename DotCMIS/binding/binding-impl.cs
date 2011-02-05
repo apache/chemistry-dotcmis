@@ -35,7 +35,6 @@ namespace DotCMIS.Binding.Impl
     internal class CmisBinding : ICmisBinding
     {
         private BindingSession session;
-        private BindingsObjectFactory objectFactory;
         private BindingRepositoryService repositoryServiceWrapper;
 
         public CmisBinding(IDictionary<string, string> sessionParameters)
@@ -56,9 +55,6 @@ namespace DotCMIS.Binding.Impl
             {
                 session.PutValue(key, sessionParameters[key]);
             }
-
-            // set up object factory
-            objectFactory = new BindingsObjectFactory();
 
             // set up authentication provider
             string authenticationProviderClass;
@@ -149,11 +145,6 @@ namespace DotCMIS.Binding.Impl
             return spi.GetPolicyService();
         }
 
-        public IBindingsObjectFactory GetObjectFactory()
-        {
-            return objectFactory;
-        }
-
         public void ClearAllCaches()
         {
             CheckSession();
@@ -200,14 +191,14 @@ namespace DotCMIS.Binding.Impl
             }
         }
 
-        public void Close()
+        public void Dispose()
         {
             CheckSession();
 
             session.Lock();
             try
             {
-                GetSpi().Close();
+                GetSpi().Dispose();
             }
             finally
             {
@@ -564,41 +555,21 @@ namespace DotCMIS.Binding.Impl
     }
 
     /// <summary>
-    /// Object factory implementation.
-    /// </summary>
-    internal class BindingsObjectFactory : IBindingsObjectFactory
-    {
-    }
-
-    /// <summary>
     /// SPI interface.
     /// </summary>
-    internal interface ICmisSpi
+    internal interface ICmisSpi : IDisposable
     {
         void initialize(BindingSession session);
-
         IRepositoryService GetRepositoryService();
-
         INavigationService GetNavigationService();
-
         IObjectService GetObjectService();
-
         IVersioningService GetVersioningService();
-
         IRelationshipService GetRelationshipService();
-
         IDiscoveryService GetDiscoveryService();
-
         IMultiFilingService GetMultiFilingService();
-
         IAclService GetAclService();
-
         IPolicyService GetPolicyService();
-
         void ClearAllCaches();
-
         void ClearRepositoryCache(string repositoryId);
-
-        void Close();
     }
 }

@@ -225,9 +225,9 @@ namespace DotCMIS.Data
         public string DisplayName { get; set; }
         public string QueryName { get; set; }
         public string Description { get; set; }
-        public PropertyType? PropertyType { get; set; }
-        public Cardinality? Cardinality { get; set; }
-        public Updatability? Updatability { get; set; }
+        public PropertyType PropertyType { get; set; }
+        public Cardinality Cardinality { get; set; }
+        public Updatability Updatability { get; set; }
         public bool? IsInherited { get; set; }
         public bool? IsRequired { get; set; }
         public bool? IsQueryable { get; set; }
@@ -427,7 +427,7 @@ namespace DotCMIS.Data
         }
     }
 
-    public abstract class PropertyData : ExtensionsData, IPropertyData
+    public abstract class AbstractPropertyData : ExtensionsData, IPropertyData
     {
         public string Id { get; set; }
         public string LocalName { get; set; }
@@ -438,37 +438,37 @@ namespace DotCMIS.Data
         {
             get
             {
-                if (this is PropertyBoolean)
+                if (this is IPropertyString)
                 {
-                    return ((PropertyBoolean)this).FirstValue;
+                    return ((IPropertyString)this).FirstValue;
                 }
-                else if (this is PropertyDateTime)
+                else if (this is IPropertyInteger)
                 {
-                    return ((PropertyDateTime)this).FirstValue;
+                    return ((IPropertyInteger)this).FirstValue;
                 }
-                else if (this is PropertyDecimal)
+                else if (this is IPropertyId)
                 {
-                    return ((PropertyDecimal)this).FirstValue;
+                    return ((IPropertyId)this).FirstValue;
                 }
-                else if (this is PropertyHtml)
+                else if (this is IPropertyBoolean)
                 {
-                    return ((PropertyHtml)this).FirstValue;
+                    return ((IPropertyBoolean)this).FirstValue;
                 }
-                else if (this is PropertyId)
+                else if (this is IPropertyDateTime)
                 {
-                    return ((PropertyId)this).FirstValue;
+                    return ((IPropertyDateTime)this).FirstValue;
                 }
-                else if (this is PropertyInteger)
+                else if (this is IPropertyDecimal)
                 {
-                    return ((PropertyInteger)this).FirstValue;
+                    return ((IPropertyDecimal)this).FirstValue;
                 }
-                else if (this is PropertyString)
+                else if (this is IPropertyHtml)
                 {
-                    return ((PropertyString)this).FirstValue;
+                    return ((IPropertyHtml)this).FirstValue;
                 }
-                else if (this is PropertyUri)
+                else if (this is IPropertyUri)
                 {
-                    return ((PropertyUri)this).FirstValue;
+                    return ((IPropertyUri)this).FirstValue;
                 }
 
                 return null;
@@ -481,49 +481,49 @@ namespace DotCMIS.Data
         }
     }
 
-    public class PropertyBoolean : PropertyData, IPropertyBoolean
+    public class PropertyBoolean : AbstractPropertyData, IPropertyBoolean
     {
         public IList<bool> Values { get; set; }
         public bool? FirstValue { get { return Values == null || Values.Count < 1 ? null : (bool?)Values[0]; } }
     }
 
-    public class PropertyDateTime : PropertyData, IPropertyDateTime
+    public class PropertyDateTime : AbstractPropertyData, IPropertyDateTime
     {
         public IList<DateTime> Values { get; set; }
         public DateTime? FirstValue { get { return Values == null || Values.Count < 1 ? null : (DateTime?)Values[0]; } }
     }
 
-    public class PropertyDecimal : PropertyData, IPropertyDecimal
+    public class PropertyDecimal : AbstractPropertyData, IPropertyDecimal
     {
         public IList<decimal> Values { get; set; }
         public decimal? FirstValue { get { return Values == null || Values.Count < 1 ? null : (decimal?)Values[0]; } }
     }
 
-    public class PropertyHtml : PropertyData, IPropertyHtml
+    public class PropertyHtml : AbstractPropertyData, IPropertyHtml
     {
         public IList<string> Values { get; set; }
         public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }
     }
 
-    public class PropertyId : PropertyData, IPropertyId
+    public class PropertyId : AbstractPropertyData, IPropertyId
     {
         public IList<string> Values { get; set; }
         public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }
     }
 
-    public class PropertyInteger : PropertyData, IPropertyInteger
+    public class PropertyInteger : AbstractPropertyData, IPropertyInteger
     {
         public IList<long> Values { get; set; }
         public long? FirstValue { get { return Values == null || Values.Count < 1 ? null : (long?)Values[0]; } }
     }
 
-    public class PropertyString : PropertyData, IPropertyString
+    public class PropertyString : AbstractPropertyData, IPropertyString
     {
         public IList<string> Values { get; set; }
         public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }
     }
 
-    public class PropertyUri : PropertyData, IPropertyUri
+    public class PropertyUri : AbstractPropertyData, IPropertyUri
     {
         public IList<string> Values { get; set; }
         public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }

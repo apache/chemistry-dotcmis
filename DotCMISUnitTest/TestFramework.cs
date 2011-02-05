@@ -334,6 +334,8 @@ namespace DotCMISUnitTest
             Assert.NotNull(expected);
             Assert.NotNull(actual);
 
+            Assert.NotNull(actual.Id);
+
             Assert.AreEqual(expected.Id, actual.Id);
             Assert.AreEqual(expected.IsBaseType, actual.IsBaseType);
             Assert.AreEqual(expected.BaseTypeId, actual.BaseTypeId);
@@ -343,6 +345,39 @@ namespace DotCMISUnitTest
             Assert.AreEqual(expected.LocalNamespace, actual.LocalNamespace);
             Assert.AreEqual(expected.QueryName, actual.QueryName);
             Assert.AreEqual(expected.PropertyDefintions.Count, actual.PropertyDefintions.Count);
+
+            foreach (IPropertyDefinition propDef in expected.PropertyDefintions)
+            {
+                Assert.NotNull(propDef);
+                Assert.NotNull(propDef.Id);
+
+                IPropertyDefinition propDef2 = actual[propDef.Id];
+
+                AssertAreEqual(propDef, propDef2);
+            }
+        }
+
+        public void AssertAreEqual(IPropertyDefinition expected, IPropertyDefinition actual)
+        {
+            if (expected == null && actual == null)
+            {
+                return;
+            }
+
+            Assert.NotNull(expected);
+            Assert.NotNull(actual);
+
+            Assert.NotNull(actual.Id);
+
+            Assert.AreEqual(expected.Id, actual.Id);
+            Assert.AreEqual(expected.LocalName, actual.LocalName);
+            Assert.AreEqual(expected.LocalNamespace, actual.LocalNamespace);
+            Assert.AreEqual(expected.DisplayName, actual.DisplayName);
+            Assert.AreEqual(expected.Description, actual.Description);
+            Assert.AreEqual(expected.QueryName, actual.QueryName);
+            Assert.AreEqual(expected.PropertyType, actual.PropertyType);
+            Assert.AreEqual(expected.Cardinality, actual.Cardinality);
+            Assert.AreEqual(expected.Updatability, actual.Updatability);
         }
     }
 }

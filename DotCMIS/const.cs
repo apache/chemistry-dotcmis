@@ -91,7 +91,7 @@ namespace DotCMIS
         public const string IsImmutable = "cmis:isImmutable";
         public const string IsLatestVersion = "cmis:isLatestVersion";
         public const string IsMajorVersion = "cmis:isMajorVersion";
-        public const string isLatestMajorVersion = "cmis:isLatestMajorVersion";
+        public const string IsLatestMajorVersion = "cmis:isLatestMajorVersion";
         public const string VersionLabel = "cmis:versionLabel";
         public const string VersionSeriesId = "cmis:versionSeriesId";
         public const string IsVersionSeriesCheckedOut = "cmis:isVersionSeriesCheckedOut";

@@ -43,7 +43,7 @@ namespace DotCMIS.Client
 
         public ISession Session { get { return session; } }
 
-        public bool IsBaseType { get { return objectType.ParentTypeId == null; } }
+        public bool IsBaseType { get { return objectType.ParentTypeId == null || objectType.ParentTypeId.Length == 0; } }
 
         public IObjectType GetBaseType()
         {

@@ -120,7 +120,7 @@ namespace DotCMIS.Client
         // ACL and ACE
         IAcl ConvertAces(IList<IAce> aces);
         IAcl CreateAcl(IList<IAce> aces);
-        IAce CreateAce(string principal, List<string> permissions);
+        IAce CreateAce(string principal, IList<string> permissions);
 
         // policies
         IList<string> ConvertPolicies(IList<IPolicy> policies);
@@ -130,14 +130,13 @@ namespace DotCMIS.Client
 
         // content stream
         IContentStream CreateContentStream(string filename, long length, string mimetype, Stream stream);
-        IContentStream ConvertContentStream(IContentStream contentStream);
 
         // types
         IObjectType ConvertTypeDefinition(ITypeDefinition typeDefinition);
         IObjectType GetTypeFromObjectData(IObjectData objectData);
 
         // properties
-        IProperty CreateProperty(IPropertyDefinition type, IList<object> values);
+        IProperty CreateProperty<T>(IPropertyDefinition type, IList<T> values);
         IDictionary<string, IProperty> ConvertProperties(IObjectType objectType, IProperties properties);
         IProperties ConvertProperties(IDictionary<string, object> properties, IObjectType type, HashSet<Updatability> updatabilityFilter);
         IList<IPropertyData> ConvertQueryProperties(IProperties properties);
@@ -223,12 +222,18 @@ namespace DotCMIS.Client
         IContentStream GetContentStream();
     }
 
-    public interface IProperty : IPropertyData
+    public interface IProperty
     {
+        string Id { get; }
+        string LocalName { get; }
+        string DisplayName { get; }
+        string QueryName { get; }
         bool IsMultiValued { get; }
-        PropertyType PropertyType { get; }
-        PropertyDefinition PropertyDefinition { get; }
+        PropertyType? PropertyType { get; }
+        IPropertyDefinition PropertyDefinition { get; }
         object Value { get; }
+        IList<object> Values { get; }
+        object FirstValue { get; }
         string ValueAsString { get; }
         string ValuesAsString { get; }
     }
@@ -296,8 +301,8 @@ namespace DotCMIS.Client
         IFileableCmisObject Move(IObjectId sourceFolderId, IObjectId targetFolderId);
 
         // navigation service
-        IList<IFolder> GetParents();
-        IList<string> GetPaths();
+        IList<IFolder> Parents { get; }
+        IList<string> Paths { get; }
 
         // multifiling service
         void AddToFolder(IObjectId folderId, bool allVersions);
@@ -312,11 +317,11 @@ namespace DotCMIS.Client
         bool? IsLatestMajorVersion { get; }
         string VersionLabel { get; }
         string VersionSeriesId { get; }
-        bool? VersionSeriesCheckedOut { get; }
+        bool? IsVersionSeriesCheckedOut { get; }
         string VersionSeriesCheckedOutBy { get; }
         string VersionSeriesCheckedOutId { get; }
         string CheckinComment { get; }
-        long ContentStreamLength { get; }
+        long? ContentStreamLength { get; }
         string ContentStreamMimeType { get; }
         string ContentStreamFileName { get; }
         string ContentStreamId { get; }
@@ -335,7 +340,7 @@ namespace DotCMIS.Client
         void CancelCheckOut();
         IObjectId CheckIn(bool major, IDictionary<string, object> properties, IContentStream contentStream, string checkinComment,
                 IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces);
-        IObjectId checkIn(bool major, IDictionary<string, object> properties, IContentStream contentStream, string checkinComment);
+        IObjectId CheckIn(bool major, IDictionary<string, object> properties, IContentStream contentStream, string checkinComment);
         IDocument GetObjectOfLatestVersion(bool major);
         IDocument GetObjectOfLatestVersion(bool major, IOperationContext context);
         IList<IDocument> GetAllVersions();
@@ -361,7 +366,7 @@ namespace DotCMIS.Client
         IFolder CreateFolder(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces,
                 IOperationContext context);
         IFolder CreateFolder(IDictionary<string, object> properties);
-        IPolicy CreatePolicy(IDictionary<string, object> properties, List<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces,
+        IPolicy CreatePolicy(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces,
                 IOperationContext context);
         IPolicy CreatePolicy(IDictionary<string, object> properties);
         IList<string> DeleteTree(bool allversions, UnfileObject? unfile, bool continueOnFailure);

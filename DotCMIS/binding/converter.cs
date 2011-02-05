@@ -424,9 +424,9 @@ namespace DotCMIS.Binding
             result.DisplayName = propDef.displayName;
             result.QueryName = propDef.queryName;
             result.Description = propDef.description;
-            result.PropertyType = (PropertyType?)CmisValue.SerializerToCmisEnum(propDef.propertyType);
-            result.Cardinality = (Cardinality?)CmisValue.SerializerToCmisEnum(propDef.cardinality);
-            result.Updatability = (Updatability?)CmisValue.SerializerToCmisEnum(propDef.updatability);
+            result.PropertyType = (PropertyType)CmisValue.SerializerToCmisEnum(propDef.propertyType);
+            result.Cardinality = (Cardinality)CmisValue.SerializerToCmisEnum(propDef.cardinality);
+            result.Updatability = (Updatability)CmisValue.SerializerToCmisEnum(propDef.updatability);
             result.IsInherited = (propDef.inheritedSpecified ? (bool?)propDef.inherited : null);
             result.IsRequired = propDef.required;
             result.IsQueryable = propDef.queryable;
@@ -702,7 +702,7 @@ namespace DotCMIS.Binding
         {
             if (property == null) { return null; }
 
-            PropertyData result = null;
+            AbstractPropertyData result = null;
             if (property is cmisPropertyString)
             {
                 result = new PropertyString();

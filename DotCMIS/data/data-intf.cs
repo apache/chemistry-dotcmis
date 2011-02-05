@@ -145,9 +145,9 @@ namespace DotCMIS.Data
         string DisplayName { get; }
         string QueryName { get; }
         string Description { get; }
-        PropertyType? PropertyType { get; }
-        Cardinality? Cardinality { get; }
-        Updatability? Updatability { get; }
+        PropertyType PropertyType { get; }
+        Cardinality Cardinality { get; }
+        Updatability Updatability { get; }
         bool? IsInherited { get; }
         bool? IsRequired { get; }
         bool? IsQueryable { get; }

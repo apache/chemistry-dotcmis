@@ -243,15 +243,15 @@ namespace DotCMIS.Client
                     cacheType = typeof(NoCache);
                 }
 
-                object cacheObject = Activator.CreateInstance(cacheType);
-                if (!(cacheObject is ICache))
+                ICache cacheObject = Activator.CreateInstance(cacheType) as ICache;
+                if (cacheObject == null)
                 {
                     throw new Exception("Class does not implement ICache!");
                 }
 
-                ((ICache)cacheObject).Initialize(this, parameters);
+                cacheObject.Initialize(this, parameters);
 
-                return (ICache)cacheObject;
+                return cacheObject;
             }
             catch (Exception e)
             {
@@ -275,15 +275,15 @@ namespace DotCMIS.Client
                     ofType = typeof(ObjectFactory);
                 }
 
-                object ofObject = Activator.CreateInstance(ofType);
-                if (!(ofObject is IObjectFactory))
+                IObjectFactory ofObject = Activator.CreateInstance(ofType) as IObjectFactory;
+                if (ofObject == null)
                 {
                     throw new Exception("Class does not implement IObjectFactory!");
                 }
 
-                ((IObjectFactory)ofObject).Initialize(this, parameters);
+                ofObject.Initialize(this, parameters);
 
-                return (IObjectFactory)ofObject;
+                return ofObject;
             }
             catch (Exception e)
             {
@@ -335,12 +335,12 @@ namespace DotCMIS.Client
 
         public IItemEnumerable<IObjectType> GetTypeChildren(string typeId, bool includePropertyDefinitions)
         {
-            IRepositoryService repositoryService = Binding.GetRepositoryService();
+            IRepositoryService service = Binding.GetRepositoryService();
 
             PageFetcher<IObjectType>.FetchPage fetchPageDelegate = delegate(long maxNumItems, long skipCount)
             {
                 // fetch the data
-                ITypeDefinitionList tdl = repositoryService.GetTypeChildren(RepositoryId, typeId, includePropertyDefinitions, maxNumItems, skipCount, null);
+                ITypeDefinitionList tdl = service.GetTypeChildren(RepositoryId, typeId, includePropertyDefinitions, maxNumItems, skipCount, null);
 
                 // convert type definitions
                 IList<IObjectType> page = new List<IObjectType>(tdl.List.Count);
@@ -388,13 +388,13 @@ namespace DotCMIS.Client
 
         public IFolder GetRootFolder(IOperationContext context)
         {
-            ICmisObject rootFolder = GetObject(CreateObjectId(RepositoryInfo.RootFolderId), context);
-            if (!(rootFolder is IFolder))
+            IFolder rootFolder = GetObject(CreateObjectId(RepositoryInfo.RootFolderId), context) as IFolder;
+            if (rootFolder == null)
             {
                 throw new CmisRuntimeException("Root folder object is not a folder!");
             }
 
-            return (IFolder)rootFolder;
+            return rootFolder;
         }
 
         public IItemEnumerable<IDocument> GetCheckedOutDocs()

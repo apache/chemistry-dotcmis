@@ -123,7 +123,7 @@ namespace DotCMIS.Binding.Services
         void CancelCheckOut(string repositoryId, string objectId, IExtensionsData extension);
 
         void CheckIn(string repositoryId, ref string objectId, bool? major, IProperties properties,
-            IContentStream contentStream, string checkinComment, List<string> policies, IAcl addAces, IAcl removeAces,
+            IContentStream contentStream, string checkinComment, IList<string> policies, IAcl addAces, IAcl removeAces,
             IExtensionsData extension);
 
         IObjectData GetObjectOfLatestVersion(string repositoryId, string objectId, string versionSeriesId, bool major,

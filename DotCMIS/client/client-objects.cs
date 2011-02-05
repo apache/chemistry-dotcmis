@@ -27,10 +27,14 @@ using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
+using DotCMIS.Binding.Services;
 
 namespace DotCMIS.Client
 {
-    internal abstract class AbstractCmisObject : ICmisObject
+    /// <summary>
+    /// CMIS object base class.
+    /// </summary>
+    public abstract class AbstractCmisObject : ICmisObject
     {
         protected ISession Session { get; private set; }
         protected string RepositoryId { get { return Session.RepositoryInfo.Id; } }
@@ -80,7 +84,7 @@ namespace DotCMIS.Client
 
         private object objectLock = new object();
 
-        protected void initialize(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
+        protected void Initialize(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
         {
             if (session == null)
             {
@@ -103,7 +107,6 @@ namespace DotCMIS.Client
             this.extensions = new Dictionary<ExtensionLevel, IList<ICmisExtensionElement>>();
             this.CreationContext = new OperationContext(context);
             this.RefreshTimestamp = DateTime.UtcNow;
-
 
             IObjectFactory of = Session.ObjectFactory;
 
@@ -146,10 +149,10 @@ namespace DotCMIS.Client
                     policies = new List<IPolicy>();
                     foreach (string pid in objectData.PolicyIds.PolicyIds)
                     {
-                        ICmisObject policy = Session.GetObject(Session.CreateObjectId(pid));
-                        if (policy is IPolicy)
+                        IPolicy policy = Session.GetObject(Session.CreateObjectId(pid)) as IPolicy;
+                        if (policy != null)
                         {
-                            policies.Add((IPolicy)policy);
+                            policies.Add(policy);
                         }
                     }
                     extensions[ExtensionLevel.Policies] = objectData.PolicyIds.Extensions;
@@ -161,10 +164,10 @@ namespace DotCMIS.Client
                     relationships = new List<IRelationship>();
                     foreach (IObjectData rod in objectData.Relationships)
                     {
-                        ICmisObject relationship = of.ConvertObject(rod, CreationContext);
-                        if (relationship is IRelationship)
+                        IRelationship relationship = of.ConvertObject(rod, CreationContext) as IRelationship;
+                        if (relationship != null)
                         {
-                            relationships.Add((IRelationship)relationship);
+                            relationships.Add(relationship);
                         }
                     }
                 }
@@ -274,7 +277,7 @@ namespace DotCMIS.Client
 
         // --- properties ---
 
-        public IObjectType BaseType { get { return Session.GetTypeDefinition(BaseTypeId.GetCmisValue()); } }
+        public IObjectType BaseType { get { return Session.GetTypeDefinition(GetPropertyValue(PropertyIds.BaseTypeId) as string); } }
 
         public BaseTypeId BaseTypeId
         {
@@ -521,7 +524,7 @@ namespace DotCMIS.Client
                     oc.IncludeRelationships, oc.RenditionFilterString, oc.IncludePolicies, oc.IncludeAcls, null);
 
                 // reset this object
-                initialize(Session, ObjectType, objectData, CreationContext);
+                Initialize(Session, ObjectType, objectData, CreationContext);
             }
             finally
             {
@@ -553,6 +556,1108 @@ namespace DotCMIS.Client
         protected void Unlock()
         {
             Monitor.Exit(objectLock);
+        }
+    }
+
+    /// <summary>
+    /// Fileable object base class.
+    /// </summary>
+    public abstract class AbstractFileableCmisObject : AbstractCmisObject, IFileableCmisObject
+    {
+        public IFileableCmisObject Move(IObjectId sourceFolderId, IObjectId targetFolderId)
+        {
+            string objectId = ObjectId;
+
+            if (sourceFolderId == null || sourceFolderId.Id == null)
+            {
+                throw new ArgumentException("Source folder id must be set!");
+            }
+
+            if (targetFolderId == null || targetFolderId.Id == null)
+            {
+                throw new ArgumentException("Target folder id must be set!");
+            }
+
+            Binding.GetObjectService().MoveObject(RepositoryId, ref objectId, targetFolderId.Id, sourceFolderId.Id, null);
+
+            if (objectId == null)
+            {
+                return null;
+            }
+
+            IFileableCmisObject movedObject = Session.GetObject(Session.CreateObjectId(objectId)) as IFileableCmisObject;
+            if (movedObject == null)
+            {
+                throw new CmisRuntimeException("Moved object is invalid!");
+            }
+
+            return movedObject;
+        }
+
+        public virtual IList<IFolder> Parents
+        {
+            get
+            {
+                // get object ids of the parent folders
+                IList<IObjectParentData> providerParents = Binding.GetNavigationService().GetObjectParents(
+                        RepositoryId, ObjectId, GetPropertyQueryName(PropertyIds.ObjectId), false,
+                        IncludeRelationshipsFlag.None, null, false, null);
+
+                IList<IFolder> parents = new List<IFolder>();
+
+                foreach (IObjectParentData p in providerParents)
+                {
+                    if (p == null || p.Object == null || p.Object.Properties == null)
+                    {
+                        // should not happen...
+                        throw new CmisRuntimeException("Repository sent invalid data!");
+                    }
+
+                    // get id property
+                    IPropertyId idProperty = p.Object.Properties[PropertyIds.ObjectId] as IPropertyId;
+                    if (idProperty == null)
+                    {
+                        // the repository sent an object without a valid object id...
+                        throw new CmisRuntimeException("Repository sent invalid data! No object id!");
+                    }
+
+                    // fetch the object and make sure it is a folder
+                    IObjectId parentId = Session.CreateObjectId(idProperty.FirstValue);
+                    IFolder parentFolder = Session.GetObject(parentId) as IFolder;
+                    if (parentFolder == null)
+                    {
+                        // the repository sent an object that is not a folder...
+                        throw new CmisRuntimeException("Repository sent invalid data! Object is not a folder!");
+                    }
+
+                    parents.Add(parentFolder);
+                }
+
+                return parents;
+            }
+        }
+
+        public virtual IList<string> Paths
+        {
+            get
+            {
+                // get object paths of the parent folders
+                IList<IObjectParentData> parents = Binding.GetNavigationService().GetObjectParents(
+                        RepositoryId, ObjectId, GetPropertyQueryName(PropertyIds.Path), false, IncludeRelationshipsFlag.None,
+                        null, true, null);
+
+                IList<string> paths = new List<string>();
+
+                foreach (IObjectParentData p in parents)
+                {
+                    if (p == null || p.Object == null || p.Object.Properties == null)
+                    {
+                        // should not happen...
+                        throw new CmisRuntimeException("Repository sent invalid data!");
+                    }
+
+                    // get path property
+                    IPropertyString pathProperty = p.Object.Properties[PropertyIds.Path] as IPropertyString;
+                    if (pathProperty == null)
+                    {
+                        // the repository sent a folder without a valid path...
+                        throw new CmisRuntimeException("Repository sent invalid data! No path property!");
+                    }
+
+                    if (p.RelativePathSegment == null)
+                    {
+                        // the repository didn't send a relative path segment
+                        throw new CmisRuntimeException("Repository sent invalid data! No relative path segement!");
+                    }
+
+                    string folderPath = pathProperty.FirstValue;
+                    paths.Add(folderPath + (folderPath.EndsWith("/") ? "" : "/") + p.RelativePathSegment);
+                }
+
+                return paths;
+            }
+        }
+
+        public void AddToFolder(IObjectId folderId, bool allVersions)
+        {
+            if (folderId == null || folderId.Id == null)
+            {
+                throw new ArgumentException("Folder Id must be set!");
+            }
+
+            Binding.GetMultiFilingService().AddObjectToFolder(RepositoryId, ObjectId, folderId.Id, allVersions, null);
+        }
+
+        public void RemoveFromFolder(IObjectId folderId)
+        {
+            if (folderId == null || folderId.Id == null)
+            {
+                throw new ArgumentException("Folder Id must be set!");
+            }
+
+            Binding.GetMultiFilingService().RemoveObjectFromFolder(RepositoryId, ObjectId, folderId.Id, null);
+        }
+    }
+
+    /// <summary>
+    /// Document implemetation.
+    /// </summary>
+    public class Document : AbstractFileableCmisObject, IDocument
+    {
+        public Document(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
+        {
+            Initialize(session, objectType, objectData, context);
+        }
+
+        // properties
+
+        public bool? IsImmutable { get { return GetPropertyValue(PropertyIds.IsImmutable) as bool?; } }
+
+        public bool? IsLatestVersion { get { return GetPropertyValue(PropertyIds.IsLatestVersion) as bool?; } }
+
+        public bool? IsMajorVersion { get { return GetPropertyValue(PropertyIds.IsMajorVersion) as bool?; } }
+
+        public bool? IsLatestMajorVersion { get { return GetPropertyValue(PropertyIds.IsLatestMajorVersion) as bool?; } }
+
+        public string VersionLabel { get { return GetPropertyValue(PropertyIds.VersionLabel) as string; } }
+
+        public string VersionSeriesId { get { return GetPropertyValue(PropertyIds.VersionSeriesId) as string; } }
+
+        public bool? IsVersionSeriesCheckedOut { get { return GetPropertyValue(PropertyIds.IsVersionSeriesCheckedOut) as bool?; } }
+
+        public string VersionSeriesCheckedOutBy { get { return GetPropertyValue(PropertyIds.VersionSeriesCheckedOutBy) as string; } }
+
+        public string VersionSeriesCheckedOutId { get { return GetPropertyValue(PropertyIds.VersionSeriesCheckedOutId) as string; } }
+
+        public string CheckinComment { get { return GetPropertyValue(PropertyIds.CheckinComment) as string; } }
+
+        public long? ContentStreamLength { get { return GetPropertyValue(PropertyIds.ContentStreamLength) as long?; } }
+
+        public string ContentStreamMimeType { get { return GetPropertyValue(PropertyIds.ContentStreamMimeType) as string; } }
+
+        public string ContentStreamFileName { get { return GetPropertyValue(PropertyIds.ContentStreamFileName) as string; } }
+
+        public string ContentStreamId { get { return GetPropertyValue(PropertyIds.ContentStreamId) as string; } }
+
+        // operations
+
+        public IDocument Copy(IObjectId targetFolderId, IDictionary<string, object> properties, VersioningState? versioningState,
+                IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces, IOperationContext context)
+        {
+
+            IObjectId newId = Session.CreateDocumentFromSource(this, properties, targetFolderId, versioningState, policies, addAces, removeAces);
+
+            // if no context is provided the object will not be fetched
+            if (context == null || newId == null)
+            {
+                return null;
+            }
+            // get the new object
+            IDocument newDoc = Session.GetObject(newId, context) as IDocument;
+            if (newDoc == null)
+            {
+                throw new CmisRuntimeException("Newly created object is not a document! New id: " + newId);
+            }
+
+            return newDoc;
+        }
+
+        public IDocument Copy(IObjectId targetFolderId)
+        {
+            return Copy(targetFolderId, null, null, null, null, null, Session.DefaultContext);
+        }
+
+        public void DeleteAllVersions()
+        {
+            Delete(true);
+        }
+
+        // versioning
+
+        public IObjectId CheckOut()
+        {
+            string newObjectId = null;
+
+            Lock();
+            try
+            {
+                string objectId = ObjectId;
+                bool? contentCopied;
+
+                Binding.GetVersioningService().CheckOut(RepositoryId, ref objectId, null, out contentCopied);
+                newObjectId = objectId;
+            }
+            finally
+            {
+                Unlock();
+            }
+
+            if (newObjectId == null)
+            {
+                return null;
+            }
+
+            return Session.CreateObjectId(newObjectId);
+        }
+
+        public void CancelCheckOut()
+        {
+            Binding.GetVersioningService().CancelCheckOut(RepositoryId, ObjectId, null);
+        }
+
+        public IObjectId CheckIn(bool major, IDictionary<string, object> properties, IContentStream contentStream,
+                string checkinComment, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
+        {
+            String newObjectId = null;
+
+            Lock();
+            try
+            {
+                string objectId = ObjectId;
+
+                IObjectFactory of = Session.ObjectFactory;
+
+                HashSet<Updatability> updatebility = new HashSet<Updatability>();
+                updatebility.Add(Updatability.ReadWrite);
+                updatebility.Add(Updatability.WhenCheckedOut);
+
+                Binding.GetVersioningService().CheckIn(RepositoryId, ref objectId, major, of.ConvertProperties(properties, ObjectType, updatebility),
+                    contentStream, checkinComment, of.ConvertPolicies(policies), of.ConvertAces(addAces), of.ConvertAces(removeAces), null);
+
+                newObjectId = objectId;
+            }
+            finally
+            {
+                Unlock();
+            }
+
+            if (newObjectId == null)
+            {
+                return null;
+            }
+
+            return Session.CreateObjectId(newObjectId);
+
+        }
+
+        public IList<IDocument> GetAllVersions()
+        {
+            return GetAllVersions(Session.DefaultContext);
+        }
+
+        public IList<IDocument> GetAllVersions(IOperationContext context)
+        {
+            string objectId;
+            string versionSeriesId;
+
+            Lock();
+            try
+            {
+                objectId = ObjectId;
+                versionSeriesId = VersionSeriesId;
+            }
+            finally
+            {
+                Unlock();
+            }
+
+            IList<IObjectData> versions = Binding.GetVersioningService().GetAllVersions(RepositoryId, objectId, versionSeriesId,
+                context.FilterString, context.IncludeAllowableActions, null);
+
+            IObjectFactory of = Session.ObjectFactory;
+
+            IList<IDocument> result = new List<IDocument>();
+            if (versions != null)
+            {
+                foreach (IObjectData objectData in versions)
+                {
+                    IDocument doc = of.ConvertObject(objectData, context) as IDocument;
+                    if (doc == null)
+                    {
+                        // should not happen...
+                        continue;
+                    }
+
+                    result.Add(doc);
+                }
+            }
+
+            return result;
+        }
+
+        public IDocument GetObjectOfLatestVersion(bool major)
+        {
+            return GetObjectOfLatestVersion(major, Session.DefaultContext);
+        }
+
+        public IDocument GetObjectOfLatestVersion(bool major, IOperationContext context)
+        {
+            string objectId;
+            string versionSeriesId;
+
+            Lock();
+            try
+            {
+                objectId = ObjectId;
+                versionSeriesId = VersionSeriesId;
+            }
+            finally
+            {
+                Unlock();
+            }
+
+            if (versionSeriesId == null)
+            {
+                throw new CmisRuntimeException("Version series id is unknown!");
+            }
+
+            IObjectData objectData = Binding.GetVersioningService().GetObjectOfLatestVersion(RepositoryId, objectId, versionSeriesId, major,
+                context.FilterString, context.IncludeAllowableActions, context.IncludeRelationships, context.RenditionFilterString,
+                context.IncludePolicies, context.IncludeAcls, null);
+
+            IDocument result = Session.ObjectFactory.ConvertObject(objectData, context) as IDocument;
+            if (result == null)
+            {
+                throw new CmisRuntimeException("Latest version is not a document!");
+            }
+
+            return result;
+        }
+
+        // content operations
+
+        public IContentStream GetContentStream()
+        {
+            return GetContentStream(null);
+        }
+
+        public IContentStream GetContentStream(String streamId)
+        {
+            IContentStream contentStream;
+            try
+            {
+                contentStream = Binding.GetObjectService().GetContentStream(RepositoryId, ObjectId, streamId, null, null, null);
+            }
+            catch (CmisConstraintException)
+            {
+                // no content stream
+                return null;
+            }
+
+            // the AtomPub binding doesn't return a file name
+            // -> get the file name from properties, if present
+            if (contentStream.FileName == null && ContentStreamFileName != null)
+            {
+                ContentStream newContentStream = new ContentStream();
+                newContentStream.FileName = ContentStreamFileName;
+                newContentStream.Length = contentStream.Length;
+                newContentStream.MimeType = contentStream.MimeType;
+                newContentStream.Stream = contentStream.Stream;
+                newContentStream.Extensions = contentStream.Extensions;
+
+                contentStream = newContentStream;
+            }
+
+            return contentStream;
+        }
+
+        public IDocument SetContentStream(IContentStream contentStream, bool overwrite)
+        {
+            IObjectId objectId = SetContentStream(contentStream, overwrite, true);
+            if (objectId == null)
+            {
+                return null;
+            }
+
+            if (ObjectId != objectId.Id)
+            {
+                return (IDocument)Session.GetObject(objectId, CreationContext);
+            }
+
+            return this;
+        }
+
+        public IObjectId SetContentStream(IContentStream contentStream, bool overwrite, bool refresh)
+        {
+            string newObjectId = null;
+
+            Lock();
+            try
+            {
+                string objectId = ObjectId;
+                string changeToken = ChangeToken;
+
+                Binding.GetObjectService().SetContentStream(RepositoryId, ref objectId, overwrite, ref changeToken, contentStream, null);
+
+                newObjectId = objectId;
+            }
+            finally
+            {
+                Unlock();
+            }
+
+            if (refresh)
+            {
+                Refresh();
+            }
+
+            if (newObjectId == null)
+            {
+                return null;
+            }
+
+            return Session.CreateObjectId(newObjectId);
+        }
+
+        public IDocument DeleteContentStream()
+        {
+            IObjectId objectId = DeleteContentStream(true);
+            if (objectId == null)
+            {
+                return null;
+            }
+
+            if (ObjectId != objectId.Id)
+            {
+                return (IDocument)Session.GetObject(objectId, CreationContext);
+            }
+
+            return this;
+        }
+
+        public IObjectId DeleteContentStream(bool refresh)
+        {
+            string newObjectId = null;
+
+            Lock();
+            try
+            {
+                string objectId = ObjectId;
+                string changeToken = ChangeToken;
+
+                Binding.GetObjectService().DeleteContentStream(RepositoryId, ref objectId, ref changeToken, null);
+
+                newObjectId = objectId;
+            }
+            finally
+            {
+                Unlock();
+            }
+
+            if (refresh)
+            {
+                Refresh();
+            }
+
+            if (newObjectId == null)
+            {
+                return null;
+            }
+
+            return Session.CreateObjectId(newObjectId);
+        }
+
+        public IObjectId CheckIn(bool major, IDictionary<String, object> properties, IContentStream contentStream, string checkinComment)
+        {
+            return this.CheckIn(major, properties, contentStream, checkinComment, null, null, null);
+        }
+    }
+
+    /// <summary>
+    /// Folder implemetation.
+    /// </summary>
+    public class Folder : AbstractFileableCmisObject, IFolder
+    {
+        private static HashSet<Updatability> CreateUpdatability = new HashSet<Updatability>();
+        static Folder()
+        {
+            CreateUpdatability.Add(Updatability.OnCreate);
+            CreateUpdatability.Add(Updatability.ReadWrite);
+        }
+
+        public Folder(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
+        {
+            Initialize(session, objectType, objectData, context);
+        }
+
+        public IDocument CreateDocument(IDictionary<string, object> properties, IContentStream contentStream, VersioningState? versioningState,
+            IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces, IOperationContext context)
+        {
+            IObjectId newId = Session.CreateDocument(properties, this, contentStream, versioningState, policies, addAces, removeAces);
+
+            // if no context is provided the object will not be fetched
+            if (context == null || newId == null)
+            {
+                return null;
+            }
+
+            // get the new object
+            IDocument newDoc = Session.GetObject(newId, context) as IDocument;
+            if (newDoc == null)
+            {
+                throw new CmisRuntimeException("Newly created object is not a document! New id: " + newId);
+            }
+
+            return newDoc;
+        }
+
+        public IDocument CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, VersioningState? versioningState,
+            IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces, IOperationContext context)
+        {
+            IObjectId newId = Session.CreateDocumentFromSource(source, properties, this, versioningState, policies, addAces, removeAces);
+
+            // if no context is provided the object will not be fetched
+            if (context == null || newId == null)
+            {
+                return null;
+            }
+
+            // get the new object
+            IDocument newDoc = Session.GetObject(newId, context) as IDocument;
+            if (newDoc == null)
+            {
+                throw new CmisRuntimeException("Newly created object is not a document! New id: " + newId);
+            }
+
+            return newDoc;
+        }
+
+        public IFolder CreateFolder(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces, IOperationContext context)
+        {
+            IObjectId newId = Session.CreateFolder(properties, this, policies, addAces, removeAces);
+
+            // if no context is provided the object will not be fetched
+            if (context == null || newId == null)
+            {
+                return null;
+            }
+
+            // get the new object
+            IFolder newFolder = Session.GetObject(newId, context) as IFolder;
+            if (newFolder == null)
+            {
+                throw new CmisRuntimeException("Newly created object is not a folder! New id: " + newId);
+            }
+
+            return newFolder;
+        }
+
+        public IPolicy CreatePolicy(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces, IOperationContext context)
+        {
+            IObjectId newId = Session.CreatePolicy(properties, this, policies, addAces, removeAces);
+
+            // if no context is provided the object will not be fetched
+            if (context == null || newId == null)
+            {
+                return null;
+            }
+
+            // get the new object
+            IPolicy newPolicy = Session.GetObject(newId, context) as IPolicy;
+            if (newPolicy == null)
+            {
+                throw new CmisRuntimeException("Newly created object is not a policy! New id: " + newId);
+            }
+
+            return newPolicy;
+        }
+
+        public IList<string> DeleteTree(bool allVersions, UnfileObject? unfile, bool continueOnFailure)
+        {
+            IFailedToDeleteData failed = Binding.GetObjectService().DeleteTree(RepositoryId, ObjectId, allVersions, unfile, continueOnFailure, null);
+            return failed.Ids;
+        }
+
+        public IList<IObjectType> AllowedChildObjectTypes
+        {
+            get
+            {
+                IList<IObjectType> result = new List<IObjectType>();
+
+                Lock();
+                try
+                {
+                    IList<string> otids = GetPropertyValue(PropertyIds.AllowedChildObjectTypeIds) as IList<string>;
+                    if (otids == null)
+                    {
+                        return result;
+                    }
+
+                    foreach (string otid in otids)
+                    {
+                        result.Add(Session.GetTypeDefinition(otid));
+                    }
+                }
+                finally
+                {
+                    Unlock();
+                }
+
+                return result;
+            }
+        }
+
+        public IItemEnumerable<IDocument> GetCheckedOutDocs()
+        {
+            return GetCheckedOutDocs(Session.DefaultContext);
+        }
+
+        public IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context)
+        {
+            string objectId = ObjectId;
+            INavigationService service = Binding.GetNavigationService();
+            IObjectFactory of = Session.ObjectFactory;
+            IOperationContext ctxt = new OperationContext(context);
+
+            PageFetcher<IDocument>.FetchPage fetchPageDelegate = delegate(long maxNumItems, long skipCount)
+            {
+                // get checked out documents for this folder
+                IObjectList checkedOutDocs = service.GetCheckedOutDocs(RepositoryId, objectId, ctxt.FilterString, ctxt.OrderBy, ctxt.IncludeAllowableActions,
+                    ctxt.IncludeRelationships, ctxt.RenditionFilterString, maxNumItems, skipCount, null);
+
+                IList<IDocument> page = new List<IDocument>();
+                if (checkedOutDocs.Objects != null)
+                {
+                    foreach (IObjectData objectData in checkedOutDocs.Objects)
+                    {
+                        IDocument doc = of.ConvertObject(objectData, ctxt) as IDocument;
+                        if (doc == null)
+                        {
+                            // should not happen...
+                            continue;
+                        }
+
+                        page.Add(doc);
+                    }
+                }
+
+
+                return new PageFetcher<IDocument>.Page<IDocument>(page, checkedOutDocs.NumItems, checkedOutDocs.HasMoreItems);
+            };
+
+            return new CollectionEnumerable<IDocument>(new PageFetcher<IDocument>(ctxt.MaxItemsPerPage, fetchPageDelegate));
+        }
+
+        public IItemEnumerable<ICmisObject> GetChildren()
+        {
+            return GetChildren(Session.DefaultContext);
+        }
+
+        public IItemEnumerable<ICmisObject> GetChildren(IOperationContext context)
+        {
+            string objectId = ObjectId;
+            INavigationService service = Binding.GetNavigationService();
+            IObjectFactory of = Session.ObjectFactory;
+            IOperationContext ctxt = new OperationContext(context);
+
+            PageFetcher<ICmisObject>.FetchPage fetchPageDelegate = delegate(long maxNumItems, long skipCount)
+            {
+                // get the children
+                IObjectInFolderList children = service.GetChildren(RepositoryId, objectId, ctxt.FilterString, ctxt.OrderBy, ctxt.IncludeAllowableActions,
+                    ctxt.IncludeRelationships, ctxt.RenditionFilterString, ctxt.IncludePathSegments, maxNumItems, skipCount, null);
+
+                // convert objects
+                IList<ICmisObject> page = new List<ICmisObject>();
+                if (children.Objects != null)
+                {
+                    foreach (IObjectInFolderData objectData in children.Objects)
+                    {
+                        if (objectData.Object != null)
+                        {
+                            page.Add(of.ConvertObject(objectData.Object, ctxt));
+                        }
+                    }
+                }
+
+                return new PageFetcher<ICmisObject>.Page<ICmisObject>(page, children.NumItems, children.HasMoreItems);
+            };
+
+            return new CollectionEnumerable<ICmisObject>(new PageFetcher<ICmisObject>(ctxt.MaxItemsPerPage, fetchPageDelegate));
+        }
+
+        public IList<ITree<IFileableCmisObject>> GetDescendants(int depth)
+        {
+            return GetDescendants(depth, Session.DefaultContext);
+        }
+
+        public IList<ITree<IFileableCmisObject>> GetDescendants(int depth, IOperationContext context)
+        {
+            IList<IObjectInFolderContainer> bindingContainerList = Binding.GetNavigationService().GetDescendants(RepositoryId, ObjectId, depth,
+                context.FilterString, context.IncludeAllowableActions, context.IncludeRelationships, context.RenditionFilterString,
+                context.IncludePathSegments, null);
+
+            return ConvertProviderContainer(bindingContainerList, context);
+        }
+
+        public IList<ITree<IFileableCmisObject>> GetFolderTree(int depth)
+        {
+            return GetFolderTree(depth, Session.DefaultContext);
+        }
+
+        public IList<ITree<IFileableCmisObject>> GetFolderTree(int depth, IOperationContext context)
+        {
+            IList<IObjectInFolderContainer> bindingContainerList = Binding.GetNavigationService().GetFolderTree(RepositoryId, ObjectId, depth,
+                context.FilterString, context.IncludeAllowableActions, context.IncludeRelationships, context.RenditionFilterString,
+                context.IncludePathSegments, null);
+
+            return ConvertProviderContainer(bindingContainerList, context);
+        }
+
+        private IList<ITree<IFileableCmisObject>> ConvertProviderContainer(IList<IObjectInFolderContainer> bindingContainerList, IOperationContext context)
+        {
+            if (bindingContainerList == null)
+            {
+                return null;
+            }
+
+            IList<ITree<IFileableCmisObject>> result = new List<ITree<IFileableCmisObject>>();
+            foreach (IObjectInFolderContainer oifc in bindingContainerList)
+            {
+                if (oifc.Object == null || oifc.Object.Object == null)
+                {
+                    // shouldn't happen ...
+                    continue;
+                }
+
+                // convert the object
+                IFileableCmisObject cmisObject = Session.ObjectFactory.ConvertObject(oifc.Object.Object, context) as IFileableCmisObject;
+                if (cmisObject == null)
+                {
+                    // the repository must not return objects that are not fileable, but you never know...
+                    continue;
+                }
+
+                // convert the children
+                IList<ITree<IFileableCmisObject>> children = ConvertProviderContainer(oifc.Children, context);
+
+                // add both to current container
+                Tree<IFileableCmisObject> tree = new Tree<IFileableCmisObject>();
+                tree.Item = cmisObject;
+                tree.Children = children;
+
+                result.Add(tree);
+            }
+
+            return result;
+        }
+
+        public bool IsRootFolder { get { return ObjectId == Session.RepositoryInfo.RootFolderId; } }
+
+        public IFolder FolderParent
+        {
+            get
+            {
+                if (IsRootFolder)
+                {
+                    return null;
+                }
+
+                IList<IFolder> parents = Parents;
+                if (parents == null || parents.Count == 0)
+                {
+                    return null;
+                }
+
+                return parents[0];
+            }
+        }
+
+        public string Path
+        {
+            get
+            {
+                string path;
+
+                Lock();
+                try
+                {
+                    // get the path property
+                    path = GetPropertyValue(PropertyIds.Path) as string;
+
+                    // if the path property isn't set, get it
+                    if (path == null)
+                    {
+                        IObjectData objectData = Binding.GetObjectService().GetObject(RepositoryId, ObjectId,
+                                GetPropertyQueryName(PropertyIds.Path), false, IncludeRelationshipsFlag.None, "cmis:none", false,
+                                false, null);
+
+                        if (objectData.Properties != null)
+                        {
+                            PropertyString pathProperty = objectData.Properties[PropertyIds.Path] as PropertyString;
+                            if (pathProperty != null)
+                            {
+                                path = pathProperty.FirstValue;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    Unlock();
+                }
+
+                // we still don't know the path ... it's not a CMIS compliant repository
+                if (path == null)
+                {
+                    throw new CmisRuntimeException("Repository didn't return " + PropertyIds.Path + "!");
+                }
+
+                return path;
+            }
+        }
+
+        public override IList<string> Paths
+        {
+            get
+            {
+                IList<string> result = new List<string>();
+                result.Add(Path);
+
+                return result;
+            }
+        }
+
+        public IDocument CreateDocument(IDictionary<string, object> properties, IContentStream contentStream, VersioningState? versioningState)
+        {
+            return CreateDocument(properties, contentStream, versioningState, null, null, null, Session.DefaultContext);
+        }
+
+        public IDocument CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, VersioningState? versioningState)
+        {
+            return CreateDocumentFromSource(source, properties, versioningState, null, null, null, Session.DefaultContext);
+        }
+
+        public IFolder CreateFolder(IDictionary<string, object> properties)
+        {
+            return CreateFolder(properties, null, null, null, Session.DefaultContext);
+        }
+
+        public IPolicy CreatePolicy(IDictionary<string, object> properties)
+        {
+            return CreatePolicy(properties, null, null, null, Session.DefaultContext);
+        }
+    }
+
+    /// <summary>
+    /// Policy implemetation.
+    /// </summary>
+    public class Policy : AbstractFileableCmisObject, IPolicy
+    {
+        public Policy(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
+        {
+            Initialize(session, objectType, objectData, context);
+        }
+
+        public string PolicyText { get { return GetPropertyValue(PropertyIds.PolicyText) as string; } }
+    }
+
+    /// <summary>
+    /// Relationship implemetation.
+    /// </summary>
+    public class Relationship : AbstractCmisObject, IRelationship
+    {
+
+        public Relationship(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
+        {
+            Initialize(session, objectType, objectData, context);
+        }
+
+        public ICmisObject GetSource()
+        {
+            return GetSource(Session.DefaultContext);
+        }
+
+        public ICmisObject GetSource(IOperationContext context)
+        {
+            Lock();
+            try
+            {
+                IObjectId sourceId = SourceId;
+                if (sourceId == null)
+                {
+                    return null;
+                }
+
+                return Session.GetObject(sourceId, context);
+            }
+            finally
+            {
+                Unlock();
+            }
+        }
+
+        public IObjectId SourceId
+        {
+            get
+            {
+                string sourceId = GetPropertyValue(PropertyIds.SourceId) as string;
+                if (sourceId == null || sourceId.Length == 0)
+                {
+                    return null;
+                }
+
+                return Session.CreateObjectId(sourceId);
+            }
+        }
+
+        public ICmisObject GetTarget()
+        {
+            return GetTarget(Session.DefaultContext);
+        }
+
+        public ICmisObject GetTarget(IOperationContext context)
+        {
+            Lock();
+            try
+            {
+                IObjectId targetId = TargetId;
+                if (targetId == null)
+                {
+                    return null;
+                }
+
+                return Session.GetObject(targetId, context);
+            }
+            finally
+            {
+                Unlock();
+            }
+        }
+
+        public IObjectId TargetId
+        {
+            get
+            {
+                string targetId = GetPropertyValue(PropertyIds.TargetId) as string;
+                if (targetId == null || targetId.Length == 0)
+                {
+                    return null;
+                }
+
+                return Session.CreateObjectId(targetId);
+            }
+        }
+    }
+
+    public class Property : IProperty
+    {
+        public Property(IPropertyDefinition propertyDefinition, IList<object> values)
+        {
+            PropertyDefinition = propertyDefinition;
+            Values = values;
+        }
+
+        public string Id { get { return PropertyDefinition.Id; } }
+
+        public string LocalName { get { return PropertyDefinition.LocalName; } }
+
+        public string DisplayName { get { return PropertyDefinition.DisplayName; } }
+
+        public string QueryName { get { return PropertyDefinition.QueryName; } }
+
+        public bool IsMultiValued { get { return PropertyDefinition.Cardinality == Cardinality.Multi; } }
+
+        public PropertyType? PropertyType { get { return PropertyDefinition.PropertyType; } }
+
+        public IPropertyDefinition PropertyDefinition { get; protected set; }
+
+        public object Value
+        {
+            get
+            {
+                if (PropertyDefinition.Cardinality == Cardinality.Single)
+                {
+                    return Values.Count == 0 ? null : Values[0];
+                }
+                else
+                {
+                    return Values;
+                }
+            }
+        }
+
+        public IList<object> Values { get; protected set; }
+
+        public object FirstValue { get { return Values.Count == 0 ? null : Values[0]; } }
+
+        public string ValueAsString { get { return FormatValue(FirstValue); } }
+
+        public string ValuesAsString
+        {
+            get
+            {
+                StringBuilder result = new StringBuilder();
+                foreach (object value in Values)
+                {
+                    if (result.Length > 0)
+                    {
+                        result.Append(", ");
+                    }
+
+                    result.Append(FormatValue(value));
+                }
+
+                return "[" + result.ToString() + "]";
+            }
+        }
+
+        private string FormatValue(object value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            // for future formating
+
+            return value.ToString();
+        }
+    }
+
+    public class Rendition : RenditionData, IRendition
+    {
+        private ISession session;
+        private string objectId;
+
+        public Rendition(ISession session, string objectId, string streamId, string mimeType, long? length, string kind,
+            string title, long? height, long? width, string renditionDocumentId)
+        {
+            this.session = session;
+            this.objectId = objectId;
+
+            StreamId = streamId;
+            MimeType = mimeType;
+            Length = length;
+            Kind = kind;
+            Title = title;
+            Height = height;
+            Width = width;
+            RenditionDocumentId = renditionDocumentId;
+        }
+
+        public IDocument GetRenditionDocument()
+        {
+            return GetRenditionDocument(session.DefaultContext);
+        }
+
+        public IDocument GetRenditionDocument(IOperationContext context)
+        {
+            if (RenditionDocumentId == null)
+            {
+                return null;
+            }
+
+            return session.GetObject(session.CreateObjectId(RenditionDocumentId), context) as IDocument;
+        }
+
+        public IContentStream GetContentStream()
+        {
+            if (objectId == null || StreamId == null)
+            {
+                return null;
+            }
+
+            return session.Binding.GetObjectService().GetContentStream(session.RepositoryInfo.Id, objectId, StreamId, null, null, null);
         }
     }
 }

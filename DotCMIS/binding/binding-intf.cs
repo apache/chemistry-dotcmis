@@ -18,16 +18,14 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DotCMIS.Binding.Services;
-using DotCMIS.Binding.Impl;
-using DotCMIS.CMISWebServicesReference;
 using System.Net;
+using DotCMIS.Binding.Impl;
+using DotCMIS.Binding.Services;
+using DotCMIS.CMISWebServicesReference;
 
 namespace DotCMIS.Binding
 {
-    public interface ICmisBinding
+    public interface ICmisBinding : IDisposable
     {
         IRepositoryService GetRepositoryService();
         INavigationService GetNavigationService();
@@ -38,10 +36,8 @@ namespace DotCMIS.Binding
         IMultiFilingService GetMultiFilingService();
         IAclService GetAclService();
         IPolicyService GetPolicyService();
-        IBindingsObjectFactory GetObjectFactory();
         void ClearAllCaches();
         void ClearRepositoryCache(string repositoryId);
-        void Close();
     }
 
     public interface IBindingSession
@@ -129,11 +125,6 @@ namespace DotCMIS.Binding
                 ((WebRequest)connection).Credentials = new NetworkCredential(user, password);
             }
         }
-    }
-
-
-    public interface IBindingsObjectFactory
-    {
     }
 
     public class CmisBindingFactory
