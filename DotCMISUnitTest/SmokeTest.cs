@@ -23,6 +23,7 @@ using System.Text;
 using NUnit.Framework;
 using DotCMIS.Client;
 using DotCMIS.Enums;
+using DotCMIS;
 
 namespace DotCMISUnitTest
 {
@@ -124,6 +125,25 @@ namespace DotCMISUnitTest
 
             Assert.True(count >= 2);
             Assert.True(count <= 4);
+        }
+
+        [Test]
+        public void SmokeRootFolder()
+        {
+            ICmisObject rootFolderObject = Session.GetRootFolder();
+
+            Assert.NotNull(rootFolderObject);
+            Assert.NotNull(rootFolderObject.Id);
+            Assert.True(rootFolderObject is IFolder);
+
+            IFolder rootFolder = (IFolder)rootFolderObject;
+
+            Assert.AreEqual("/", rootFolder.Path);
+            Assert.AreEqual(1, rootFolder.Paths.Count);
+
+            Assert.NotNull(rootFolder.AllowableActions);
+            Assert.True(rootFolder.AllowableActions.Actions.Contains(Actions.CanGetProperties));
+            Assert.False(rootFolder.AllowableActions.Actions.Contains(Actions.CanGetFolderParent));
         }
     }
 }

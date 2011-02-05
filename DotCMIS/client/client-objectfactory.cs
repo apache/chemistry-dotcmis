@@ -138,13 +138,19 @@ namespace DotCMIS.Client
                 return null;
             }
 
-            IPropertyId typeProperty = objectData.Properties[PropertyIds.ObjectTypeId] as IPropertyId;
+            IPropertyData typeProperty = objectData.Properties[PropertyIds.ObjectTypeId];
             if (typeProperty == null)
             {
                 return null;
             }
 
-            return session.GetTypeDefinition(typeProperty.FirstValue);
+            string typeId = typeProperty.FirstValue as string;
+            if (typeId == null)
+            {
+                return null;
+            }
+
+            return session.GetTypeDefinition(typeId);
         }
 
         // properties
@@ -162,25 +168,7 @@ namespace DotCMIS.Client
                 throw new CmisRuntimeException("Property '" + pd.Id + "' doesn't exist!");
             }
 
-            switch (definition.PropertyType)
-            {
-                case PropertyType.String:
-                    return CreateProperty(definition, ((IPropertyString)pd).Values);
-                case PropertyType.Id:
-                    return CreateProperty(definition, ((IPropertyId)pd).Values);
-                case PropertyType.Integer:
-                    return CreateProperty(definition, ((IPropertyInteger)pd).Values);
-                case PropertyType.Boolean:
-                    return CreateProperty(definition, ((IPropertyBoolean)pd).Values);
-                case PropertyType.Decimal:
-                    return CreateProperty(definition, ((IPropertyDecimal)pd).Values);
-                case PropertyType.Uri:
-                    return CreateProperty(definition, ((IPropertyUri)pd).Values);
-                case PropertyType.Html:
-                    return CreateProperty(definition, ((IPropertyHtml)pd).Values);
-                default:
-                    return null;
-            }
+            return CreateProperty(definition, pd.Values);
         }
 
         public IDictionary<string, IProperty> ConvertProperties(IObjectType objectType, IProperties properties)
@@ -266,39 +254,32 @@ namespace DotCMIS.Client
                     }
                 }
 
+                PropertyData propertyData = new PropertyData(definition.PropertyType);
+                propertyData.Id = id;
+
                 // single and multi value check
-                IList<dynamic> values;
                 if (value == null)
                 {
-                    values = null;
+                    propertyData.Values = null;
                 }
-                else if (value is IList<dynamic>)
+                else if (value is IList)
                 {
                     if (definition.Cardinality != Cardinality.Multi)
                     {
                         throw new ArgumentException("Property '" + id + "' is not a multi value property!");
                     }
-                    values = (IList<dynamic>)value;
+
+                    IList valueList = (IList)value;
 
                     // check if the list is homogeneous and does not contain null values
-                    Type valueType = null;
-                    foreach (object o in values)
+                    foreach (object o in valueList)
                     {
                         if (o == null)
                         {
                             throw new ArgumentException("Property '" + id + "' contains null values!");
                         }
-                        if (valueType == null)
-                        {
-                            valueType = o.GetType();
-                        }
-                        else
-                        {
-                            if (!valueType.IsInstanceOfType(o))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is inhomogeneous!");
-                            }
-                        }
+
+                        propertyData.AddValue(o);
                     }
                 }
                 else
@@ -307,160 +288,11 @@ namespace DotCMIS.Client
                     {
                         throw new ArgumentException("Property '" + id + "' is not a single value property!");
                     }
-                    values = new List<dynamic>();
-                    values.Add(value);
+
+                    propertyData.AddValue(value);
                 }
 
-                // assemble property
-                object firstValue = (values == null || values.Count == 0 ? null : values[0]);
-
-                switch (definition.PropertyType)
-                {
-                    case PropertyType.String:
-                        PropertyString stringProperty = new PropertyString();
-                        stringProperty.Id = id;
-                        stringProperty.Values = new List<string>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is string))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is a String property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                stringProperty.Values.Add((string)o);
-                            }
-                        }
-                        result.AddProperty(stringProperty);
-                        break;
-                    case PropertyType.Id:
-                        PropertyId idProperty = new PropertyId();
-                        idProperty.Id = id;
-                        idProperty.Values = new List<string>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is string))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is a Id property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                idProperty.Values.Add((string)o);
-                            }
-                        }
-                        result.AddProperty(idProperty);
-                        break;
-                    case PropertyType.Integer:
-                        PropertyInteger intProperty = new PropertyInteger();
-                        intProperty.Id = id;
-                        intProperty.Values = new List<long>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is sbyte || firstValue is byte || firstValue is short || firstValue is ushort || firstValue is int || firstValue is uint || firstValue is long))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is an Integer property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                intProperty.Values.Add((long)o);
-                            }
-                        }
-                        result.AddProperty(intProperty);
-                        break;
-                    case PropertyType.Boolean:
-                        PropertyBoolean booleanProperty = new PropertyBoolean();
-                        booleanProperty.Id = id;
-                        booleanProperty.Values = new List<bool>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is bool))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is a boolean property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                booleanProperty.Values.Add((bool)o);
-                            }
-                        }
-                        result.AddProperty(booleanProperty);
-                        break;
-                    case PropertyType.DateTime:
-                        PropertyDateTime dateTimeProperty = new PropertyDateTime();
-                        dateTimeProperty.Id = id;
-                        dateTimeProperty.Values = new List<DateTime>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is DateTime))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is a Boolean property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                dateTimeProperty.Values.Add((DateTime)o);
-                            }
-                        }
-                        result.AddProperty(dateTimeProperty);
-                        break;
-                    case PropertyType.Decimal:
-                        PropertyDecimal decimalProperty = new PropertyDecimal();
-                        decimalProperty.Id = id;
-                        decimalProperty.Values = new List<decimal>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is DateTime))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is a Decimal property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                decimalProperty.Values.Add((decimal)o);
-                            }
-                        }
-                        result.AddProperty(decimalProperty);
-                        break;
-                    case PropertyType.Uri:
-                        PropertyUri uriProperty = new PropertyUri();
-                        uriProperty.Id = id;
-                        uriProperty.Values = new List<string>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is string))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is a URI property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                uriProperty.Values.Add((string)o);
-                            }
-                        }
-                        result.AddProperty(uriProperty);
-                        break;
-                    case PropertyType.Html:
-                        PropertyHtml htmlProperty = new PropertyHtml();
-                        htmlProperty.Id = id;
-                        htmlProperty.Values = new List<string>(values.Count);
-                        if (values != null)
-                        {
-                            if (firstValue != null && !(firstValue is string))
-                            {
-                                throw new ArgumentException("Property '" + id + "' is a HTML property!");
-                            }
-
-                            foreach (object o in values)
-                            {
-                                htmlProperty.Values.Add((string)o);
-                            }
-                        }
-                        result.AddProperty(htmlProperty);
-                        break;
-                }
+                result.AddProperty(propertyData);
             }
 
             return result;

@@ -325,7 +325,6 @@ namespace DotCMIS.Binding.Impl
                     return spi;
                 }
 
-
                 // ok, we have to create it...
                 try
                 {

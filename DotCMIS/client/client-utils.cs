@@ -63,12 +63,12 @@ namespace DotCMIS.Client
 
         public OperationContext(IOperationContext source)
         {
-            filter = new HashSet<string>(source.Filter);
+            filter = (source.Filter == null ? null : new HashSet<string>(source.Filter));
             includeAcls = source.IncludeAcls;
             includeAllowableActions = source.IncludeAllowableActions;
             includePolicies = source.IncludePolicies;
             includeRelationships = source.IncludeRelationships;
-            renditionFilter = new HashSet<string>(source.RenditionFilter);
+            renditionFilter = (source.RenditionFilter == null ? null : new HashSet<string>(source.RenditionFilter));
             includePathSegments = source.IncludePathSegments;
             orderBy = source.OrderBy;
             cacheEnabled = source.CacheEnabled;
@@ -97,7 +97,7 @@ namespace DotCMIS.Client
 
         public HashSet<string> Filter
         {
-            get { return new HashSet<string>(filter); }
+            get { return filter == null ? null : new HashSet<string>(filter); }
             set
             {
                 if (value != null)
@@ -206,7 +206,7 @@ namespace DotCMIS.Client
 
         public HashSet<string> RenditionFilter
         {
-            get { return new HashSet<string>(renditionFilter); }
+            get { return renditionFilter == null ? null : new HashSet<string>(renditionFilter); }
             set
             {
                 HashSet<string> tempSet = new HashSet<string>();

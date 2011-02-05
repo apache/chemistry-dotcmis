@@ -599,13 +599,12 @@ namespace DotCMIS.Client
             get
             {
                 // get object ids of the parent folders
-                IList<IObjectParentData> providerParents = Binding.GetNavigationService().GetObjectParents(
-                        RepositoryId, ObjectId, GetPropertyQueryName(PropertyIds.ObjectId), false,
-                        IncludeRelationshipsFlag.None, null, false, null);
+                IList<IObjectParentData> bindingParents = Binding.GetNavigationService().GetObjectParents(RepositoryId, ObjectId,
+                    GetPropertyQueryName(PropertyIds.ObjectId), false, IncludeRelationshipsFlag.None, null, false, null);
 
                 IList<IFolder> parents = new List<IFolder>();
 
-                foreach (IObjectParentData p in providerParents)
+                foreach (IObjectParentData p in bindingParents)
                 {
                     if (p == null || p.Object == null || p.Object.Properties == null)
                     {
@@ -614,15 +613,15 @@ namespace DotCMIS.Client
                     }
 
                     // get id property
-                    IPropertyId idProperty = p.Object.Properties[PropertyIds.ObjectId] as IPropertyId;
-                    if (idProperty == null)
+                    IPropertyData idProperty = p.Object.Properties[PropertyIds.ObjectId];
+                    if (idProperty == null || idProperty.PropertyType != PropertyType.Id)
                     {
                         // the repository sent an object without a valid object id...
                         throw new CmisRuntimeException("Repository sent invalid data! No object id!");
                     }
 
                     // fetch the object and make sure it is a folder
-                    IObjectId parentId = Session.CreateObjectId(idProperty.FirstValue);
+                    IObjectId parentId = Session.CreateObjectId(idProperty.FirstValue as string);
                     IFolder parentFolder = Session.GetObject(parentId) as IFolder;
                     if (parentFolder == null)
                     {
@@ -657,8 +656,8 @@ namespace DotCMIS.Client
                     }
 
                     // get path property
-                    IPropertyString pathProperty = p.Object.Properties[PropertyIds.Path] as IPropertyString;
-                    if (pathProperty == null)
+                    IPropertyData pathProperty = p.Object.Properties[PropertyIds.Path];
+                    if (pathProperty == null || pathProperty.PropertyType != PropertyType.String)
                     {
                         // the repository sent a folder without a valid path...
                         throw new CmisRuntimeException("Repository sent invalid data! No path property!");
@@ -670,7 +669,7 @@ namespace DotCMIS.Client
                         throw new CmisRuntimeException("Repository sent invalid data! No relative path segement!");
                     }
 
-                    string folderPath = pathProperty.FirstValue;
+                    string folderPath = pathProperty.FirstValue as string;
                     paths.Add(folderPath + (folderPath.EndsWith("/") ? "" : "/") + p.RelativePathSegment);
                 }
 
@@ -1068,13 +1067,6 @@ namespace DotCMIS.Client
     /// </summary>
     public class Folder : AbstractFileableCmisObject, IFolder
     {
-        private static HashSet<Updatability> CreateUpdatability = new HashSet<Updatability>();
-        static Folder()
-        {
-            CreateUpdatability.Add(Updatability.OnCreate);
-            CreateUpdatability.Add(Updatability.ReadWrite);
-        }
-
         public Folder(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
         {
             Initialize(session, objectType, objectData, context);
@@ -1383,10 +1375,10 @@ namespace DotCMIS.Client
 
                         if (objectData.Properties != null)
                         {
-                            PropertyString pathProperty = objectData.Properties[PropertyIds.Path] as PropertyString;
-                            if (pathProperty != null)
+                            IPropertyData pathProperty = objectData.Properties[PropertyIds.Path];
+                            if (pathProperty != null && pathProperty.PropertyType == PropertyType.String)
                             {
-                                path = pathProperty.FirstValue;
+                                path = pathProperty.FirstValue as string;
                             }
                         }
                     }

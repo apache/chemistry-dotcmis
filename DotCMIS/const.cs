@@ -65,6 +65,8 @@ namespace DotCMIS
         public const string ObjectFactoryClass = "org.apache.chemistry.dotcmis.objectfactory.classname";
         public const string CacheClass = "org.apache.chemistry.dotcmis.cache.classname";
         public const string RepositoryId = "org.apache.chemistry.dotcmis.session.repository.id";
+
+        public const string CachePathOmit = "org.apache.chemistry.dotcmis.cache.path.omit";
     }
 
     public static class BindingType

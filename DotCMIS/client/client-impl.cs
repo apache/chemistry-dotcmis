@@ -54,7 +54,7 @@ namespace DotCMIS.Client
 
         public IList<IRepository> GetRepositories(IDictionary<string, string> parameters)
         {
-            ICmisBinding binding = CmisBindingHelper.CreateProvider(parameters);
+            ICmisBinding binding = CmisBindingHelper.CreateBinding(parameters);
 
             IList<IRepositoryInfo> repositoryInfos = binding.GetRepositoryService().GetRepositoryInfos(null);
 
@@ -73,7 +73,7 @@ namespace DotCMIS.Client
     /// </summary>
     internal class CmisBindingHelper
     {
-        public static ICmisBinding CreateProvider(IDictionary<string, string> parameters)
+        public static ICmisBinding CreateBinding(IDictionary<string, string> parameters)
         {
             if (parameters == null)
             {
@@ -163,6 +163,7 @@ namespace DotCMIS.Client
 
         public IObjectFactory ObjectFactory { get; protected set; }
         protected ICache Cache { get; set; }
+        protected bool cachePathOmit;
 
         private IOperationContext context = FallbackContext;
         public IOperationContext DefaultContext
@@ -204,6 +205,16 @@ namespace DotCMIS.Client
 
             ObjectFactory = CreateObjectFactory();
             Cache = CreateCache();
+
+            string cachePathOmitStr;
+            if (parameters.TryGetValue(SessionParameter.CachePathOmit, out cachePathOmitStr))
+            {
+                cachePathOmit = cachePathOmitStr.ToLower() == "true";
+            }
+            else
+            {
+                cachePathOmit = false;
+            }
         }
 
         public void Connect()
@@ -211,7 +222,7 @@ namespace DotCMIS.Client
             Lock();
             try
             {
-                Binding = CmisBindingHelper.CreateProvider(parameters);
+                Binding = CmisBindingHelper.CreateBinding(parameters);
 
                 string repositoryId;
                 if (!parameters.TryGetValue(SessionParameter.RepositoryId, out repositoryId))
@@ -409,7 +420,43 @@ namespace DotCMIS.Client
         }
 
         public ICmisObject GetObject(IObjectId objectId, IOperationContext context)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentException("Object Id must be set!");
+            }
+            if (context == null)
+            {
+                throw new ArgumentException("Operation context must be set!");
+            }
+
+            ICmisObject result = null;
+
+            // ask the cache first
+            if (context.CacheEnabled)
+            {
+                result = Cache.GetById(objectId.Id, context.CacheKey);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            // get the object
+            IObjectData objectData = Binding.GetObjectService().GetObject(RepositoryId, objectId.Id, context.FilterString,
+                context.IncludeAllowableActions, context.IncludeRelationships, context.RenditionFilterString, context.IncludePolicies,
+                context.IncludeAcls, null);
+
+            result = ObjectFactory.ConvertObject(objectData, context);
+
+            // put into cache
+            if (context.CacheEnabled)
+            {
+                Cache.Put(result, context.CacheKey);
+            }
+
+            return result;
+        }
 
         public ICmisObject GetObjectByPath(string path)
         {
@@ -417,7 +464,43 @@ namespace DotCMIS.Client
         }
 
         public ICmisObject GetObjectByPath(string path, IOperationContext context)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            if (path == null)
+            {
+                throw new ArgumentException("Path must be set!");
+            }
+            if (context == null)
+            {
+                throw new ArgumentException("Operation context must be set!");
+            }
+
+            ICmisObject result = null;
+
+            // ask the cache first
+            if (context.CacheEnabled && !cachePathOmit)
+            {
+                result = Cache.GetByPath(path, context.CacheKey);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+
+            // get the object
+            IObjectData objectData = Binding.GetObjectService().GetObjectByPath(RepositoryId, path, context.FilterString,
+                context.IncludeAllowableActions, context.IncludeRelationships, context.RenditionFilterString, context.IncludePolicies,
+                context.IncludeAcls, null);
+
+            result = ObjectFactory.ConvertObject(objectData, context);
+
+            // put into cache
+            if (context.CacheEnabled)
+            {
+                Cache.PutPath(path, result, context.CacheKey);
+            }
+
+            return result;
+        }
 
         // discovery
 

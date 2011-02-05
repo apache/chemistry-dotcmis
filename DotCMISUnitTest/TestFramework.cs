@@ -132,15 +132,15 @@ namespace DotCMISUnitTest
         {
             Properties properties = new Properties();
 
-            PropertyId objectTypeIdProperty = new PropertyId();
+            PropertyData objectTypeIdProperty = new PropertyData(PropertyType.Id);
             objectTypeIdProperty.Id = PropertyIds.ObjectTypeId;
-            objectTypeIdProperty.Values = new List<string>();
+            objectTypeIdProperty.Values = new List<object>();
             objectTypeIdProperty.Values.Add(DefaultDocumentType);
             properties.AddProperty(objectTypeIdProperty);
 
-            PropertyString nameProperty = new PropertyString();
+            PropertyData nameProperty = new PropertyData(PropertyType.String);
             nameProperty.Id = PropertyIds.Name;
-            nameProperty.Values = new List<string>();
+            nameProperty.Values = new List<object>();
             nameProperty.Values.Add(name);
             properties.AddProperty(nameProperty);
 
@@ -166,10 +166,12 @@ namespace DotCMISUnitTest
             Assert.NotNull(doc.Id);
             Assert.AreEqual(BaseTypeId.CmisDocument, doc.BaseTypeId);
             Assert.NotNull(doc.Properties);
-            Assert.True(doc.Properties[PropertyIds.ObjectTypeId] is PropertyId);
-            Assert.AreEqual(DefaultDocumentType, ((PropertyId)doc.Properties[PropertyIds.ObjectTypeId]).FirstValue);
-            Assert.True(doc.Properties[PropertyIds.Name] is PropertyString);
-            Assert.AreEqual(name, ((PropertyString)doc.Properties[PropertyIds.Name]).FirstValue);
+            Assert.NotNull(doc.Properties[PropertyIds.ObjectTypeId]);
+            Assert.AreEqual(PropertyType.Id, doc.Properties[PropertyIds.ObjectTypeId].PropertyType);
+            Assert.AreEqual(DefaultDocumentType, doc.Properties[PropertyIds.ObjectTypeId].FirstValue as string);
+            Assert.NotNull(doc.Properties[PropertyIds.Name]);
+            Assert.AreEqual(PropertyType.String, doc.Properties[PropertyIds.Name].PropertyType);
+            Assert.AreEqual(name, doc.Properties[PropertyIds.Name].FirstValue as string);
 
             if (folderId != null)
             {
@@ -183,15 +185,15 @@ namespace DotCMISUnitTest
         {
             Properties properties = new Properties();
 
-            PropertyId objectTypeIdProperty = new PropertyId();
+            PropertyData objectTypeIdProperty = new PropertyData(PropertyType.Id);
             objectTypeIdProperty.Id = PropertyIds.ObjectTypeId;
-            objectTypeIdProperty.Values = new List<string>();
+            objectTypeIdProperty.Values = new List<object>();
             objectTypeIdProperty.Values.Add(DefaultFolderType);
             properties.AddProperty(objectTypeIdProperty);
 
-            PropertyString nameProperty = new PropertyString();
+            PropertyData nameProperty = new PropertyData(PropertyType.String);
             nameProperty.Id = PropertyIds.Name;
-            nameProperty.Values = new List<string>();
+            nameProperty.Values = new List<object>();
             nameProperty.Values.Add(name);
             properties.AddProperty(nameProperty);
 
@@ -205,10 +207,12 @@ namespace DotCMISUnitTest
             Assert.NotNull(folder.Id);
             Assert.AreEqual(BaseTypeId.CmisFolder, folder.BaseTypeId);
             Assert.NotNull(folder.Properties);
-            Assert.True(folder.Properties[PropertyIds.ObjectTypeId] is PropertyId);
-            Assert.AreEqual(DefaultFolderType, ((PropertyId)folder.Properties[PropertyIds.ObjectTypeId]).FirstValue);
-            Assert.True(folder.Properties[PropertyIds.Name] is PropertyString);
-            Assert.AreEqual(name, ((PropertyString)folder.Properties[PropertyIds.Name]).FirstValue);
+            Assert.NotNull(folder.Properties[PropertyIds.ObjectTypeId]);
+            Assert.AreEqual(PropertyType.Id, folder.Properties[PropertyIds.ObjectTypeId].PropertyType);
+            Assert.AreEqual(DefaultFolderType, folder.Properties[PropertyIds.ObjectTypeId].FirstValue as string);
+            Assert.NotNull(folder.Properties[PropertyIds.Name]);
+            Assert.AreEqual(PropertyType.String, folder.Properties[PropertyIds.Name].PropertyType);
+            Assert.AreEqual(name, folder.Properties[PropertyIds.Name].FirstValue as string);
 
             if (folderId != null)
             {

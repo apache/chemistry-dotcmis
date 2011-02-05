@@ -338,7 +338,7 @@ namespace DotCMIS.Data
                 return null;
             }
 
-            return property.FirstObject;
+            return property.FirstValue;
         }
     }
 
@@ -427,106 +427,119 @@ namespace DotCMIS.Data
         }
     }
 
-    public abstract class AbstractPropertyData : ExtensionsData, IPropertyData
+    public class PropertyData : ExtensionsData, IPropertyData
     {
+        private IList<object> values;
+
+        public PropertyData(PropertyType propertyType)
+        {
+            PropertyType = propertyType;
+        }
+
         public string Id { get; set; }
+
         public string LocalName { get; set; }
+
         public string DisplayName { get; set; }
+
         public string QueryName { get; set; }
 
-        public object FirstObject
-        {
-            get
-            {
-                if (this is IPropertyString)
-                {
-                    return ((IPropertyString)this).FirstValue;
-                }
-                else if (this is IPropertyInteger)
-                {
-                    return ((IPropertyInteger)this).FirstValue;
-                }
-                else if (this is IPropertyId)
-                {
-                    return ((IPropertyId)this).FirstValue;
-                }
-                else if (this is IPropertyBoolean)
-                {
-                    return ((IPropertyBoolean)this).FirstValue;
-                }
-                else if (this is IPropertyDateTime)
-                {
-                    return ((IPropertyDateTime)this).FirstValue;
-                }
-                else if (this is IPropertyDecimal)
-                {
-                    return ((IPropertyDecimal)this).FirstValue;
-                }
-                else if (this is IPropertyHtml)
-                {
-                    return ((IPropertyHtml)this).FirstValue;
-                }
-                else if (this is IPropertyUri)
-                {
-                    return ((IPropertyUri)this).FirstValue;
-                }
+        public PropertyType PropertyType { get; protected set; }
 
-                return null;
+        public IList<object> Values
+        {
+            get { return values; }
+            set
+            {
+                if (value == null)
+                {
+                    values = null;
+                }
+                else
+                {
+                    foreach (object o in value)
+                    {
+                        CheckValue(o);
+                    }
+
+                    values = value;
+                }
+            }
+        }
+
+        public object FirstValue { get { return values == null || Values.Count < 1 ? null : values[0]; } }
+
+        public void AddValue(object value)
+        {
+            CheckValue(value);
+
+            if (Values == null)
+            {
+                Values = new List<object>();
+            }
+
+            Values.Add(value);
+        }
+
+        public void CheckValue(object value)
+        {
+            switch (PropertyType)
+            {
+                case PropertyType.String:
+                    if (!(value is string))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is a String property!");
+                    }
+                    break;
+                case PropertyType.Id:
+                    if (!(value is string))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is an Id property!");
+                    }
+                    break;
+                case PropertyType.Integer:
+                    if (!(value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint || value is long))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is an Id property!");
+                    }
+                    break;
+                case PropertyType.Boolean:
+                    if (!(value is bool))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is a Boolean property!");
+                    }
+                    break;
+                case PropertyType.DateTime:
+                    if (!(value is DateTime))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is a DateTime property!");
+                    }
+                    break;
+                case PropertyType.Decimal:
+                    if (!(value is decimal))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is a Decimal property!");
+                    }
+                    break;
+                case PropertyType.Uri:
+                    if (!(value is string))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is a URI property!");
+                    }
+                    break;
+                case PropertyType.Html:
+                    if (!(value is string))
+                    {
+                        throw new ArgumentException("Property '" + Id + "' is a HTML property!");
+                    }
+                    break;
             }
         }
 
         public override string ToString()
         {
-            return Id + ": " + FirstObject;
+            return Id + ": " + values;
         }
-    }
-
-    public class PropertyBoolean : AbstractPropertyData, IPropertyBoolean
-    {
-        public IList<bool> Values { get; set; }
-        public bool? FirstValue { get { return Values == null || Values.Count < 1 ? null : (bool?)Values[0]; } }
-    }
-
-    public class PropertyDateTime : AbstractPropertyData, IPropertyDateTime
-    {
-        public IList<DateTime> Values { get; set; }
-        public DateTime? FirstValue { get { return Values == null || Values.Count < 1 ? null : (DateTime?)Values[0]; } }
-    }
-
-    public class PropertyDecimal : AbstractPropertyData, IPropertyDecimal
-    {
-        public IList<decimal> Values { get; set; }
-        public decimal? FirstValue { get { return Values == null || Values.Count < 1 ? null : (decimal?)Values[0]; } }
-    }
-
-    public class PropertyHtml : AbstractPropertyData, IPropertyHtml
-    {
-        public IList<string> Values { get; set; }
-        public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }
-    }
-
-    public class PropertyId : AbstractPropertyData, IPropertyId
-    {
-        public IList<string> Values { get; set; }
-        public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }
-    }
-
-    public class PropertyInteger : AbstractPropertyData, IPropertyInteger
-    {
-        public IList<long> Values { get; set; }
-        public long? FirstValue { get { return Values == null || Values.Count < 1 ? null : (long?)Values[0]; } }
-    }
-
-    public class PropertyString : AbstractPropertyData, IPropertyString
-    {
-        public IList<string> Values { get; set; }
-        public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }
-    }
-
-    public class PropertyUri : AbstractPropertyData, IPropertyUri
-    {
-        public IList<string> Values { get; set; }
-        public string FirstValue { get { return Values == null || Values.Count < 1 ? null : Values[0]; } }
     }
 
     public class Principal : ExtensionsData, IPrincipal

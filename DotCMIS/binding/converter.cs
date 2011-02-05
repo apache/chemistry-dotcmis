@@ -702,100 +702,92 @@ namespace DotCMIS.Binding
         {
             if (property == null) { return null; }
 
-            AbstractPropertyData result = null;
+            PropertyData result = null;
             if (property is cmisPropertyString)
             {
-                result = new PropertyString();
+                result = new PropertyData(PropertyType.String);
                 if (((cmisPropertyString)property).value != null)
                 {
-                    ((PropertyString)result).Values = new List<string>();
                     foreach (string value in ((cmisPropertyString)property).value)
                     {
-                        ((PropertyString)result).Values.Add(value);
+                        result.AddValue(value);
                     }
                 }
             }
             else if (property is cmisPropertyId)
             {
-                result = new PropertyId();
+                result = new PropertyData(PropertyType.Id);
                 if (((cmisPropertyId)property).value != null)
                 {
-                    ((PropertyId)result).Values = new List<string>();
                     foreach (string value in ((cmisPropertyId)property).value)
                     {
-                        ((PropertyId)result).Values.Add(value);
+                        result.AddValue(value);
                     }
                 }
             }
             else if (property is cmisPropertyInteger)
             {
-                result = new PropertyInteger();
+                result = new PropertyData(PropertyType.Integer);
                 if (((cmisPropertyInteger)property).value != null)
                 {
-                    ((PropertyInteger)result).Values = new List<long>();
                     foreach (string value in ((cmisPropertyInteger)property).value)
                     {
-                        ((PropertyInteger)result).Values.Add(Int64.Parse(value));
+                        result.AddValue(Int64.Parse(value));
                     }
                 }
             }
             else if (property is cmisPropertyBoolean)
             {
-                result = new PropertyBoolean();
+                result = new PropertyData(PropertyType.Boolean);
                 if (((cmisPropertyBoolean)property).value != null)
                 {
-                    ((PropertyBoolean)result).Values = new List<bool>();
                     foreach (bool value in ((cmisPropertyBoolean)property).value)
                     {
-                        ((PropertyBoolean)result).Values.Add(value);
+                        result.AddValue(value);
                     }
                 }
             }
             else if (property is cmisPropertyDateTime)
             {
-                result = new PropertyDateTime();
+                result = new PropertyData(PropertyType.DateTime);
                 if (((cmisPropertyDateTime)property).value != null)
                 {
-                    ((PropertyDateTime)result).Values = new List<DateTime>();
                     foreach (DateTime value in ((cmisPropertyDateTime)property).value)
                     {
-                        ((PropertyDateTime)result).Values.Add(value);
+                        result.AddValue(value);
                     }
                 }
             }
             else if (property is cmisPropertyDecimal)
             {
-                result = new PropertyDecimal();
+                result = new PropertyData(PropertyType.Decimal);
                 if (((cmisPropertyDecimal)property).value != null)
                 {
-                    ((PropertyDecimal)result).Values = new List<decimal>();
                     foreach (decimal value in ((cmisPropertyDecimal)property).value)
                     {
-                        ((PropertyDecimal)result).Values.Add(value);
+                        result.AddValue(value);
                     }
                 }
             }
             else if (property is cmisPropertyHtml)
             {
-                result = new PropertyHtml();
+                result = new PropertyData(PropertyType.Html);
                 if (((cmisPropertyHtml)property).value != null)
                 {
-                    ((PropertyHtml)result).Values = new List<string>();
                     foreach (string value in ((cmisPropertyHtml)property).value)
                     {
-                        ((PropertyHtml)result).Values.Add(value);
+                        result.AddValue(value);
                     }
                 }
             }
             else if (property is cmisPropertyUri)
             {
-                result = new PropertyUri();
+                result = new PropertyData(PropertyType.Uri);
                 if (((cmisPropertyUri)property).value != null)
                 {
-                    ((PropertyUri)result).Values = new List<string>();
                     foreach (string value in ((cmisPropertyUri)property).value)
                     {
-                        ((PropertyUri)result).Values.Add(value);
+                        result.AddValue(value);
                     }
                 }
             }
@@ -836,109 +828,112 @@ namespace DotCMIS.Binding
 
             cmisProperty result = null;
 
-            if (property is IPropertyString)
+            switch (property.PropertyType)
             {
-                result = new cmisPropertyString();
-                IList<string> propValues = ((IPropertyString)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyString)result).value = new string[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                case PropertyType.String:
+                    result = new cmisPropertyString();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyString)result).value[i] = propValues[i];
+                        ((cmisPropertyString)result).value = new string[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            ((cmisPropertyString)result).value[i] = property.Values[i] as string;
+                        }
                     }
-                }
-            }
-            else if (property is IPropertyId)
-            {
-                result = new cmisPropertyId();
-                IList<string> propValues = ((IPropertyId)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyId)result).value = new string[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                    break;
+                case PropertyType.Id:
+                    result = new cmisPropertyId();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyId)result).value[i] = propValues[i];
+                        ((cmisPropertyId)result).value = new string[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            ((cmisPropertyId)result).value[i] = property.Values[i] as string;
+                        }
                     }
-                }
-            }
-            else if (property is IPropertyInteger)
-            {
-                result = new cmisPropertyInteger();
-                IList<long> propValues = ((IPropertyInteger)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyInteger)result).value = new string[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                    break;
+                case PropertyType.Integer:
+                    result = new cmisPropertyInteger();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyInteger)result).value[i] = propValues[i].ToString();
+                        ((cmisPropertyInteger)result).value = new string[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            long? value = property.Values[i] as long?;
+                            if (value.HasValue)
+                            {
+                                ((cmisPropertyInteger)result).value[i] = value.ToString();
+                            }
+                        }
                     }
-                }
-            }
-            else if (property is IPropertyBoolean)
-            {
-                result = new cmisPropertyInteger();
-                IList<bool> propValues = ((IPropertyBoolean)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyBoolean)result).value = new bool[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                    break;
+                case PropertyType.Boolean:
+                    result = new cmisPropertyBoolean();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyBoolean)result).value[i] = propValues[i];
+                        ((cmisPropertyBoolean)result).value = new bool[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            bool? value = property.Values[i] as bool?;
+                            if (value.HasValue)
+                            {
+                                ((cmisPropertyBoolean)result).value[i] = value.Value;
+                            }
+                        }
                     }
-                }
-            }
-            else if (property is IPropertyDateTime)
-            {
-                result = new cmisPropertyDateTime();
-                IList<DateTime> propValues = ((IPropertyDateTime)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyDateTime)result).value = new DateTime[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                    break;
+                case PropertyType.DateTime:
+                    result = new cmisPropertyDateTime();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyDateTime)result).value[i] = propValues[i];
+                        ((cmisPropertyDateTime)result).value = new DateTime[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            DateTime? value = property.Values[i] as DateTime?;
+                            if (value.HasValue)
+                            {
+                                ((cmisPropertyDateTime)result).value[i] = value.Value;
+                            }
+                        }
                     }
-                }
-            }
-            else if (property is IPropertyDecimal)
-            {
-                result = new cmisPropertyDecimal();
-                IList<decimal> propValues = ((IPropertyDecimal)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyDecimal)result).value = new decimal[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                    break;
+                case PropertyType.Decimal:
+                    result = new cmisPropertyDecimal();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyDecimal)result).value[i] = propValues[i];
+                        ((cmisPropertyDecimal)result).value = new decimal[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            decimal? value = property.Values[i] as decimal?;
+                            if (value.HasValue)
+                            {
+                                ((cmisPropertyDecimal)result).value[i] = value.Value;
+                            }
+                        }
                     }
-                }
-            }
-            else if (property is IPropertyHtml)
-            {
-                result = new cmisPropertyHtml();
-                IList<string> propValues = ((IPropertyHtml)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyHtml)result).value = new string[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                    break;
+                case PropertyType.Html:
+                    result = new cmisPropertyHtml();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyHtml)result).value[i] = propValues[i];
+                        ((cmisPropertyHtml)result).value = new string[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            ((cmisPropertyHtml)result).value[i] = property.Values[i] as string;
+                        }
                     }
-                }
-            }
-            else if (property is IPropertyUri)
-            {
-                result = new cmisPropertyUri();
-                IList<string> propValues = ((IPropertyUri)property).Values;
-                if (propValues != null)
-                {
-                    ((cmisPropertyUri)result).value = new string[propValues.Count];
-                    for (int i = 0; i < propValues.Count; i++)
+                    break;
+                case PropertyType.Uri:
+                    result = new cmisPropertyUri();
+                    if (property.Values != null)
                     {
-                        ((cmisPropertyUri)result).value[i] = propValues[i];
+                        ((cmisPropertyUri)result).value = new string[property.Values.Count];
+                        for (int i = 0; i < property.Values.Count; i++)
+                        {
+                            ((cmisPropertyUri)result).value[i] = property.Values[i] as string;
+                        }
                     }
-                }
+                    break;
             }
 
             result.propertyDefinitionId = property.Id;

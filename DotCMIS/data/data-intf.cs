@@ -275,55 +275,9 @@ namespace DotCMIS.Data
         string LocalName { get; }
         string DisplayName { get; }
         string QueryName { get; }
-        object FirstObject { get; }
-    }
-
-    public interface IPropertyBoolean : IPropertyData
-    {
-        IList<bool> Values { get; }
-        bool? FirstValue { get; }
-    }
-
-    public interface IPropertyDateTime : IPropertyData
-    {
-        IList<DateTime> Values { get; }
-        DateTime? FirstValue { get; }
-    }
-
-    public interface IPropertyDecimal : IPropertyData
-    {
-        IList<decimal> Values { get; }
-        decimal? FirstValue { get; }
-    }
-
-    public interface IPropertyHtml : IPropertyData
-    {
-        IList<string> Values { get; }
-        string FirstValue { get; }
-    }
-
-    public interface IPropertyId : IPropertyData
-    {
-        IList<string> Values { get; }
-        string FirstValue { get; }
-    }
-
-    public interface IPropertyInteger : IPropertyData
-    {
-        IList<long> Values { get; }
-        long? FirstValue { get; }
-    }
-
-    public interface IPropertyString : IPropertyData
-    {
-        IList<string> Values { get; }
-        string FirstValue { get; }
-    }
-
-    public interface IPropertyUri : IPropertyData
-    {
-        IList<string> Values { get; }
-        string FirstValue { get; }
+        PropertyType PropertyType { get; }
+        IList<object> Values { get; }
+        object FirstValue { get; }
     }
 
     public interface IPrincipal : IExtensionsData

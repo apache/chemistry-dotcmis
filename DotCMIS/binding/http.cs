@@ -157,9 +157,9 @@ namespace DotCMIS.Binding
             {
                 response = exception.Response;
 
-                if (response is HttpWebResponse)
+                HttpWebResponse httpResponse = response as HttpWebResponse;
+                if (httpResponse != null)
                 {
-                    HttpWebResponse httpResponse = (HttpWebResponse)response;
                     StatusCode = httpResponse.StatusCode;
                     Message = httpResponse.StatusDescription;
                     ContentType = httpResponse.ContentType;

@@ -1577,12 +1577,12 @@ namespace DotCMIS.Binding.AtomPub
 
             // find source id
             IPropertyData sourceIdProperty = properties[PropertyIds.SourceId];
-            if (!(sourceIdProperty is IPropertyId))
+            if (sourceIdProperty == null || sourceIdProperty.PropertyType != PropertyType.Id)
             {
                 throw new CmisInvalidArgumentException("Source Id is not set!");
             }
 
-            string sourceId = ((IPropertyId)sourceIdProperty).FirstValue;
+            string sourceId = sourceIdProperty.FirstValue as string;
             if (sourceId == null)
             {
                 throw new CmisInvalidArgumentException("Source Id is not set!");
