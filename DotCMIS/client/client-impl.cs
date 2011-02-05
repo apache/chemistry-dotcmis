@@ -152,6 +152,13 @@ namespace DotCMIS.Client
     /// </summary>
     public class Session : ISession
     {
+        private static HashSet<Updatability> CreateUpdatability = new HashSet<Updatability>();
+        static Session()
+        {
+            CreateUpdatability.Add(Updatability.OnCreate);
+            CreateUpdatability.Add(Updatability.ReadWrite);
+        }
+
         protected static IOperationContext FallbackContext = new OperationContext(null, false, true, false, IncludeRelationshipsFlag.None, null, true, null, true, 100);
 
         protected IDictionary<string, string> parameters;
@@ -409,10 +416,43 @@ namespace DotCMIS.Client
         }
 
         public IItemEnumerable<IDocument> GetCheckedOutDocs()
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            return GetCheckedOutDocs(DefaultContext);
+        }
 
         public IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            INavigationService service = Binding.GetNavigationService();
+            IOperationContext ctxt = new OperationContext(context);
+
+            PageFetcher<IDocument>.FetchPage fetchPageDelegate = delegate(long maxNumItems, long skipCount)
+            {
+                // get all checked out documents
+                IObjectList checkedOutDocs = service.GetCheckedOutDocs(RepositoryId, null, ctxt.FilterString, ctxt.OrderBy,
+                    ctxt.IncludeAllowableActions, ctxt.IncludeRelationships, ctxt.RenditionFilterString, maxNumItems, skipCount, null);
+
+                // convert objects
+                IList<IDocument> page = new List<IDocument>();
+                if (checkedOutDocs.Objects != null)
+                {
+                    foreach (IObjectData objectData in checkedOutDocs.Objects)
+                    {
+                        IDocument doc = ObjectFactory.ConvertObject(objectData, ctxt) as IDocument;
+                        if (doc == null)
+                        {
+                            // should not happen...
+                            continue;
+                        }
+
+                        page.Add(doc);
+                    }
+                }
+
+                return new PageFetcher<IDocument>.Page<IDocument>(page, checkedOutDocs.NumItems, checkedOutDocs.HasMoreItems);
+            };
+
+            return new CollectionEnumerable<IDocument>(new PageFetcher<IDocument>(DefaultContext.MaxItemsPerPage, fetchPageDelegate));
+        }
 
         public ICmisObject GetObject(IObjectId objectId)
         {
@@ -505,13 +545,17 @@ namespace DotCMIS.Client
         // discovery
 
         public IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            return Query(statement, searchAllVersions, DefaultContext);
+        }
 
         public IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions, IOperationContext context)
         { throw new CmisNotSupportedException("Client not implemented!"); }
 
         public IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            return GetContentChanges(changeLogToken, includeProperties, maxNumItems, DefaultContext);
+        }
 
         public IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
                 IOperationContext context)
@@ -520,59 +564,255 @@ namespace DotCMIS.Client
         // create
 
         public IObjectId CreateDocument(IDictionary<string, object> properties, IObjectId folderId, IContentStream contentStream,
-                VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+            VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
+        {
+            if (folderId != null && folderId.Id == null)
+            {
+                throw new ArgumentException("Folder Id must be set!");
+            }
+            if (properties == null || properties.Count == 0)
+            {
+                throw new ArgumentException("Properties must not be empty!");
+            }
+
+            string newId = Binding.GetObjectService().CreateDocument(RepositoryId, ObjectFactory.ConvertProperties(properties, null, CreateUpdatability),
+                (folderId == null ? null : folderId.Id), contentStream, versioningState, ObjectFactory.ConvertPolicies(policies),
+                ObjectFactory.ConvertAces(addAces), ObjectFactory.ConvertAces(removeAces), null);
+
+            return newId == null ? null : CreateObjectId(newId);
+        }
 
         public IObjectId CreateDocument(IDictionary<string, object> properties, IObjectId folderId, IContentStream contentStream,
-                VersioningState? versioningState)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+            VersioningState? versioningState)
+        {
+            return CreateDocument(properties, folderId, contentStream, versioningState, null, null, null);
+        }
 
         public IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, IObjectId folderId,
-                VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+            VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
+        {
+            if (source == null || source.Id == null)
+            {
+                throw new ArgumentException("Source must be set!");
+            }
+
+            // get the type of the source document
+            IObjectType type = null;
+            if (source is ICmisObject)
+            {
+                type = ((ICmisObject)source).Type;
+            }
+            else
+            {
+                ICmisObject sourceObj = GetObject(source);
+                type = sourceObj.Type;
+            }
+
+            if (type.BaseTypeId != BaseTypeId.CmisDocument)
+            {
+                throw new ArgumentException("Source object must be a document!");
+            }
+
+            string newId = Binding.GetObjectService().CreateDocumentFromSource(RepositoryId, source.Id,
+                ObjectFactory.ConvertProperties(properties, type, CreateUpdatability), (folderId == null ? null : folderId.Id),
+                versioningState, ObjectFactory.ConvertPolicies(policies), ObjectFactory.ConvertAces(addAces),
+                ObjectFactory.ConvertAces(removeAces), null);
+
+            return newId == null ? null : CreateObjectId(newId);
+        }
 
         public IObjectId CreateDocumentFromSource(IObjectId source, IDictionary<string, object> properties, IObjectId folderId,
                 VersioningState? versioningState)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            return CreateDocumentFromSource(source, properties, folderId, versioningState, null, null, null);
+        }
 
-        public IObjectId CreateFolder(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
-                IList<IAce> removeAces)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        public IObjectId CreateFolder(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies,
+            IList<IAce> addAces, IList<IAce> removeAces)
+        {
+            if (folderId == null || folderId.Id == null)
+            {
+                throw new ArgumentException("Folder Id must be set!");
+            }
+            if (properties == null || properties.Count == 0)
+            {
+                throw new ArgumentException("Properties must not be empty!");
+            }
+
+            string newId = Binding.GetObjectService().CreateFolder(RepositoryId, ObjectFactory.ConvertProperties(properties, null, CreateUpdatability),
+                (folderId == null ? null : folderId.Id), ObjectFactory.ConvertPolicies(policies), ObjectFactory.ConvertAces(addAces),
+                ObjectFactory.ConvertAces(removeAces), null);
+
+            return newId == null ? null : CreateObjectId(newId);
+        }
 
         public IObjectId CreateFolder(IDictionary<string, object> properties, IObjectId folderId)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            return CreateFolder(properties, folderId, null, null, null);
+        }
 
-        public IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies, IList<IAce> addAces,
-                IList<IAce> removeAces)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        public IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies,
+            IList<IAce> addAces, IList<IAce> removeAces)
+        {
+            if (folderId == null || folderId.Id == null)
+            {
+                throw new ArgumentException("Folder Id must be set!");
+            }
+            if (properties == null || properties.Count == 0)
+            {
+                throw new ArgumentException("Properties must not be empty!");
+            }
+
+            string newId = Binding.GetObjectService().CreatePolicy(RepositoryId, ObjectFactory.ConvertProperties(properties, null, CreateUpdatability),
+                (folderId == null ? null : folderId.Id), ObjectFactory.ConvertPolicies(policies), ObjectFactory.ConvertAces(addAces),
+                ObjectFactory.ConvertAces(removeAces), null);
+
+            return newId == null ? null : CreateObjectId(newId);
+        }
 
         public IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            return CreatePolicy(properties, folderId, null, null, null);
+        }
 
         public IObjectId CreateRelationship(IDictionary<string, object> properties, IList<IPolicy> policies, IList<IAce> addAces,
                 IList<IAce> removeAces)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            if (properties == null || properties.Count == 0)
+            {
+                throw new ArgumentException("Properties must not be empty!");
+            }
+
+            string newId = Binding.GetObjectService().CreateRelationship(RepositoryId, ObjectFactory.ConvertProperties(properties, null, CreateUpdatability),
+                ObjectFactory.ConvertPolicies(policies), ObjectFactory.ConvertAces(addAces), ObjectFactory.ConvertAces(removeAces), null);
+
+            return newId == null ? null : CreateObjectId(newId);
+        }
 
         public IObjectId CreateRelationship(IDictionary<string, object> properties)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            return CreateRelationship(properties, null, null, null);
+        }
 
         public IItemEnumerable<IRelationship> GetRelationships(IObjectId objectId, bool includeSubRelationshipTypes,
                 RelationshipDirection? relationshipDirection, IObjectType type, IOperationContext context)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentException("Invalid object id!");
+            }
+
+            string id = objectId.Id;
+            string typeId = (type == null ? null : type.Id);
+            IRelationshipService service = Binding.GetRelationshipService();
+            IOperationContext ctxt = new OperationContext(context);
+
+            PageFetcher<IRelationship>.FetchPage fetchPageDelegate = delegate(long maxNumItems, long skipCount)
+            {
+                // fetch the relationships
+                IObjectList relList = service.GetObjectRelationships(RepositoryId, id, includeSubRelationshipTypes, relationshipDirection,
+                    typeId, ctxt.FilterString, ctxt.IncludeAllowableActions, maxNumItems, skipCount, null);
+
+                // convert relationship objects
+                IList<IRelationship> page = new List<IRelationship>();
+                if (relList.Objects != null)
+                {
+                    foreach (IObjectData rod in relList.Objects)
+                    {
+                        IRelationship relationship = GetObject(CreateObjectId(rod.Id), ctxt) as IRelationship;
+                        if (relationship == null)
+                        {
+                            throw new CmisRuntimeException("Repository returned an object that is not a relationship!");
+                        }
+
+                        page.Add(relationship);
+                    }
+                }
+
+                return new PageFetcher<IRelationship>.Page<IRelationship>(page, relList.NumItems, relList.HasMoreItems);
+            };
+
+            return new CollectionEnumerable<IRelationship>(new PageFetcher<IRelationship>(DefaultContext.MaxItemsPerPage, fetchPageDelegate));
+        }
 
         // permissions
 
         public IAcl GetAcl(IObjectId objectId, bool onlyBasicPermissions)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentException("Invalid object id!");
+            }
+
+            return Binding.GetAclService().GetAcl(RepositoryId, objectId.Id, onlyBasicPermissions, null);
+        }
 
         public IAcl ApplyAcl(IObjectId objectId, IList<IAce> addAces, IList<IAce> removeAces, AclPropagation? aclPropagation)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentException("Invalid object id!");
+            }
 
-        public void ApplyPolicy(IObjectId objectId, IObjectId policyIds)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+            return Binding.GetAclService().ApplyAcl(RepositoryId, objectId.Id, ObjectFactory.ConvertAces(addAces),
+                ObjectFactory.ConvertAces(removeAces), aclPropagation, null);
+        }
 
-        public void RemovePolicy(IObjectId objectId, IObjectId policyIds)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        public void ApplyPolicy(IObjectId objectId, params IObjectId[] policyIds)
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentException("Invalid object id!");
+            }
+            if (policyIds == null || (policyIds.Length == 0))
+            {
+                throw new ArgumentException("No Policies provided!");
+            }
+
+            string[] ids = new string[policyIds.Length];
+            for (int i = 0; i < policyIds.Length; i++)
+            {
+                if (policyIds[i] == null || policyIds[i].Id == null)
+                {
+                    throw new ArgumentException("A Policy Id is not set!");
+                }
+
+                ids[i] = policyIds[i].Id;
+            }
+
+            foreach (string id in ids)
+            {
+                Binding.GetPolicyService().ApplyPolicy(RepositoryId, id, objectId.Id, null);
+            }
+        }
+
+        public void RemovePolicy(IObjectId objectId, params IObjectId[] policyIds)
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentException("Invalid object id!");
+            }
+            if (policyIds == null || (policyIds.Length == 0))
+            {
+                throw new ArgumentException("No Policies provided!");
+            }
+
+            string[] ids = new string[policyIds.Length];
+            for (int i = 0; i < policyIds.Length; i++)
+            {
+                if (policyIds[i] == null || policyIds[i].Id == null)
+                {
+                    throw new ArgumentException("A Policy Id is not set!");
+                }
+
+                ids[i] = policyIds[i].Id;
+            }
+
+            foreach (string id in ids)
+            {
+                Binding.GetPolicyService().RemovePolicy(RepositoryId, id, objectId.Id, null);
+            }
+        }
 
         protected void Lock()
         {

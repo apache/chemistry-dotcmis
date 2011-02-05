@@ -109,8 +109,8 @@ namespace DotCMIS.Client
 
         IAcl GetAcl(IObjectId objectId, bool onlyBasicPermissions);
         IAcl ApplyAcl(IObjectId objectId, IList<IAce> addAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
-        void ApplyPolicy(IObjectId objectId, IObjectId policyIds);
-        void RemovePolicy(IObjectId objectId, IObjectId policyIds);
+        void ApplyPolicy(IObjectId objectId, params IObjectId[] policyIds);
+        void RemovePolicy(IObjectId objectId, params IObjectId[] policyIds);
     }
 
     public interface IObjectFactory
@@ -278,8 +278,8 @@ namespace DotCMIS.Client
         IList<IRendition> Renditions { get; }
 
         // policy service
-        void ApplyPolicy(IObjectId policyId);
-        void RemovePolicy(IObjectId policyId);
+        void ApplyPolicy(params IObjectId[] policyId);
+        void RemovePolicy(params IObjectId[] policyId);
         IList<IPolicy> Policies { get; }
 
         // ACL service

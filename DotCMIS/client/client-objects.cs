@@ -326,6 +326,11 @@ namespace DotCMIS.Client
         {
             get
             {
+                if (propertyId == null)
+                {
+                    throw new ArgumentNullException("propertyId");
+                }
+
                 Lock();
                 try
                 {
@@ -431,7 +436,7 @@ namespace DotCMIS.Client
 
         // --- policies ---
 
-        public void ApplyPolicy(IObjectId policyId)
+        public void ApplyPolicy(params IObjectId[] policyId)
         {
             Lock();
             try
@@ -446,7 +451,7 @@ namespace DotCMIS.Client
             Refresh();
         }
 
-        public void RemovePolicy(IObjectId policyId)
+        public void RemovePolicy(params IObjectId[] policyId)
         {
             Lock();
             try
@@ -1559,7 +1564,7 @@ namespace DotCMIS.Client
             {
                 if (PropertyDefinition.Cardinality == Cardinality.Single)
                 {
-                    return Values.Count == 0 ? null : Values[0];
+                    return Values == null || Values.Count == 0 ? null : Values[0];
                 }
                 else
                 {
@@ -1570,7 +1575,7 @@ namespace DotCMIS.Client
 
         public IList<object> Values { get; protected set; }
 
-        public object FirstValue { get { return Values.Count == 0 ? null : Values[0]; } }
+        public object FirstValue { get { return Values == null || Values.Count == 0 ? null : Values[0]; } }
 
         public string ValueAsString { get { return FormatValue(FirstValue); } }
 
