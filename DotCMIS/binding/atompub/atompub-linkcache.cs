@@ -31,11 +31,11 @@ namespace DotCMIS.Binding.AtomPub
         private const int CacheSizeTypes = 100;
         private const int CacheSizeLinks = 400;
 
-        private ICache linkCache;
-        private ICache typeLinkCache;
-        private ICache collectionLinkCache;
-        private ICache templateCache;
-        private ICache repositoryLinkCache;
+        private IBindingCache linkCache;
+        private IBindingCache typeLinkCache;
+        private IBindingCache collectionLinkCache;
+        private IBindingCache templateCache;
+        private IBindingCache repositoryLinkCache;
 
         public LinkCache(BindingSession session)
         {

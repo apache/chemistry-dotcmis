@@ -18,18 +18,17 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using DotCMIS.Binding;
-using DotCMIS.Client;
+using DotCMIS.Binding.Services;
 using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
+using DotCMIS.Data.Impl;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
-using DotCMIS.Binding.Services;
 
-namespace DotCMIS.Client
+namespace DotCMIS.Client.Impl
 {
     /// <summary>
     /// CMIS object base class.
@@ -41,7 +40,7 @@ namespace DotCMIS.Client
         protected ICmisBinding Binding { get { return Session.Binding; } }
 
         private IObjectType objectType;
-        protected IObjectType ObjectType
+        public IObjectType ObjectType
         {
             get
             {
@@ -80,7 +79,6 @@ namespace DotCMIS.Client
         private IList<IPolicy> policies;
         private IList<IRelationship> relationships;
         private IDictionary<ExtensionLevel, IList<ICmisExtensionElement>> extensions;
-
 
         private object objectLock = new object();
 
@@ -303,8 +301,6 @@ namespace DotCMIS.Client
         public DateTime? LastModificationDate { get { return GetPropertyValue(PropertyIds.LastModificationDate) as DateTime?; } }
 
         public string ChangeToken { get { return GetPropertyValue(PropertyIds.ChangeToken) as string; } }
-
-        public IObjectType Type { get { return ObjectType; } }
 
         public IList<IProperty> Properties
         {
@@ -1656,5 +1652,156 @@ namespace DotCMIS.Client
 
             return session.Binding.GetObjectService().GetContentStream(session.RepositoryInfo.Id, objectId, StreamId, null, null, null);
         }
+    }
+
+    public class QueryResult : IQueryResult
+    {
+        private IDictionary<string, IPropertyData> propertiesById;
+        private IDictionary<string, IPropertyData> propertiesByQueryName;
+
+        public QueryResult(ISession session, IObjectData objectData)
+        {
+            if (objectData != null)
+            {
+                IObjectFactory of = session.ObjectFactory;
+
+                // handle properties
+                if (objectData.Properties != null)
+                {
+                    Properties = new List<IPropertyData>();
+                    propertiesById = new Dictionary<string, IPropertyData>();
+                    propertiesByQueryName = new Dictionary<string, IPropertyData>();
+
+                    IList<IPropertyData> queryProperties = of.ConvertQueryProperties(objectData.Properties);
+
+                    foreach (IPropertyData property in queryProperties)
+                    {
+                        Properties.Add(property);
+                        if (property.Id != null)
+                        {
+                            propertiesById[property.Id] = property;
+                        }
+                        if (property.QueryName != null)
+                        {
+                            propertiesByQueryName[property.QueryName] = property;
+                        }
+                    }
+                }
+
+                // handle allowable actions
+                AllowableActions = objectData.AllowableActions;
+
+                // handle relationships
+                if (objectData.Relationships != null)
+                {
+                    Relationships = new List<IRelationship>();
+                    foreach (IObjectData rod in objectData.Relationships)
+                    {
+                        IRelationship relationship = of.ConvertObject(rod, session.DefaultContext) as IRelationship;
+                        if (relationship != null)
+                        {
+                            Relationships.Add(relationship);
+                        }
+                    }
+                }
+
+                // handle renditions
+                if (objectData.Renditions != null)
+                {
+                    Renditions = new List<IRendition>();
+                    foreach (IRenditionData rd in objectData.Renditions)
+                    {
+                        Renditions.Add(of.ConvertRendition(null, rd));
+                    }
+                }
+            }
+        }
+
+        public IPropertyData this[string queryName]
+        {
+            get
+            {
+                if (queryName == null)
+                {
+                    return null;
+                }
+
+                IPropertyData result;
+                if (propertiesByQueryName.TryGetValue(queryName, out result))
+                {
+                    return result;
+                }
+
+                return null;
+            }
+        }
+
+        public IList<IPropertyData> Properties { get; protected set; }
+
+        public IPropertyData GetPropertyById(string propertyId)
+        {
+            if (propertyId == null)
+            {
+                return null;
+            }
+
+            IPropertyData result;
+            if (propertiesById.TryGetValue(propertyId, out result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+
+        public object GetPropertyValueByQueryName(string queryName)
+        {
+            IPropertyData property = this[queryName];
+            if (property == null)
+            {
+                return null;
+            }
+
+            return property.FirstValue;
+        }
+
+        public object GetPropertyValueById(string propertyId)
+        {
+            IPropertyData property = GetPropertyById(propertyId);
+            if (property == null)
+            {
+                return null;
+            }
+
+            return property.FirstValue;
+        }
+
+        public IList<object> GetPropertyMultivalueByQueryName(string queryName)
+        {
+            IPropertyData property = this[queryName];
+            if (property == null)
+            {
+                return null;
+            }
+
+            return property.Values;
+        }
+
+        public IList<object> GetPropertyMultivalueById(string propertyId)
+        {
+            IPropertyData property = GetPropertyById(propertyId);
+            if (property == null)
+            {
+                return null;
+            }
+
+            return property.Values;
+        }
+
+        public IAllowableActions AllowableActions { get; protected set; }
+
+        public IList<IRelationship> Relationships { get; protected set; }
+
+        public IList<IRendition> Renditions { get; protected set; }
     }
 }

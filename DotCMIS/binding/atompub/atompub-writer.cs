@@ -83,7 +83,10 @@ namespace DotCMIS.Binding.AtomPub
 
         public void Write(Stream outStream)
         {
-            using (XmlWriter writer = XmlWriter.Create(outStream))
+            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
+            xmlWriterSettings.Encoding = new UTF8Encoding(false);
+
+            using (XmlWriter writer = XmlWriter.Create(outStream, xmlWriterSettings))
             {
                 // start doc
                 writer.WriteStartDocument();
@@ -213,16 +216,17 @@ namespace DotCMIS.Binding.AtomPub
 
         public void Write(Stream outStream)
         {
-            using (XmlWriter writer = XmlWriter.Create(outStream))
+            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
+            xmlWriterSettings.Encoding = new UTF8Encoding(false);
+
+            using (XmlWriter writer = XmlWriter.Create(outStream, xmlWriterSettings))
             {
                 // start doc
                 writer.WriteStartDocument();
 
                 // start query
                 writer.WriteStartElement(AtomWriter.PrefixCMIS, AtomPubConstants.TagQuery, AtomPubConstants.NamespaceCMIS);
-                writer.WriteAttributeString("xmlns", AtomWriter.PrefixAtom, null, AtomPubConstants.NamespaceAtom);
                 writer.WriteAttributeString("xmlns", AtomWriter.PrefixCMIS, null, AtomPubConstants.NamespaceCMIS);
-                writer.WriteAttributeString("xmlns", AtomWriter.PrefixRestAtom, null, AtomPubConstants.NamespaceRestAtom);
 
                 // cmis:statement
                 writer.WriteStartElement(AtomWriter.PrefixCMIS, AtomPubConstants.TagStatement, AtomPubConstants.NamespaceCMIS);

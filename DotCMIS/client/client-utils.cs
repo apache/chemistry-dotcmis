@@ -23,7 +23,7 @@ using System.Text;
 using DotCMIS.Enums;
 using System.Collections;
 
-namespace DotCMIS.Client
+namespace DotCMIS.Client.Impl
 {
     /// <summary>
     /// Operation context implementation.

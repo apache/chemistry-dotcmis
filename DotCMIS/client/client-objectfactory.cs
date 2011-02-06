@@ -17,16 +17,15 @@
  * under the License.
  */
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DotCMIS.Data;
 using System.IO;
+using DotCMIS.Data;
+using DotCMIS.Data.Impl;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
-using System.Collections;
 
-namespace DotCMIS.Client
+namespace DotCMIS.Client.Impl
 {
     public class ObjectFactory : IObjectFactory
     {
@@ -305,7 +304,7 @@ namespace DotCMIS.Client
                 throw new ArgumentException("Properties must be set!");
             }
 
-            return new List<IPropertyData>(properties.PropertyList);
+            return properties.PropertyList;
         }
 
         // objects
@@ -333,7 +332,15 @@ namespace DotCMIS.Client
             }
         }
 
-        public IQueryResult ConvertQueryResult(IObjectData objectData) { return null; }
+        public IQueryResult ConvertQueryResult(IObjectData objectData) {
+            if (objectData == null)
+            {
+                throw new ArgumentException("Object data is null!");
+            }
+
+            return new QueryResult(session, objectData);
+        }
+
         public IChangeEvent ConvertChangeEvent(IObjectData objectData) { return null; }
         public IChangeEvents ConvertChangeEvents(String changeLogToken, IObjectList objectList) { return null; }
     }

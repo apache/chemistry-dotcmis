@@ -1,5 +1,4 @@
-﻿using DotCMIS.CMISWebServicesReference;
-/*
+﻿/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,15 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Xml;
+using System.Xml.Serialization;
+using DotCMIS.CMISWebServicesReference;
 using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
-using System.Collections.Generic;
-using System.Xml;
+using DotCMIS.Data.Impl;
 using DotCMIS.Enums;
-using System;
-using System.Reflection;
-using System.Xml.Serialization;
-using System.IO;
 
 namespace DotCMIS.Binding
 {

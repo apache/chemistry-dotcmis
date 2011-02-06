@@ -22,8 +22,9 @@ using System.Linq;
 using System.Text;
 using DotCMIS.Enums;
 using DotCMIS.Data;
+using DotCMIS.Data.Impl;
 
-namespace DotCMIS.Client
+namespace DotCMIS.Client.Impl
 {
     /// <summary>
     /// Helper for all type implementations.

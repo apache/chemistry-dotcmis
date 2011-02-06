@@ -37,6 +37,9 @@ namespace DotCMIS.Client
         ISession CreateSession();
     }
 
+    /// <summary>
+    /// Session interface.
+    /// </summary>
     public interface ISession
     {
         void Clear();
@@ -252,7 +255,7 @@ namespace DotCMIS.Client
         DateTime? LastModificationDate { get; }
         BaseTypeId BaseTypeId { get; }
         IObjectType BaseType { get; }
-        IObjectType Type { get; }
+        IObjectType ObjectType { get; }
         string ChangeToken { get; }
     }
 
@@ -408,13 +411,31 @@ namespace DotCMIS.Client
 
     public interface IQueryResult
     {
+        IPropertyData this[string queryName] { get; }
+        IList<IPropertyData> Properties { get; }
+        IPropertyData GetPropertyById(string propertyId);
+        object GetPropertyValueByQueryName(string queryName);
+        object GetPropertyValueById(string propertyId);
+        IList<object> GetPropertyMultivalueByQueryName(string queryName);
+        IList<object> GetPropertyMultivalueById(string propertyId);
+        IAllowableActions AllowableActions { get; }
+        IList<IRelationship> Relationships { get; }
+        IList<IRendition> Renditions { get; }
     }
 
-    public interface IChangeEvent
+    public interface IChangeEvent : IChangeEventInfo
     {
+        string ObjectId { get; }
+        IDictionary<string, IList<object>> Properties { get; }
+        IList<string> PolicyIds { get; }
+        IAcl Acl { get; }
     }
 
     public interface IChangeEvents
     {
+        string LatestChangeLogToken { get; }
+        IList<IChangeEvent> ChangeEvents { get; }
+        bool HasMoreItems { get; }
+        long getTotalNumItems { get; }
     }
 }

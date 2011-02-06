@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DotCMIS.Client
+namespace DotCMIS.Client.Impl.Cache
 {
     /// <summary>
     /// Client cache interface.
@@ -42,7 +42,7 @@ namespace DotCMIS.Client
     /// <summary>
     /// Cache implementation that doesn't cache.
     /// </summary>
-    internal class NoCache : ICache
+    public class NoCache : ICache
     {
         public void Initialize(ISession session, IDictionary<string, string> parameters) { }
         public bool ContainsId(string objectId, string cacheKey) { return false; }

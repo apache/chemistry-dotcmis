@@ -25,8 +25,9 @@ using DotCMIS.Binding.Services;
 using DotCMIS.CMISWebServicesReference;
 using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
-using DotCMIS.Exceptions;
+using DotCMIS.Data.Impl;
 using DotCMIS.Enums;
+using DotCMIS.Exceptions;
 
 namespace DotCMIS.Binding.AtomPub
 {

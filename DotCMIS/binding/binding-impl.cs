@@ -18,14 +18,11 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DotCMIS.Binding;
-using DotCMIS.Binding.Services;
 using System.Threading;
-using DotCMIS.Exceptions;
+using DotCMIS.Binding.Services;
 using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
+using DotCMIS.Exceptions;
 
 namespace DotCMIS.Binding.Impl
 {
@@ -424,7 +421,7 @@ namespace DotCMIS.Binding.Impl
             if (!hasExtension && (result != null))
             {
                 RepositoryInfoCache cache = session.GetRepositoryInfoCache();
-                foreach (RepositoryInfo rid in result)
+                foreach (IRepositoryInfo rid in result)
                 {
                     cache.Put(rid);
                 }

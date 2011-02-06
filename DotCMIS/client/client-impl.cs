@@ -18,17 +18,16 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DotCMIS.Binding;
-using DotCMIS.Data;
-using DotCMIS.Exceptions;
 using System.Threading;
-using DotCMIS.Enums;
-using DotCMIS.Data.Extensions;
+using DotCMIS.Binding;
 using DotCMIS.Binding.Services;
+using DotCMIS.Client.Impl.Cache;
+using DotCMIS.Data;
+using DotCMIS.Data.Impl;
+using DotCMIS.Enums;
+using DotCMIS.Exceptions;
 
-namespace DotCMIS.Client
+namespace DotCMIS.Client.Impl
 {
     /// <summary>
     /// Session factory implementation.
@@ -550,7 +549,36 @@ namespace DotCMIS.Client
         }
 
         public IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions, IOperationContext context)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            IDiscoveryService service = Binding.GetDiscoveryService();
+            IOperationContext ctxt = new OperationContext(context);
+
+            PageFetcher<IQueryResult>.FetchPage fetchPageDelegate = delegate(long maxNumItems, long skipCount)
+            {
+                // fetch the data
+                IObjectList resultList = service.Query(RepositoryId, statement, searchAllVersions, ctxt.IncludeAllowableActions,
+                    ctxt.IncludeRelationships, ctxt.RenditionFilterString, maxNumItems, skipCount, null);
+
+                // convert query results
+                IList<IQueryResult> page = new List<IQueryResult>();
+                if (resultList.Objects != null)
+                {
+                    foreach (IObjectData objectData in resultList.Objects)
+                    {
+                        if (objectData == null)
+                        {
+                            continue;
+                        }
+
+                        page.Add(ObjectFactory.ConvertQueryResult(objectData));
+                    }
+                }
+
+                return new PageFetcher<IQueryResult>.Page<IQueryResult>(page, resultList.NumItems, resultList.HasMoreItems);
+            };
+
+            return new CollectionEnumerable<IQueryResult>(new PageFetcher<IQueryResult>(DefaultContext.MaxItemsPerPage, fetchPageDelegate));
+        }
 
         public IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems)
         {
@@ -600,12 +628,12 @@ namespace DotCMIS.Client
             IObjectType type = null;
             if (source is ICmisObject)
             {
-                type = ((ICmisObject)source).Type;
+                type = ((ICmisObject)source).ObjectType;
             }
             else
             {
                 ICmisObject sourceObj = GetObject(source);
-                type = sourceObj.Type;
+                type = sourceObj.ObjectType;
             }
 
             if (type.BaseTypeId != BaseTypeId.CmisDocument)

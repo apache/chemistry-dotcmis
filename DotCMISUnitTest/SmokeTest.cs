@@ -16,14 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using DotCMIS.Client;
-using DotCMIS.Enums;
 using DotCMIS;
+using DotCMIS.Client;
+using DotCMIS.Client.Impl;
+using DotCMIS.Enums;
+using NUnit.Framework;
+using System;
 
 namespace DotCMISUnitTest
 {
@@ -128,7 +127,7 @@ namespace DotCMISUnitTest
         }
 
         [Test]
-        public void SmokeRootFolder()
+        public void SmokeTestRootFolder()
         {
             ICmisObject rootFolderObject = Session.GetRootFolder();
 
@@ -144,6 +143,30 @@ namespace DotCMISUnitTest
             Assert.NotNull(rootFolder.AllowableActions);
             Assert.True(rootFolder.AllowableActions.Actions.Contains(Actions.CanGetProperties));
             Assert.False(rootFolder.AllowableActions.Actions.Contains(Actions.CanGetFolderParent));
+
+            IItemEnumerable<ICmisObject> children = rootFolder.GetChildren();
+            Assert.NotNull(children);
+            foreach (ICmisObject child in children)
+            {
+                Assert.NotNull(child);
+                Assert.NotNull(child.Id);
+                Assert.NotNull(child.Name);
+                Console.WriteLine(child.Name + " (" + child.Id + ")");
+            }
+        }
+
+        [Test]
+        public void SmokeTestQuery()
+        {
+            IItemEnumerable<IQueryResult> qr = Session.Query("SELECT * FROM cmis:document", false);
+            Assert.NotNull(qr);
+
+            foreach (IQueryResult hit in qr)
+            {
+                Assert.NotNull(hit);
+                Assert.NotNull(hit["cmis:objectId"]);
+                Console.WriteLine(hit.GetPropertyValueById(PropertyIds.Name) + " (" + hit.GetPropertyValueById(PropertyIds.ObjectId) + ")");
+            }
         }
     }
 }

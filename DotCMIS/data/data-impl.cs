@@ -23,7 +23,7 @@ using System.Text;
 using DotCMIS.Data.Extensions;
 using DotCMIS.Enums;
 
-namespace DotCMIS.Data
+namespace DotCMIS.Data.Impl
 {
     public class RepositoryInfo : ExtensionsData, IRepositoryInfo
     {

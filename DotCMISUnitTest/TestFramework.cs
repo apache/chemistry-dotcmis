@@ -22,11 +22,13 @@ using System.Net;
 using System.Text;
 using DotCMIS;
 using DotCMIS.Binding;
+using DotCMIS.Client;
+using DotCMIS.Client.Impl;
 using DotCMIS.Data;
+using DotCMIS.Data.Impl;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
 using NUnit.Framework;
-using DotCMIS.Client;
 
 namespace DotCMISUnitTest
 {

@@ -18,6 +18,7 @@
  */
 using System.Collections.Generic;
 using DotCMIS.Client;
+using DotCMIS.Client.Impl;
 using NUnit.Framework;
 
 namespace DotCMISUnitTest

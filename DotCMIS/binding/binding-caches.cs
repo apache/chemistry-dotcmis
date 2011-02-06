@@ -29,7 +29,7 @@ namespace DotCMIS.Binding
 {
     // --- base cache implementation ---
 
-    internal interface ICache
+    internal interface IBindingCache
     {
         void Initialize(string[] cacheLevelConfig);
 
@@ -46,7 +46,7 @@ namespace DotCMIS.Binding
         void Unlock();
     }
 
-    internal interface ICacheLevel
+    internal interface IBindingCacheLevel
     {
         void Initialize(IDictionary<string, string> cacheLevelConfig);
 
@@ -55,11 +55,11 @@ namespace DotCMIS.Binding
         void Remove(string key);
     }
 
-    internal class Cache : ICache
+    internal class Cache : IBindingCache
     {
         private IList<Type> cacheLevels;
         private IList<IDictionary<string, string>> cacheLevelParameters;
-        private ICacheLevel root;
+        private IBindingCacheLevel root;
         private string name;
         private object cacheLock = new object();
  
@@ -125,7 +125,7 @@ namespace DotCMIS.Binding
             Lock();
             try
             {
-                ICacheLevel cacheLevel = root;
+                IBindingCacheLevel cacheLevel = root;
 
                 // follow the branch
                 for (int i = 0; i < keys.Length - 1; i++)
@@ -140,7 +140,7 @@ namespace DotCMIS.Binding
                     }
 
                     // next level
-                    cacheLevel = (ICacheLevel)level;
+                    cacheLevel = (IBindingCacheLevel)level;
                 }
 
                 cacheLevel[keys[keys.Length - 1]] = value;
@@ -167,7 +167,7 @@ namespace DotCMIS.Binding
             Lock();
             try
             {
-                ICacheLevel cacheLevel = root;
+                IBindingCacheLevel cacheLevel = root;
 
                 // follow the branch
                 for (int i = 0; i < keys.Length - 1; i++)
@@ -178,7 +178,7 @@ namespace DotCMIS.Binding
                     if (level == null) { return null; }
 
                     // next level
-                    cacheLevel = (ICacheLevel)level;
+                    cacheLevel = (IBindingCacheLevel)level;
                 }
 
                 // get the value
@@ -199,7 +199,7 @@ namespace DotCMIS.Binding
             Lock();
             try
             {
-                ICacheLevel cacheLevel = root;
+                IBindingCacheLevel cacheLevel = root;
 
                 // follow the branch
                 for (int i = 0; i < keys.Length - 1; i++)
@@ -210,7 +210,7 @@ namespace DotCMIS.Binding
                     if (level == null) { return; }
 
                     // next level
-                    cacheLevel = (ICacheLevel)level;
+                    cacheLevel = (IBindingCacheLevel)level;
                 }
 
                 cacheLevel.Remove(keys[keys.Length - 1]);
@@ -230,7 +230,7 @@ namespace DotCMIS.Binding
             Lock();
             try
             {
-                ICacheLevel cacheLevel = root;
+                IBindingCacheLevel cacheLevel = root;
 
                 // follow the branch
                 for (int i = 0; i < keys.Length - 1; i++)
@@ -241,7 +241,7 @@ namespace DotCMIS.Binding
                     if (level == null) { return i; }
 
                     // next level
-                    cacheLevel = (ICacheLevel)level;
+                    cacheLevel = (IBindingCacheLevel)level;
                 }
 
                 return keys.Length;
@@ -277,7 +277,7 @@ namespace DotCMIS.Binding
                 throw new ArgumentException("Class '" + typeName + "' not found!", e);
             }
 
-            if (!typeof(ICacheLevel).IsAssignableFrom(levelType))
+            if (!typeof(IBindingCacheLevel).IsAssignableFrom(levelType))
             {
                 throw new ArgumentException("Class '" + typeName + "' does not implement the ICacheLevel interface!");
             }
@@ -309,7 +309,7 @@ namespace DotCMIS.Binding
             }
         }
 
-        private ICacheLevel CreateCacheLevel(int level)
+        private IBindingCacheLevel CreateCacheLevel(int level)
         {
             if ((level < 0) || (level >= cacheLevels.Count))
             {
@@ -318,10 +318,10 @@ namespace DotCMIS.Binding
 
             // get the class and create an instance
             Type levelType = cacheLevels[level];
-            ICacheLevel cacheLevel = null;
+            IBindingCacheLevel cacheLevel = null;
             try
             {
-                cacheLevel = (ICacheLevel)Activator.CreateInstance(levelType);
+                cacheLevel = (IBindingCacheLevel)Activator.CreateInstance(levelType);
             }
             catch (Exception e)
             {
@@ -350,7 +350,7 @@ namespace DotCMIS.Binding
         }
     }
 
-    internal abstract class AbstractDictionaryCacheLevel : ICacheLevel
+    internal abstract class AbstractDictionaryCacheLevel : IBindingCacheLevel
     {
         protected static string NullKey = "";
 
@@ -567,7 +567,7 @@ namespace DotCMIS.Binding
     {
         private const int CacheSizeRepositories = 10;
 
-        private ICache cache;
+        private IBindingCache cache;
 
         public RepositoryInfoCache(BindingSession session)
         {
@@ -611,7 +611,7 @@ namespace DotCMIS.Binding
         private const int CacheSizeRepositories = 10;
         private const int CacheSizeTypes = 100;
 
-        private ICache cache;
+        private IBindingCache cache;
 
         public TypeDefinitionCache(BindingSession session)
         {

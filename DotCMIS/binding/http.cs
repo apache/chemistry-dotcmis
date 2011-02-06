@@ -20,13 +20,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using DotCMIS.Binding.Impl;
+using System.Text;
+using System.Web;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
-using System.Web;
-using System.Text;
 
-namespace DotCMIS.Binding
+namespace DotCMIS.Binding.Impl
 {
     internal static class HttpUtils
     {
