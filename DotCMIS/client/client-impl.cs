@@ -360,10 +360,14 @@ namespace DotCMIS.Client.Impl
                 ITypeDefinitionList tdl = service.GetTypeChildren(RepositoryId, typeId, includePropertyDefinitions, maxNumItems, skipCount, null);
 
                 // convert type definitions
-                IList<IObjectType> page = new List<IObjectType>(tdl.List.Count);
-                foreach (ITypeDefinition typeDefinition in tdl.List)
+                int count = (tdl != null && tdl.List != null ? tdl.List.Count : 0);
+                IList<IObjectType> page = new List<IObjectType>(count);
+                if (count > 0)
                 {
-                    page.Add(ObjectFactory.ConvertTypeDefinition(typeDefinition));
+                    foreach (ITypeDefinition typeDefinition in tdl.List)
+                    {
+                        page.Add(ObjectFactory.ConvertTypeDefinition(typeDefinition));
+                    }
                 }
 
                 return new PageFetcher<IObjectType>.Page<IObjectType>(page, tdl.NumItems, tdl.HasMoreItems);
@@ -382,6 +386,11 @@ namespace DotCMIS.Client.Impl
 
         private IList<ITree<IObjectType>> ConvertTypeDescendants(IList<ITypeDefinitionContainer> descendantsList)
         {
+            if (descendantsList == null || descendantsList.Count == 0)
+            {
+                return null;
+            }
+
             IList<ITree<IObjectType>> result = new List<ITree<IObjectType>>();
 
             foreach (ITypeDefinitionContainer container in descendantsList)

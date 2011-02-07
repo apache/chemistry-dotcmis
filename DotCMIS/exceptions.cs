@@ -23,6 +23,9 @@ using System.Text;
 
 namespace DotCMIS.Exceptions
 {
+    /// <summary>
+    /// Base exception for all CMIS exceptions.
+    /// </summary>
     [Serializable]
     public class CmisBaseException : ApplicationException
     {

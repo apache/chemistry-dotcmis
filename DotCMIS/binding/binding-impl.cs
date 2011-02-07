@@ -472,7 +472,7 @@ namespace DotCMIS.Binding.Impl
                     skipCount, extension);
 
             // put it into the cache
-            if (!hasExtension && (includePropertyDefinitions ?? false) && (result != null))
+            if (!hasExtension && (includePropertyDefinitions ?? false) && (result != null) && (result.List != null))
             {
                 TypeDefinitionCache cache = session.GetTypeDefinitionCache();
                 foreach (ITypeDefinition tdd in result.List)

@@ -1298,7 +1298,7 @@ namespace DotCMIS.Client.Impl
 
         private IList<ITree<IFileableCmisObject>> ConvertProviderContainer(IList<IObjectInFolderContainer> bindingContainerList, IOperationContext context)
         {
-            if (bindingContainerList == null)
+            if (bindingContainerList == null || bindingContainerList.Count == 0)
             {
                 return null;
             }

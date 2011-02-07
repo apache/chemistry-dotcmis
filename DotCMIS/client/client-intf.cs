@@ -26,14 +26,75 @@ using System.IO;
 
 namespace DotCMIS.Client
 {
+    /// <summary>
+    /// Session factory interface.
+    /// </summary>
     public interface ISessionFactory
     {
+        /// <summary>
+        /// Creates a new session with the given parameters and connects to the repository.
+        /// </summary>
+        /// <param name="parameters">the session parameters</param>
+        /// <returns>the newly created session</returns>
+        /// <example>
+        /// Connect to an AtomPub CMIS endpoint:
+        /// <code>
+        /// Dictionary&lt;string, string&gt; parameters = new Dictionary&lt;string, string&gt;();
+        /// 
+        /// parameters[SessionParameter.BindingType] = BindingType.AtomPub;
+        /// parameters[SessionParameter.AtomPubUrl] = "http://localhost/cmis/atom";
+        /// parameters[SessionParameter.Password] = "admin";
+        /// parameters[SessionParameter.User] = "admin";
+        /// parameters[SessionParameter.RepositoryId] = "1234-abcd-5678";
+        ///
+        /// SessionFactory factory = SessionFactory.NewInstance();
+        /// ISession session = factory.CreateSession(parameters);
+        /// </code>
+        /// 
+        /// Connect to a Web Services CMIS endpoint:
+        /// <code>
+        /// Dictionary&lt;string, string&gt; parameters = new Dictionary&lt;string, string&gt;();
+        /// 
+        /// string baseUrlWS = "https://localhost:443/cmis/ws";
+        ///
+        /// parameters[SessionParameter.BindingType] = BindingType.WebServices;
+        /// parameters[SessionParameter.WebServicesRepositoryService] = baseUrlWS + "/RepositoryService?wsdl";
+        /// parameters[SessionParameter.WebServicesAclService] = baseUrlWS + "/AclService?wsdl";
+        /// parameters[SessionParameter.WebServicesDiscoveryService] = baseUrlWS + "/DiscoveryService?wsdl";
+        /// parameters[SessionParameter.WebServicesMultifilingService] = baseUrlWS + "/MultifilingService?wsdl";
+        /// parameters[SessionParameter.WebServicesNavigationService] = baseUrlWS + "/NavigationService?wsdl";
+        /// parameters[SessionParameter.WebServicesObjectService] = baseUrlWS + "/ObjectService?wsdl";
+        /// parameters[SessionParameter.WebServicesPolicyService] = baseUrlWS + "/PolicyService?wsdl";
+        /// parameters[SessionParameter.WebServicesRelationshipService] = baseUrlWS + "/RelationshipService?wsdl";
+        /// parameters[SessionParameter.WebServicesVersioningService] = baseUrlWS + "/VersioningService?wsdl";
+        /// parameters[SessionParameter.RepositoryId] = "1234-abcd-5678"
+        /// parameters[SessionParameter.User] = "admin";
+        /// parameters[SessionParameter.Password] = "admin";
+        ///
+        /// SessionFactory factory = SessionFactory.NewInstance();
+        /// ISession session = factory.CreateSession(parameters);
+        /// </code>
+        /// </example>
+        /// <seealso cref="DotCMIS.SessionParameter"/>
         ISession CreateSession(IDictionary<string, string> parameters);
+
+        /// <summary>
+        /// Gets all repository available at the specified endpoint.
+        /// </summary>
+        /// <param name="parameters">the session parameters</param>
+        /// <returns>a list of all available repositories</returns>
+        /// <seealso cref="DotCMIS.SessionParameter"/>
         IList<IRepository> GetRepositories(IDictionary<string, string> parameters);
     }
 
+    /// <summary>
+    /// Repository interface.
+    /// </summary>
     public interface IRepository : IRepositoryInfo
     {
+        /// <summary>
+        /// Creates a session for this repository.
+        /// </summary>
         ISession CreateSession();
     }
 
@@ -42,22 +103,46 @@ namespace DotCMIS.Client
     /// </summary>
     public interface ISession
     {
+        /// <summary>
+        /// Clears all caches.
+        /// </summary>
         void Clear();
 
-        // session context
-
+        /// <summary>
+        /// Gets the CMIS binding object.
+        /// </summary>
         ICmisBinding Binding { get; }
 
+        /// <summary>
+        /// Gets the default operation context.
+        /// </summary>
         IOperationContext DefaultContext { get; set; }
+
+        /// <summary>
+        /// Creates a new operation context object.
+        /// </summary>
         IOperationContext CreateOperationContext();
+
+        /// <summary>
+        /// Creates a new operation context object with the given parameters.
+        /// </summary>
         IOperationContext CreateOperationContext(HashSet<string> filter, bool includeAcls, bool includeAllowableActions, bool includePolicies,
             IncludeRelationshipsFlag includeRelationships, HashSet<string> renditionFilter, bool includePathSegments, string orderBy,
             bool cacheEnabled, int maxItemsPerPage);
+
+        /// <summary>
+        /// Creates a new <see cref="DotCMIS.Client.IObjectId"/> with the giveb id.
+        /// </summary>
         IObjectId CreateObjectId(string id);
 
-        // services
-
+        /// <summary>
+        /// Gets the CMIS repositoy info.
+        /// </summary>
         IRepositoryInfo RepositoryInfo { get; }
+
+        /// <summary>
+        /// Gets the internal object factory. 
+        /// </summary>
         IObjectFactory ObjectFactory { get; }
 
         // types
@@ -151,6 +236,9 @@ namespace DotCMIS.Client
         IChangeEvents ConvertChangeEvents(String changeLogToken, IObjectList objectList);
     }
 
+    /// <summary>
+    /// Operation context interface.
+    /// </summary>
     public interface IOperationContext
     {
         HashSet<string> Filter { get; set; }
@@ -174,6 +262,9 @@ namespace DotCMIS.Client
         IList<ITree<T>> Children { get; }
     }
 
+    /// <summary>
+    /// Base interface for all CMIS types.
+    /// </summary>
     public interface IObjectType : ITypeDefinition
     {
         bool IsBaseType { get; }
@@ -183,22 +274,34 @@ namespace DotCMIS.Client
         IList<ITree<IObjectType>> GetDescendants(int depth);
     }
 
+    /// <summary>
+    /// Document type interface.
+    /// </summary>
     public interface IDocumentType : IObjectType
     {
         bool? IsVersionable { get; }
         ContentStreamAllowed? ContentStreamAllowed { get; }
     }
 
+    /// <summary>
+    /// Folder type interface.
+    /// </summary>
     public interface IFolderType : IObjectType
     {
     }
 
+    /// <summary>
+    /// Relationship type interface.
+    /// </summary>
     public interface IRelationshipType : IObjectType
     {
         IList<IObjectType> GetAllowedSourceTypes { get; }
         IList<IObjectType> GetAllowedTargetTypes { get; }
     }
 
+    /// <summary>
+    /// Policy type interface.
+    /// </summary>
     public interface IPolicyType : IObjectType
     {
     }
@@ -215,6 +318,9 @@ namespace DotCMIS.Client
 
     public interface IObjectId
     {
+        /// <summary>
+        /// Gets the object id.
+        /// </summary>
         string Id { get; }
     }
 
@@ -225,6 +331,9 @@ namespace DotCMIS.Client
         IContentStream GetContentStream();
     }
 
+    /// <summary>
+    /// Property interface.
+    /// </summary>
     public interface IProperty
     {
         string Id { get; }
@@ -241,30 +350,84 @@ namespace DotCMIS.Client
         string ValuesAsString { get; }
     }
 
+    /// <summary>
+    /// Collection of common CMIS properties.
+    /// </summary>
     public interface ICmisObjectProperties
     {
+        /// <summary>
+        /// Gets a list of all available CMIS properties.
+        /// </summary>
         IList<IProperty> Properties { get; }
+
+        /// <summary>
+        /// available
+        /// </summary>
+        /// <param name="propertyId">the property id</param>
+        /// <returns>the property or <c>null</c> if the property is not available</returns>
         IProperty this[string propertyId] { get; }
+
+        /// <summary>
+        /// Gets the value of the requested property.
+        /// </summary>
+        /// <param name="propertyId">the property id</param>
+        /// <returns>the property value or <c>null</c> if the property is not available or not set</returns>
         object GetPropertyValue(string propertyId);
 
-        // convenience accessors
+        /// <summary>
+        /// Gets the name of this CMIS object (CMIS property <c>cmis:name</c>).
+        /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Gets the user who created this CMIS object (CMIS property <c>cmis:createdBy</c>).
+        /// </summary>
         string CreatedBy { get; }
+
+        /// <summary>
+        /// Gets the timestamp when this CMIS object has been created (CMIS property <c>cmis:creationDate</c>).
+        /// </summary>
         DateTime? CreationDate { get; }
+
+        /// <summary>
+        /// Gets the user who modified this CMIS object (CMIS property <c>cmis:lastModifiedBy</c>).
+        /// </summary>
         string LastModifiedBy { get; }
+
+        /// <summary>
+        /// Gets the timestamp when this CMIS object has been modified (CMIS property <c>cmis:lastModificationDate</c>).
+        /// </summary>
         DateTime? LastModificationDate { get; }
+
+        /// <summary>
+        /// Gets the id of the base type of this CMIS object (CMIS property <c>cmis:baseTypeId</c>).
+        /// </summary>
         BaseTypeId BaseTypeId { get; }
+
+        /// <summary>
+        /// Gets the base type of this CMIS object (object type identified by <c>cmis:baseTypeId</c>).
+        /// </summary>
         IObjectType BaseType { get; }
+
+        /// <summary>
+        /// Gets the type of this CMIS object (object type identified by <c>cmis:objectTypeId</c>).
+        /// </summary>
         IObjectType ObjectType { get; }
+
+        /// <summary>
+        /// Gets the change token (CMIS property <c>cmis:changeToken</c>).
+        /// </summary>
         string ChangeToken { get; }
     }
 
     public enum ExtensionLevel
     {
-
         Object, Properties, AllowableActions, Acl, Policies, ChangeEvent
     }
 
+    /// <summary>
+    /// Base interface for all CMIS objects.
+    /// </summary>
     public interface ICmisObject : IObjectId, ICmisObjectProperties
     {
         // object
@@ -298,6 +461,9 @@ namespace DotCMIS.Client
         void RefreshIfOld(long durationInMillis);
     }
 
+    /// <summary>
+    /// Base interface for all fileable CMIS objects.
+    /// </summary>
     public interface IFileableCmisObject : ICmisObject
     {
         // object service
@@ -312,6 +478,9 @@ namespace DotCMIS.Client
         void RemoveFromFolder(IObjectId folderId);
     }
 
+    /// <summary>
+    /// Document properties.
+    /// </summary>
     public interface IDocumentProperties
     {
         bool? IsImmutable { get; }
@@ -330,6 +499,9 @@ namespace DotCMIS.Client
         string ContentStreamId { get; }
     }
 
+    /// <summary>
+    /// Document interface.
+    /// </summary>
     public interface IDocument : IFileableCmisObject, IDocumentProperties
     {
         void DeleteAllVersions();
@@ -353,11 +525,17 @@ namespace DotCMIS.Client
                 IList<IPolicy> policies, IList<IAce> addACEs, IList<IAce> removeACEs, IOperationContext context);
     }
 
+    /// <summary>
+    /// Folder properties.
+    /// </summary>
     public interface IFolderProperties
     {
         IList<IObjectType> AllowedChildObjectTypes { get; }
     }
 
+    /// <summary>
+    /// Folder interface.
+    /// </summary>
     public interface IFolder : IFileableCmisObject, IFolderProperties
     {
         IDocument CreateDocument(IDictionary<string, object> properties, IContentStream contentStream, VersioningState? versioningState,
@@ -386,21 +564,33 @@ namespace DotCMIS.Client
         IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context);
     }
 
+    /// <summary>
+    /// Policy properties.
+    /// </summary>
     public interface IPolicyProperties
     {
         string PolicyText { get; }
     }
 
+    /// <summary>
+    /// Policy interface.
+    /// </summary>
     public interface IPolicy : IFileableCmisObject, IPolicyProperties
     {
     }
 
+    /// <summary>
+    /// Relationship properties.
+    /// </summary>
     public interface IRelationshipProperties
     {
         IObjectId SourceId { get; }
         IObjectId TargetId { get; }
     }
 
+    /// <summary>
+    /// Relationship interface.
+    /// </summary>
     public interface IRelationship : ICmisObject, IRelationshipProperties
     {
         ICmisObject GetSource();
@@ -409,6 +599,9 @@ namespace DotCMIS.Client
         ICmisObject GetTarget(IOperationContext context);
     }
 
+    /// <summary>
+    /// Query result.
+    /// </summary>
     public interface IQueryResult
     {
         IPropertyData this[string queryName] { get; }

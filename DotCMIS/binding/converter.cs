@@ -619,7 +619,7 @@ namespace DotCMIS.Binding
             }
 
             result.HasMoreItems = typeDefList.hasMoreItems;
-            result.NumItems = Int64.Parse(typeDefList.numItems);
+            result.NumItems = typeDefList.numItems == null ? null : (long?)Int64.Parse(typeDefList.numItems);
 
             ConvertExtension(typeDefList, result);
 
@@ -1243,10 +1243,7 @@ namespace DotCMIS.Binding
                 }
             }
             result.HasMoreItems = list.hasMoreItems;
-            if (list.numItems != null)
-            {
-                result.NumItems = Int64.Parse(list.numItems);
-            }
+            result.NumItems = list.numItems == null ? null : (long?)Int64.Parse(list.numItems);
 
             ConvertExtension(list, result);
 
@@ -1315,7 +1312,7 @@ namespace DotCMIS.Binding
             }
 
             result.HasMoreItems = list.hasMoreItems;
-            result.NumItems = Int64.Parse(list.numItems);
+            result.NumItems = list.numItems == null ? null : (long?)Int64.Parse(list.numItems);
 
             ConvertExtension(list, result);
 
