@@ -588,8 +588,8 @@ namespace DotCMIS.Data.Impl
 
     public class ChangeEventInfo : ExtensionsData, IChangeEventInfo
     {
-        public ChangeType ChangeType { get; set; }
-        public DateTime ChangeTime { get; set; }
+        public ChangeType? ChangeType { get; set; }
+        public DateTime? ChangeTime { get; set; }
     }
 
     public class PolicyIdList : ExtensionsData, IPolicyIdList

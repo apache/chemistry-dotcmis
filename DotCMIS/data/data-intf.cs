@@ -326,8 +326,8 @@ namespace DotCMIS.Data
 
     public interface IChangeEventInfo : IExtensionsData
     {
-        ChangeType ChangeType { get; }
-        DateTime ChangeTime { get; }
+        ChangeType? ChangeType { get; }
+        DateTime? ChangeTime { get; }
     }
 
     public interface IPolicyIdList : IExtensionsData

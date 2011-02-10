@@ -596,7 +596,20 @@ namespace DotCMIS.Client.Impl
 
         public IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
                 IOperationContext context)
-        { throw new CmisNotSupportedException("Client not implemented!"); }
+        {
+            Lock();
+            try
+            {
+                IObjectList objectList = Binding.GetDiscoveryService().GetContentChanges(RepositoryId, ref changeLogToken, includeProperties,
+                    context.FilterString, context.IncludePolicies, context.IncludeAcls, maxNumItems, null);
+
+                return ObjectFactory.ConvertChangeEvents(changeLogToken, objectList);
+            }
+            finally
+            {
+                Unlock();
+            }
+        }
 
         // create
 

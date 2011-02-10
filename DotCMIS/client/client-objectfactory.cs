@@ -332,7 +332,8 @@ namespace DotCMIS.Client.Impl
             }
         }
 
-        public IQueryResult ConvertQueryResult(IObjectData objectData) {
+        public IQueryResult ConvertQueryResult(IObjectData objectData)
+        {
             if (objectData == null)
             {
                 throw new ArgumentException("Object data is null!");
@@ -341,7 +342,79 @@ namespace DotCMIS.Client.Impl
             return new QueryResult(session, objectData);
         }
 
-        public IChangeEvent ConvertChangeEvent(IObjectData objectData) { return null; }
-        public IChangeEvents ConvertChangeEvents(String changeLogToken, IObjectList objectList) { return null; }
+        public IChangeEvent ConvertChangeEvent(IObjectData objectData)
+        {
+            ChangeEvent result = new ChangeEvent();
+
+            if (objectData.ChangeEventInfo != null)
+            {
+                result.ChangeType = objectData.ChangeEventInfo.ChangeType;
+                result.ChangeTime = objectData.ChangeEventInfo.ChangeTime;
+            }
+
+            if (objectData.Properties != null && objectData.Properties.PropertyList != null)
+            {
+                result.Properties = new Dictionary<string, IList<object>>();
+
+                foreach (IPropertyData property in objectData.Properties.PropertyList)
+                {
+                    if (property.Id != null)
+                    {
+                        result.Properties[property.Id] = property.Values;
+                    }
+                }
+
+                IList<object> objectIdList;
+                if (result.Properties.TryGetValue(PropertyIds.ObjectId, out objectIdList))
+                {
+                    if (objectIdList != null && objectIdList.Count > 0)
+                    {
+                        result.ObjectId = objectIdList[0] as string;
+                    }
+                }
+
+                if (objectData.PolicyIds != null && objectData.PolicyIds.PolicyIds != null)
+                {
+                    result.PolicyIds = objectData.PolicyIds.PolicyIds;
+                }
+
+                if (objectData.Acl != null)
+                {
+                    result.Acl = objectData.Acl;
+                }
+            }
+
+            return result;
+        }
+
+        public IChangeEvents ConvertChangeEvents(string changeLogToken, IObjectList objectList)
+        {
+            if (objectList == null)
+            {
+                return null;
+            }
+
+            ChangeEvents result = new ChangeEvents();
+            result.LatestChangeLogToken = changeLogToken;
+
+            result.ChangeEventList = new List<IChangeEvent>();
+            if (objectList.Objects != null)
+            {
+                foreach (IObjectData objectData in objectList.Objects)
+                {
+                    if (objectData == null)
+                    {
+                        continue;
+                    }
+
+                    result.ChangeEventList.Add(ConvertChangeEvent(objectData));
+                }
+            }
+
+            result.HasMoreItems = objectList.HasMoreItems;
+            result.TotalNumItems = objectList.NumItems;
+
+            return result;
+        }
     }
 }

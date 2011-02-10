@@ -1804,4 +1804,26 @@ namespace DotCMIS.Client.Impl
 
         public IList<IRendition> Renditions { get; protected set; }
     }
+
+    public class ChangeEvent : ChangeEventInfo, IChangeEvent
+    {
+        public string ObjectId { get; set; }
+
+        public IDictionary<string, IList<object>> Properties { get; set; }
+
+        public IList<string> PolicyIds { get; set; }
+
+        public IAcl Acl { get; set; }
+    }
+
+    public class ChangeEvents : IChangeEvents
+    {
+        public string LatestChangeLogToken { get; set; }
+
+        public IList<IChangeEvent> ChangeEventList { get; set; }
+
+        public bool? HasMoreItems { get; set; }
+
+        public long? TotalNumItems { get; set; }
+    }
 }

@@ -233,7 +233,7 @@ namespace DotCMIS.Client
         ICmisObject ConvertObject(IObjectData objectData, IOperationContext context);
         IQueryResult ConvertQueryResult(IObjectData objectData);
         IChangeEvent ConvertChangeEvent(IObjectData objectData);
-        IChangeEvents ConvertChangeEvents(String changeLogToken, IObjectList objectList);
+        IChangeEvents ConvertChangeEvents(string changeLogToken, IObjectList objectList);
     }
 
     /// <summary>
@@ -627,8 +627,8 @@ namespace DotCMIS.Client
     public interface IChangeEvents
     {
         string LatestChangeLogToken { get; }
-        IList<IChangeEvent> ChangeEvents { get; }
-        bool HasMoreItems { get; }
-        long getTotalNumItems { get; }
+        IList<IChangeEvent> ChangeEventList { get; }
+        bool? HasMoreItems { get; }
+        long? TotalNumItems { get; }
     }
 }
