@@ -24,6 +24,7 @@ using System.Text;
 using System.Threading;
 using DotCMIS.Binding.Impl;
 using DotCMIS.Data;
+using DotCMIS.Util;
 
 namespace DotCMIS.Binding
 {
@@ -350,11 +351,10 @@ namespace DotCMIS.Binding
         }
     }
 
-    internal abstract class AbstractDictionaryCacheLevel : IBindingCacheLevel
+    internal abstract class AbstractCacheLevel : IBindingCacheLevel
     {
         protected static string NullKey = "";
 
-        private IDictionary<string, object> dict;
         private bool fallbackEnabled = false;
         private string fallbackKey = null;
         private bool singleValueEnabled = false;
@@ -365,42 +365,48 @@ namespace DotCMIS.Binding
         {
             get
             {
-                object value = null;
-                if (dict.TryGetValue(key == null ? NullKey : key, out value))
+                object value = GetValue(key == null ? NullKey : key);
+                if (value != null)
                 {
                     return value;
                 }
 
-                if (fallbackEnabled && dict.TryGetValue(fallbackKey, out value))
+                if (fallbackEnabled)
                 {
-                    return value;
+                    value = GetValue(fallbackKey);
+                    if (value != null)
+                    {
+                        return value;
+                    }
                 }
 
-                if (singleValueEnabled && dict.Count == 1)
+                if (singleValueEnabled)
                 {
-                    value = dict.Values.First();
+                    value = GetSingleValue();
+                    if (value != null)
+                    {
+                        return value;
+                    }
                 }
 
-                return value;
+                return null;
             }
             set
             {
                 if (value != null)
                 {
-                    dict[key == null ? NullKey : key] = value;
+                    AddValue(key == null ? NullKey : key, value);
                 }
             }
         }
 
-        public virtual void Remove(string key)
-        {
-            dict.Remove(key);
-        }
+        public abstract void Remove(string key);
 
-        public void SetDictionary(IDictionary<string, object> dict)
-        {
-            this.dict = dict;
-        }
+        protected abstract object GetValue(string key);
+
+        protected abstract object GetSingleValue();
+
+        protected abstract void AddValue(string key, object value);
 
         protected void EnableKeyFallback(string key)
         {
@@ -470,91 +476,93 @@ namespace DotCMIS.Binding
         }
     }
 
-    internal class DictionaryCacheLevel : AbstractDictionaryCacheLevel
+    internal class DictionaryCacheLevel : AbstractCacheLevel
     {
         public const string Capacity = "capacity";
         public const string SingleValue = "singleValue";
+
+        private IDictionary<string, object> dict;
 
         public override void Initialize(IDictionary<string, string> parameters)
         {
             int initialCapacity = GetIntParameter(parameters, Capacity, 32);
             bool singleValue = GetBooleanParameter(parameters, SingleValue, false);
 
-            SetDictionary(new Dictionary<string, object>(initialCapacity));
+            dict = new Dictionary<string, object>(initialCapacity);
             if (singleValue)
             {
                 EnableSingeValueFallback();
             }
         }
+
+        public override void Remove(string key)
+        {
+            dict.Remove(key);
+        }
+
+        protected override object GetValue(string key)
+        {
+            object value;
+            if (dict.TryGetValue(key, out value))
+            {
+                return value;
+            }
+
+            return null;
+        }
+
+        protected override object GetSingleValue()
+        {
+            if (dict.Count == 1)
+            {
+                return dict.Values.First();
+            }
+
+            return null;
+        }
+
+        protected override void AddValue(string key, object value)
+        {
+            dict[key] = value;
+        }
     }
 
-    internal class LruCacheLevel : AbstractDictionaryCacheLevel
+    internal class LruCacheLevel : AbstractCacheLevel
     {
         public const string MaxEntries = "maxEntries";
 
-        private LinkedList<string> keyList;
-        private int maxEntries;
+        private LRUCache<string, object> cache;
 
         public override void Initialize(IDictionary<string, string> parameters)
         {
-            maxEntries = GetIntParameter(parameters, MaxEntries, 100);
-            keyList = new LinkedList<string>();
-            SetDictionary(new Dictionary<string, object>(maxEntries + 1));
-        }
+            int maxEntries = GetIntParameter(parameters, MaxEntries, 100);
 
-        public override object this[string key]
-        {
-            get
-            {
-                object value = base[key];
-                if (value != null)
-                {
-                    LinkedListNode<string> node = keyList.Find(key);
-                    if (node == null)
-                    {
-                        throw new ApplicationException("Cache error!");
-                    }
-                    else
-                    {
-                        keyList.Remove(node);
-                        keyList.AddFirst(node);
-                    }
-                }
-
-                return value;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    return;
-                }
-
-                LinkedListNode<string> node = keyList.Find(key);
-                if (node == null)
-                {
-                    keyList.AddFirst(key);
-                    while (keyList.Count > maxEntries)
-                    {
-                        LinkedListNode<string> lastNode = keyList.Last;
-                        base.Remove(lastNode.Value);
-                        keyList.RemoveLast();
-                    }
-                }
-                else
-                {
-                    keyList.Remove(node);
-                    keyList.AddFirst(node);
-                }
-
-                base[key] = value;
-            }
+            cache = new LRUCache<string, object>(maxEntries, TimeSpan.FromDays(1));
         }
 
         public override void Remove(string key)
         {
-            keyList.Remove(key);
-            base.Remove(key);
+            cache.Remove(key);
+        }
+
+        protected override object GetValue(string key)
+        {
+            return cache.Get(key);
+        }
+
+        protected override object GetSingleValue()
+        {
+            if (cache.Count == 1)
+            {
+                return cache.GetLatest();
+            }
+
+            return null;
+        }
+
+        protected override void AddValue(string key, object value)
+        {
+            cache.Add(key, value);
         }
     }
 

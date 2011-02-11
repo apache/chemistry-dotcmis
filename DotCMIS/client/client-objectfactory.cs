@@ -210,7 +210,13 @@ namespace DotCMIS.Client.Impl
             // get the type
             if (type == null)
             {
-                string typeId = properties[PropertyIds.ObjectTypeId] as string;
+                object typeIdObject;
+                if (!properties.TryGetValue(PropertyIds.ObjectTypeId, out typeIdObject))
+                {
+                    throw new ArgumentException("Type or type property must be set!");
+                }
+
+                string typeId = typeIdObject as string;
                 if (typeId == null)
                 {
                     throw new ArgumentException("Type or type property must be set!");

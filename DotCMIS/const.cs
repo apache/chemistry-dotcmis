@@ -66,6 +66,10 @@ namespace DotCMIS
         public const string CacheClass = "org.apache.chemistry.dotcmis.cache.classname";
         public const string RepositoryId = "org.apache.chemistry.dotcmis.session.repository.id";
 
+        public const string CacheSizeObjects = "org.apache.chemistry.dotcmis.cache.objects.size";
+        public const string CacheTTLObjects = "org.apache.chemistry.dotcmis.cache.objects.ttl";
+        public const string CacheSizePathToId = "org.apache.chemistry.dotcmis.cache.pathtoid.size";
+        public const string CacheTTLPathToId = "org.apache.chemistry.dotcmis.cache.pathtoid.ttl";
         public const string CachePathOmit = "org.apache.chemistry.dotcmis.cache.path.omit";
     }
 

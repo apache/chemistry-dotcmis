@@ -99,7 +99,21 @@ namespace DotCMIS.Client
     }
 
     /// <summary>
-    /// Session interface.
+    /// A session is a connection to a CMIS repository with a specific user.
+    /// <para>
+    /// Not all operations might be supported by the connected repository. Either DotCMIS or the repository will 
+    /// throw an exception if an unsupported operation is called. 
+    /// The capabilities of the repository can be discovered by evaluating the repository info 
+    /// (see <see cref="RepositoryInfo"/>).
+    /// </para>
+    /// <para>
+    /// Almost all methods might throw exceptions derived from <see cref="DotCMIS.Exceptions.CmisBaseException"/>!
+    /// </para>
+    /// <para>
+    /// (Please refer to the <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/os/">CMIS specification</a>
+    /// for details about the domain model, terms, concepts, base types, properties, ids and query names, 
+    /// query language, etc.)
+    /// </para>
     /// </summary>
     public interface ISession
     {
@@ -336,17 +350,71 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IProperty
     {
+        /// <summary>
+        /// Gets the property id.
+        /// </summary>
         string Id { get; }
+
+        /// <summary>
+        /// Gets the property local name.
+        /// </summary>
         string LocalName { get; }
+
+        /// <summary>
+        /// Gets the property display name.
+        /// </summary>
         string DisplayName { get; }
+
+        /// <summary>
+        /// Gets the property query name.
+        /// </summary>
         string QueryName { get; }
+
+        /// <summary>
+        /// Gets if the property is a multi-value proprty.
+        /// </summary>
         bool IsMultiValued { get; }
+
+        /// <summary>
+        /// Gets the proprty type.
+        /// </summary>
         PropertyType? PropertyType { get; }
+
+        /// <summary>
+        /// Gets the property defintion.
+        /// </summary>
         IPropertyDefinition PropertyDefinition { get; }
+
+        /// <summary>
+        /// Gets the value of the property.
+        /// </summary>
+        /// <remarks>
+        /// If the property is a single-value property the single value is returned.
+        /// If the property is a multi-value property a IList&lt;object&gt; is returned.
+        /// </remarks>
         object Value { get; }
+
+        /// <summary>
+        /// Gets the value list of the property.
+        /// </summary>
+        /// <remarks>
+        /// If the property is a single-value property a list with one or no items is returend.
+        /// </remarks>
         IList<object> Values { get; }
+
+        /// <summary>
+        /// Gets the first value of the value list or <c>null</c> if the list has no values.
+        /// </summary>
         object FirstValue { get; }
+
+        /// <summary>
+        /// Gets a string representation of the first value of the value list.
+        /// </summary>
         string ValueAsString { get; }
+
+        /// <summary>
+        /// Gets a string representation of the value list.
+        /// </summary>
         string ValuesAsString { get; }
     }
 
@@ -430,17 +498,45 @@ namespace DotCMIS.Client
     /// </summary>
     public interface ICmisObject : IObjectId, ICmisObjectProperties
     {
-        // object
+        /// <summary>
+        /// Gets the allowable actions if they have been fetched for this object.
+        /// </summary>
         IAllowableActions AllowableActions { get; }
+
+        /// <summary>
+        /// Gets the relationships if they have been fetched for this object.
+        /// </summary>
         IList<IRelationship> Relationships { get; }
+
+        /// <summary>
+        /// Gets the ACL if it has been fetched for this object.
+        /// </summary>
         IAcl Acl { get; }
 
-        // object service
+        /// <summary>
+        /// Deletes this object.
+        /// </summary>
+        /// <param name="allVersions">if this object is a document this parameter defines if just this version or all versions should be deleted</param>
         void Delete(bool allVersions);
+
+        /// <summary>
+        /// Updates the properties that are provided.
+        /// </summary>
+        /// <param name="properties">the properties to update</param>
+        /// <returns>the updated object (a repository might have created a new object)</returns>
         ICmisObject UpdateProperties(IDictionary<string, object> properties);
+
+        /// <summary>
+        /// Updates the properties that are provided.
+        /// </summary>
+        /// <param name="properties">the properties to update</param>
+        /// <param name="refresh">indicates if the object should be refresh after the update</param>
+        /// <returns>the object id of the updated object (a repository might have created a new object)</returns>
         IObjectId UpdateProperties(IDictionary<string, object> properties, bool refresh);
 
-        // renditions
+        /// <summary>
+        /// Gets the renditions if they have been fetched for this object.
+        /// </summary>
         IList<IRendition> Renditions { get; }
 
         // policy service
@@ -456,8 +552,19 @@ namespace DotCMIS.Client
         // extensions
         IList<ICmisExtensionElement> GetExtensions(ExtensionLevel level);
 
+        /// <summary>
+        /// Gets the timestamp of the last refresh.
+        /// </summary>
         DateTime RefreshTimestamp { get; }
+
+        /// <summary>
+        /// Reloads the data from the repository.
+        /// </summary>
         void Refresh();
+
+        /// <summary>
+        /// Reloads the data from the repository if the last refresh did not occur within <c>durationInMillis</c>.
+        /// </summary>
         void RefreshIfOld(long durationInMillis);
     }
 

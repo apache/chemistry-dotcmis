@@ -23,6 +23,11 @@ using DotCMIS.Client.Impl;
 using DotCMIS.Enums;
 using NUnit.Framework;
 using System;
+using DotCMIS.Data;
+using DotCMIS.Data.Impl;
+using System.Text;
+using System.IO;
+using DotCMIS.Exceptions;
 
 namespace DotCMISUnitTest
 {
@@ -30,7 +35,7 @@ namespace DotCMISUnitTest
     class SmokeTest : TestFramework
     {
         [Test]
-        public void TestSession()
+        public void SmokeTestSession()
         {
             Assert.NotNull(Session);
             Assert.NotNull(Session.Binding);
@@ -167,6 +172,81 @@ namespace DotCMISUnitTest
                 Assert.NotNull(hit["cmis:objectId"]);
                 Console.WriteLine(hit.GetPropertyValueById(PropertyIds.Name) + " (" + hit.GetPropertyValueById(PropertyIds.ObjectId) + ")");
             }
+        }
+
+        [Test]
+        public void SmokeTestCreateDocument()
+        {
+            IFolder rootFolder = Session.GetRootFolder();
+
+            IDictionary<string, object> properties = new Dictionary<string, object>();
+            properties[PropertyIds.Name] = "test-smoke.txt";
+            properties[PropertyIds.ObjectTypeId] = "cmis:document";
+
+            byte[] content = UTF8Encoding.UTF8.GetBytes("Hello World!");
+
+            ContentStream contentStream = new ContentStream();
+            contentStream.FileName = properties[PropertyIds.Name] as string;
+            contentStream.MimeType = "text/plain";
+            contentStream.Length = content.Length;
+            contentStream.Stream = new MemoryStream(content);
+
+            IDocument doc = rootFolder.CreateDocument(properties, contentStream, null);
+
+            // check doc
+            Assert.NotNull(doc);
+            Assert.NotNull(doc.Id);
+
+            // check versions
+            IList<IDocument> versions = doc.GetAllVersions();
+            Assert.NotNull(versions);
+            Assert.AreEqual(1, versions.Count);
+            Assert.AreEqual(doc.Id, versions[0].Id);
+
+            // check content
+            IContentStream retrievedContentStream = doc.GetContentStream();
+            Assert.NotNull(retrievedContentStream);
+            Assert.NotNull(retrievedContentStream.Stream);
+
+            doc.Delete(true);
+
+            try
+            {
+                doc.Refresh();
+                Assert.Fail("Document shouldn't exist anymore!");
+            }
+            catch (CmisObjectNotFoundException) { }
+        }
+
+        [Test]
+        public void SmokeTestCreateFolder()
+        {
+            IFolder rootFolder = Session.GetRootFolder();
+
+            IDictionary<string, object> properties = new Dictionary<string, object>();
+            properties[PropertyIds.Name] = "test-smoke";
+            properties[PropertyIds.ObjectTypeId] = "cmis:folder";
+
+            IFolder folder = rootFolder.CreateFolder(properties);
+            
+            // check folder
+            Assert.NotNull(folder);
+            Assert.NotNull(folder.Id);
+
+            // check children
+            foreach (ICmisObject cmisObject in folder.GetChildren())
+            {
+                Assert.Fail("Folder shouldn't have children!");
+            }
+
+            folder.Delete(true);
+
+            try
+            {
+                folder.Refresh();
+                Assert.Fail("Folder shouldn't exist anymore!");
+            }
+            catch (CmisObjectNotFoundException) { }
         }
     }
 }

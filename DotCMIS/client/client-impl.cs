@@ -257,7 +257,7 @@ namespace DotCMIS.Client.Impl
                 }
                 else
                 {
-                    cacheType = typeof(NoCache);
+                    cacheType = typeof(CmisObjectCache);
                 }
 
                 ICache cacheObject = Activator.CreateInstance(cacheType) as ICache;

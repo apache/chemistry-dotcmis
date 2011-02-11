@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheTest.cs" />
     <Compile Include="CRUDTest.cs" />
     <Compile Include="EnumeratorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
