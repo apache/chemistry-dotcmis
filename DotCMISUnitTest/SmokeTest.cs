@@ -196,7 +196,9 @@ namespace DotCMISUnitTest
             // check doc
             Assert.NotNull(doc);
             Assert.NotNull(doc.Id);
-
+            Assert.AreEqual(properties[PropertyIds.Name], doc.Name);
+            Assert.AreEqual(BaseTypeId.CmisDocument, doc.BaseTypeId);
+   
             // check versions
             IList<IDocument> versions = doc.GetAllVersions();
             Assert.NotNull(versions);
@@ -232,6 +234,8 @@ namespace DotCMISUnitTest
             // check folder
             Assert.NotNull(folder);
             Assert.NotNull(folder.Id);
+            Assert.AreEqual(properties[PropertyIds.Name], folder.Name);
+            Assert.AreEqual(BaseTypeId.CmisFolder, folder.BaseTypeId);
 
             // check children
             foreach (ICmisObject cmisObject in folder.GetChildren())

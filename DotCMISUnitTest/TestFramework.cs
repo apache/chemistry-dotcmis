@@ -17,6 +17,7 @@
  * under the License.
  */
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -63,14 +64,43 @@ namespace DotCMISUnitTest
             DefaultDocumentType = "cmis:document";
             DefaultFolderType = "cmis:folder";
 
-            Session = ConnectAtomPub();
+            Session = ConnectFromConfig();
+        }
+        
+        public ISession ConnectFromConfig()
+        {
+            Dictionary<string, string> parameters = new Dictionary<string, string>();
+
+            foreach (string key in ConfigurationManager.AppSettings.AllKeys)
+            {
+                parameters[key] = ConfigurationManager.AppSettings.Get(key);
+            }
+
+            SessionFactory factory = SessionFactory.NewInstance();
+
+            ISession session = null;
+            if (parameters.ContainsKey(SessionParameter.RepositoryId))
+            {
+                session = factory.CreateSession(parameters);
+            }
+            else
+            {
+                session = factory.GetRepositories(parameters)[0].CreateSession();
+            }
+
+            Assert.NotNull(session);
+            Assert.NotNull(session.Binding);
+            Assert.NotNull(session.RepositoryInfo);
+            Assert.NotNull(session.RepositoryInfo.Id);
+
+            return session;
         }
 
         public ISession ConnectAtomPub()
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
 
-            string baseUrlAtom = "http://localhost:8080/alfresco/service/cmis";
+            string baseUrlAtom = "http://localhost:8080/alfresco/cmisatom";
 
             parameters[SessionParameter.BindingType] = BindingType.AtomPub;
             parameters[SessionParameter.AtomPubUrl] = baseUrlAtom;
@@ -92,7 +122,7 @@ namespace DotCMISUnitTest
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
 
-            string baseUrlWS = "http://localhost:8080/alfresco/cmis";
+            string baseUrlWS = "https://localhost:8443/alfresco/cmisws";
 
             parameters[SessionParameter.BindingType] = BindingType.WebServices;
             parameters[SessionParameter.WebServicesRepositoryService] = baseUrlWS + "/RepositoryService?wsdl";
@@ -132,7 +162,7 @@ namespace DotCMISUnitTest
 
         public IObjectData CreateDocument(string folderId, string name, string content)
         {
-            Properties properties = new Properties();
+            DotCMIS.Data.Impl.Properties properties = new DotCMIS.Data.Impl.Properties();
 
             PropertyData objectTypeIdProperty = new PropertyData(PropertyType.Id);
             objectTypeIdProperty.Id = PropertyIds.ObjectTypeId;
@@ -185,7 +215,7 @@ namespace DotCMISUnitTest
 
         public IObjectData CreateFolder(string folderId, string name)
         {
-            Properties properties = new Properties();
+            DotCMIS.Data.Impl.Properties properties = new DotCMIS.Data.Impl.Properties();
 
             PropertyData objectTypeIdProperty = new PropertyData(PropertyType.Id);
             objectTypeIdProperty.Id = PropertyIds.ObjectTypeId;

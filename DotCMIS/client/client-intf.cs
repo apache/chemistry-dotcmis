@@ -100,6 +100,8 @@ namespace DotCMIS.Client
 
     /// <summary>
     /// A session is a connection to a CMIS repository with a specific user.
+    /// </summary>
+    /// <remarks>
     /// <para>
     /// Not all operations might be supported by the connected repository. Either DotCMIS or the repository will 
     /// throw an exception if an unsupported operation is called. 
@@ -114,7 +116,7 @@ namespace DotCMIS.Client
     /// for details about the domain model, terms, concepts, base types, properties, ids and query names, 
     /// query language, etc.)
     /// </para>
-    /// </summary>
+    /// </remarks>
     public interface ISession
     {
         /// <summary>
@@ -178,8 +180,23 @@ namespace DotCMIS.Client
 
         // discovery
 
+        /// <summary>
+        /// Performs a query.
+        /// </summary>
+        /// <param name="statement">the CMIS QL statement</param>
+        /// <param name="searchAllVersions">indicates if all versions or only latest version should be searched</param>
+        /// <returns>query results</returns>
         IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions);
+
+        /// <summary>
+        /// Performs a query using the given <see cref="DotCMIS.Client.IOperationContext"/>.
+        /// </summary>
+        /// <param name="statement">the CMIS QL statement</param>
+        /// <param name="searchAllVersions">indicates if all versions or only latest version should be searched</param>
+        /// <param name="context">the <see cref="DotCMIS.Client.IOperationContext"/></param>
+        /// <returns>query results</returns>
         IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions, IOperationContext context);
+
         IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems);
         IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
                 IOperationContext context);
@@ -255,18 +272,85 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IOperationContext
     {
+        /// <summary>
+        /// Gets and sets the property filter.
+        /// </summary>
+        /// <remarks>
+        /// This is a set of query names.
+        /// </remarks>
         HashSet<string> Filter { get; set; }
+
+        /// <summary>
+        /// Gets and sets the property filter.
+        /// </summary>
+        /// <remarks>
+        /// This is a comma-separated list of query names.
+        /// </remarks>
         string FilterString { get; set; }
+
+        /// <summary>
+        /// Gets and sets if allowable actions should be retrieved.
+        /// </summary>
         bool IncludeAllowableActions { get; set; }
+
+        /// <summary>
+        /// Gets and sets if ACLs should be retrieved.
+        /// </summary>
         bool IncludeAcls { get; set; }
+
+        /// <summary>
+        /// Gets and sets if relationships should be retrieved.
+        /// </summary>
         IncludeRelationshipsFlag? IncludeRelationships { get; set; }
+
+        /// <summary>
+        /// Gets and sets if policies should be retrieved.
+        /// </summary>
         bool IncludePolicies { get; set; }
+
+        /// <summary>
+        /// Gets and sets the rendition filter.
+        /// </summary>
+        /// <remarks>
+        /// This is a set of rendition kinds or MIME types.
+        /// </remarks>
         HashSet<string> RenditionFilter { get; set; }
+
+        /// <summary>
+        /// Gets and sets the rendition filter.
+        /// </summary>
+        /// <remarks>
+        /// This is a comma-separated list of rendition kinds or MIME types.
+        /// </remarks>
         string RenditionFilterString { get; set; }
+
+        /// <summary>
+        /// Gets and sets if path segements should be retrieved.
+        /// </summary>
         bool IncludePathSegments { get; set; }
+
+        /// <summary>
+        /// Gets and sets order by list. 
+        /// </summary>
+        /// <remarks>
+        /// This is a comma-separated list of query names.
+        /// </remarks>
         string OrderBy { get; set; }
+
+        /// <summary>
+        /// Gets and sets if object fetched with this <see cref="DotCMIS.Client.IOperationContext"/>
+        /// should be cached or not.
+        /// </summary>
         bool CacheEnabled { get; set; }
+
+        /// <summary>
+        /// Gets the cache key. (For internal use.)
+        /// </summary>
         string CacheKey { get; }
+
+        /// <summary>
+        /// Gets and sets how many items should be fetched per page.
+        /// </summary>
         int MaxItemsPerPage { get; set; }
     }
 
@@ -539,17 +623,42 @@ namespace DotCMIS.Client
         /// </summary>
         IList<IRendition> Renditions { get; }
 
-        // policy service
+        /// <summary>
+        /// Applies the given policies to the object.
+        /// </summary>
         void ApplyPolicy(params IObjectId[] policyId);
+
+        /// <summary>
+        /// Removes the given policies from the object.
+        /// </summary>
         void RemovePolicy(params IObjectId[] policyId);
+
+        /// <summary>
+        /// Gets a list of policies applied to this object.
+        /// </summary>
         IList<IPolicy> Policies { get; }
 
-        // ACL service
-        IAcl ApplyAcl(IList<IAce> AddAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
-        IAcl AddAcl(IList<IAce> AddAces, AclPropagation? aclPropagation);
-        IAcl RemoveAcl(IList<IAce> RemoveAces, AclPropagation? aclPropagation);
+        /// <summary>
+        /// Adds and removes ACEs to this object.
+        /// </summary>
+        /// <returns>the new ACL of this object</returns>
+        IAcl ApplyAcl(IList<IAce> addAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
 
-        // extensions
+        /// <summary>
+        /// Adds ACEs to this object.
+        /// </summary>
+        /// <returns>the new ACL of this object</returns>
+        IAcl AddAcl(IList<IAce> addAces, AclPropagation? aclPropagation);
+
+        /// <summary>
+        /// Removes ACEs from this object.
+        /// </summary>
+        /// <returns>the new ACL of this object</returns>
+        IAcl RemoveAcl(IList<IAce> removeAces, AclPropagation? aclPropagation);
+
+        /// <summary>
+        /// Gets the extensions of the given level.
+        /// </summary>
         IList<ICmisExtensionElement> GetExtensions(ExtensionLevel level);
 
         /// <summary>
@@ -573,15 +682,41 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IFileableCmisObject : ICmisObject
     {
-        // object service
+        /// <summary>
+        /// Moves this object from a source folder to a target folder.
+        /// </summary>
+        /// <param name="sourceFolderId">the source folder id</param>
+        /// <param name="targetFolderId">the target folder id</param>
+        /// <returns>the object in the new location</returns>
         IFileableCmisObject Move(IObjectId sourceFolderId, IObjectId targetFolderId);
 
-        // navigation service
+        /// <summary>
+        /// Gets a list of all parent folders. 
+        /// </summary>
+        /// <remarks>
+        /// Returns an empty list if it is an unfiled object or the root folder.
+        /// </remarks>
         IList<IFolder> Parents { get; }
+
+        /// <summary>
+        /// Gets all paths for this object
+        /// </summary>
+        /// <remarks>
+        /// Returns an empty list for unfiled objects.
+        /// </remarks>
         IList<string> Paths { get; }
 
-        // multifiling service
+        /// <summary>
+        /// Adds this object to the given folder.
+        /// </summary>
+        /// <param name="folderId">the id of the target folder</param>
+        /// <param name="allVersions">indicates if only this object or all versions of the object should be added</param>
         void AddToFolder(IObjectId folderId, bool allVersions);
+
+        /// <summary>
+        /// Removes this object from the given folder.
+        /// </summary>
+        /// <param name="folderId">the id of the folder</param>
         void RemoveFromFolder(IObjectId folderId);
     }
 
@@ -590,19 +725,74 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IDocumentProperties
     {
+        /// <summary>
+        /// Gets if this CMIS object is immutable (CMIS property <c>cmis:isImmutable</c>).
+        /// </summary>
         bool? IsImmutable { get; }
+
+        /// <summary>
+        /// Gets if this CMIS object is the latest version (CMIS property <c>cmis:isLatestVersion</c>)
+        /// </summary>
         bool? IsLatestVersion { get; }
+
+        /// <summary>
+        /// Gets if this CMIS object is the latest version (CMIS property <c>cmis:isMajorVersion</c>).
+        /// </summary>
         bool? IsMajorVersion { get; }
+
+        /// <summary>
+        /// Gets if this CMIS object is the latest major version (CMIS property <c>cmis:isLatestMajorVersion</c>).
+        /// </summary>
         bool? IsLatestMajorVersion { get; }
+
+        /// <summary>
+        /// Gets the version label (CMIS property <c>cmis:versionLabel</c>).
+        /// </summary>
         string VersionLabel { get; }
+
+        /// <summary>
+        /// Gets the version series id (CMIS property <c>cmis:versionSeriesId</c>).
+        /// </summary>
         string VersionSeriesId { get; }
+
+        /// <summary>
+        /// Gets if this version series is checked out (CMIS property <c>cmis:isVersionSeriesCheckedOut</c>).
+        /// </summary>
         bool? IsVersionSeriesCheckedOut { get; }
+
+        /// <summary>
+        /// Gets the user who checked out this version series (CMIS property <c>cmis:versionSeriesCheckedOutBy</c>).
+        /// </summary>
         string VersionSeriesCheckedOutBy { get; }
+
+        /// <summary>
+        /// Gets the PWC id of this version series (CMIS property <c>cmis:versionSeriesCheckedOutId</c>).
+        /// </summary>
         string VersionSeriesCheckedOutId { get; }
+
+        /// <summary>
+        /// Gets the checkin comment (CMIS property <c>cmis:checkinComment</c>).
+        /// </summary>
         string CheckinComment { get; }
+
+        /// <summary>
+        /// Gets the content stream length or <c>null</c> if the document has no content (CMIS property <c>cmis:contentStreamLength</c>).
+        /// </summary>
         long? ContentStreamLength { get; }
+
+        /// <summary>
+        /// Gets the content stream MIME type or <c>null</c> if the document has no content (CMIS property <c>cmis:contentStreamMimeType</c>).
+        /// </summary>
         string ContentStreamMimeType { get; }
+
+        /// <summary>
+        /// Gets the content stream filename or <c>null</c> if the document has no content (CMIS property <c>cmis:contentStreamFileName</c>).
+        /// </summary>
         string ContentStreamFileName { get; }
+
+        /// <summary>
+        /// Gets the content stream id or <c>null</c> if the document has no content (CMIS property <c>cmis:contentStreamId</c>).
+        /// </summary>
         string ContentStreamId { get; }
     }
 
@@ -611,22 +801,102 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IDocument : IFileableCmisObject, IDocumentProperties
     {
+        /// <summary>
+        /// Deletes all versions of this document.
+        /// </summary>
         void DeleteAllVersions();
+
+        /// <summary>
+        /// Gets the content stream of this document.
+        /// </summary>
+        /// <returns>the content stream or <c>null</c> if the document has no content</returns>
         IContentStream GetContentStream();
+
+        /// <summary>
+        /// Gets the content stream identified by the given stream id.
+        /// </summary>
+        /// <returns>the content stream or <c>null</c> if the stream id is not associated with content</returns>
         IContentStream GetContentStream(string streamId);
+
+        /// <summary>
+        /// Sets a new content stream for this document.
+        /// </summary>
+        /// <param name="contentStream">the content stream</param>
+        /// <param name="overwrite">indicates if the current stream should be overwritten</param>
+        /// <returns>the new document object</returns>
+        /// <remarks>
+        /// Repositories might create a new version if the content is updated.
+        /// </remarks>
         IDocument SetContentStream(IContentStream contentStream, bool overwrite);
+
+        /// <summary>
+        /// Sets a new content stream for this document.
+        /// </summary>
+        /// <param name="contentStream">the content stream</param>
+        /// <param name="overwrite">indicates if the current stream should be overwritten</param>
+        /// <param name="refresh">indicates if this object should be refreshed after the new content is set</param>
+        /// <returns>the new document object id</returns>
+        /// <remarks>
+        /// Repositories might create a new version if the content is updated.
+        /// </remarks>
         IObjectId SetContentStream(IContentStream contentStream, bool overwrite, bool refresh);
+
+        /// <summary>
+        /// Deletes the current content stream for this document.
+        /// </summary>
+        /// <returns>the new document object</returns>
+        /// <remarks>
+        /// Repositories might create a new version if the content is deleted.
+        /// </remarks>
         IDocument DeleteContentStream();
+
+        /// <summary>
+        /// Deletes the current content stream for this document.
+        /// </summary>
+        /// <param name="refresh">indicates if this object should be refreshed after the content is deleted</param>
+        /// <returns>the new document object id</returns>
+        /// <remarks>
+        /// Repositories might create a new version if the content is deleted.
+        /// </remarks>
         IObjectId DeleteContentStream(bool refresh);
+
+        /// <summary>
+        /// Checks out this document.
+        /// </summary>
+        /// <returns>the object id of the newly created private working copy (PWC).</returns>
         IObjectId CheckOut();
+
+        /// <summary>
+        /// Cancels the check out.
+        /// </summary>
         void CancelCheckOut();
+
+        /// <summary>
+        /// Checks in this private working copy (PWC).
+        /// </summary>
+        /// <returns>the object id of the new created document</returns>
         IObjectId CheckIn(bool major, IDictionary<string, object> properties, IContentStream contentStream, string checkinComment,
                 IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces);
+
+        /// <summary>
+        /// Checks in this private working copy (PWC).
+        /// </summary>
+        /// <returns>the object id of the new created document</returns>
         IObjectId CheckIn(bool major, IDictionary<string, object> properties, IContentStream contentStream, string checkinComment);
+
         IDocument GetObjectOfLatestVersion(bool major);
         IDocument GetObjectOfLatestVersion(bool major, IOperationContext context);
+
+        /// <summary>
+        /// Gets a list of all versions in this version series.
+        /// </summary>
         IList<IDocument> GetAllVersions();
+
+        /// <summary>
+        /// Gets a list of all versions in this version series using the given <see cref="DotCMIS.Client.IOperationContext"/>.
+        /// </summary>
         IList<IDocument> GetAllVersions(IOperationContext context);
+
         IDocument Copy(IObjectId targetFolderId);
         IDocument Copy(IObjectId targetFolderId, IDictionary<string, object> properties, VersioningState? versioningState,
                 IList<IPolicy> policies, IList<IAce> addACEs, IList<IAce> removeACEs, IOperationContext context);
@@ -658,15 +928,82 @@ namespace DotCMIS.Client
                 IOperationContext context);
         IPolicy CreatePolicy(IDictionary<string, object> properties);
         IList<string> DeleteTree(bool allversions, UnfileObject? unfile, bool continueOnFailure);
+
+        /// <summary>
+        /// Gets the folder tress of this folder (only folder).
+        /// </summary>
+        /// <param name="depth">the depth</param>
+        /// <returns>a list of folder trees</returns>
+        /// <remarks>
+        /// If depth == 1 only objects that are children of this folder are returned.
+        /// If depth &gt; 1 only objects that are children of this folder and descendants up to "depth" levels deep are returned.
+        /// If depth == -1 all descendant objects at all depth levels in the CMIS hierarchy are returned.
+        /// </remarks>
         IList<ITree<IFileableCmisObject>> GetFolderTree(int depth);
+
+        /// <summary>
+        /// Gets the folder tress of this folder (only folder) using the given <see cref="DotCMIS.Client.IOperationContext"/>.
+        /// </summary>
+        /// <param name="depth">the depth</param>
+        /// <param name="context">the <see cref="DotCMIS.Client.IOperationContext"/></param>
+        /// <returns>a list of folder trees</returns>
+        /// <remarks>
+        /// If depth == 1 only objects that are children of this folder are returned.
+        /// If depth &gt; 1 only objects that are children of this folder and descendants up to "depth" levels deep are returned.
+        /// If depth == -1 all descendant objects at all depth levels in the CMIS hierarchy are returned.
+        /// </remarks>
         IList<ITree<IFileableCmisObject>> GetFolderTree(int depth, IOperationContext context);
+
+        /// <summary>
+        /// Gets the descendants of this folder (all filable objects).
+        /// </summary>
+        /// <param name="depth">the depth</param>
+        /// <returns>a list of descendant trees</returns>
+        /// <remarks>
+        /// If depth == 1 only objects that are children of this folder are returned.
+        /// If depth &gt; 1 only objects that are children of this folder and descendants up to "depth" levels deep are returned.
+        /// If depth == -1 all descendant objects at all depth levels in the CMIS hierarchy are returned.
+        /// </remarks>
         IList<ITree<IFileableCmisObject>> GetDescendants(int depth);
+
+        /// <summary>
+        /// Gets the descendants of this folder (all filable objects) using the given <see cref="DotCMIS.Client.IOperationContext"/>.
+        /// </summary>
+        /// <param name="depth">the depth</param>
+        /// <param name="context">the <see cref="DotCMIS.Client.IOperationContext"/></param>
+        /// <returns>a list of descendant trees</returns>
+        /// <remarks>
+        /// If depth == 1 only objects that are children of this folder are returned.
+        /// If depth &gt; 1 only objects that are children of this folder and descendants up to "depth" levels deep are returned.
+        /// If depth == -1 all descendant objects at all depth levels in the CMIS hierarchy are returned.
+        /// </remarks>
         IList<ITree<IFileableCmisObject>> GetDescendants(int depth, IOperationContext context);
+
+        /// <summary>
+        /// Gets the children of this folder.
+        /// </summary>
         IItemEnumerable<ICmisObject> GetChildren();
+
+        /// <summary>
+        /// Gets the children of this folder ussing the given <see cref="DotCMIS.Client.IOperationContext"/>.
+        /// </summary>
         IItemEnumerable<ICmisObject> GetChildren(IOperationContext context);
+
+        /// <summary>
+        /// Gets if this folder is the root folder.
+        /// </summary>
         bool IsRootFolder { get; }
+
+        /// <summary>
+        /// Gets the parent of this folder or <c>null</c> if this folder is the root folder.
+        /// </summary>
         IFolder FolderParent { get; }
+
+        /// <summary>
+        /// Gets the path of this folder.
+        /// </summary>
         string Path { get; }
+
         IItemEnumerable<IDocument> GetCheckedOutDocs();
         IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context);
     }
@@ -676,6 +1013,9 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IPolicyProperties
     {
+        /// <summary>
+        /// Gets the policy text of this CMIS policy (CMIS property <c>cmis:policyText</c>).
+        /// </summary>
         string PolicyText { get; }
     }
 
@@ -691,7 +1031,14 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IRelationshipProperties
     {
+        /// <summary>
+        /// Gets the id of the relationship source object.
+        /// </summary>
         IObjectId SourceId { get; }
+
+        /// <summary>
+        /// Gets the id of the relationships target object.
+        /// </summary>
         IObjectId TargetId { get; }
     }
 
@@ -700,9 +1047,36 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IRelationship : ICmisObject, IRelationshipProperties
     {
+        /// <summary>
+        /// Gets the relationship source object.
+        /// </summary>
+        /// <remarks>
+        /// If the source object id is invalid, <c>null</c> will be returned.
+        /// </remarks>
         ICmisObject GetSource();
+
+        /// <summary>
+        /// Gets the relationship source object using the given <see cref="DotCMIS.Client.IOperationContext"/>.
+        /// </summary>
+        /// <remarks>
+        /// If the source object id is invalid, <c>null</c> will be returned.
+        /// </remarks>
         ICmisObject GetSource(IOperationContext context);
+
+        /// <summary>
+        /// Gets the relationship target object.
+        /// </summary>
+        /// <remarks>
+        /// If the target object id is invalid, <c>null</c> will be returned.
+        /// </remarks>
         ICmisObject GetTarget();
+
+        /// <summary>
+        /// Gets the relationship target object using the given <see cref="DotCMIS.Client.IOperationContext"/>.
+        /// </summary>
+        /// <remarks>
+        /// If the target object id is invalid, <c>null</c> will be returned.
+        /// </remarks>
         ICmisObject GetTarget(IOperationContext context);
     }
 
@@ -711,15 +1085,61 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IQueryResult
     {
+        /// <summary>
+        /// Gets the property.
+        /// </summary>
+        /// <param name="queryName">the propertys query name or alias</param>
         IPropertyData this[string queryName] { get; }
+
+        /// <summary>
+        /// Gets a list of all properties in this query result.
+        /// </summary>
         IList<IPropertyData> Properties { get; }
+
+        /// <summary>
+        /// Returns a property by id.
+        /// </summary>
+        /// <param name="propertyId">the property id</param>
+        /// <remarks>
+        /// Since repositories are not obligated to add property ids to their
+        /// query result properties, this method might not always work as expected with
+        /// some repositories. Use <see cref="this[string]"/> instead.
+        /// </remarks>
         IPropertyData GetPropertyById(string propertyId);
+
+        /// <summary>
+        /// Gets the property (single) value by query name or alias.
+        /// </summary>
         object GetPropertyValueByQueryName(string queryName);
+
+        /// <summary>
+        /// Gets the property (single) value by property id.
+        /// </summary>
         object GetPropertyValueById(string propertyId);
+
+        /// <summary>
+        /// Gets the property value by query name or alias.
+        /// </summary>
         IList<object> GetPropertyMultivalueByQueryName(string queryName);
+
+        /// <summary>
+        /// Gets the property value by property id.
+        /// </summary>
         IList<object> GetPropertyMultivalueById(string propertyId);
+
+        /// <summary>
+        /// Gets the allowable actions if they were requested.
+        /// </summary>
         IAllowableActions AllowableActions { get; }
+
+        /// <summary>
+        /// Gets the relationships if they were requested.
+        /// </summary>
         IList<IRelationship> Relationships { get; }
+
+        /// <summary>
+        /// Gets the renditions if they were requested.
+        /// </summary>
         IList<IRendition> Renditions { get; }
     }
 
