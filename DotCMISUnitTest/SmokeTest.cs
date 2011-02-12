@@ -198,7 +198,7 @@ namespace DotCMISUnitTest
             Assert.NotNull(doc.Id);
             Assert.AreEqual(properties[PropertyIds.Name], doc.Name);
             Assert.AreEqual(BaseTypeId.CmisDocument, doc.BaseTypeId);
-   
+
             // check versions
             IList<IDocument> versions = doc.GetAllVersions();
             Assert.NotNull(versions);
@@ -209,6 +209,41 @@ namespace DotCMISUnitTest
             IContentStream retrievedContentStream = doc.GetContentStream();
             Assert.NotNull(retrievedContentStream);
             Assert.NotNull(retrievedContentStream.Stream);
+
+            MemoryStream byteStream = new MemoryStream();
+            byte[] buffer = new byte[4096];
+            int b = 1;
+            while (b > 0)
+            {
+                b = retrievedContentStream.Stream.Read(buffer, 0, buffer.Length);
+                byteStream.Write(buffer, 0, b);
+            }
+
+            byte[] retrievedContent = byteStream.ToArray();
+            Assert.NotNull(retrievedContent);
+            Assert.AreEqual(content.Length, retrievedContent.Length);
+            for (int i = 0; i < content.Length; i++)
+            {
+                Assert.AreEqual(content[i], retrievedContent[i]);
+            }
+
+            // update name
+            properties = new Dictionary<string, object>();
+            properties[PropertyIds.Name] = "test2-smoke.txt";
+
+            IObjectId newId = doc.UpdateProperties(properties);
+            IDocument doc2 = Session.GetObject(newId) as IDocument;
+
+            Assert.NotNull(doc2);
+
+            doc2.Refresh();
+            Assert.AreEqual(properties[PropertyIds.Name], doc2.Name);
+            Assert.AreEqual(properties[PropertyIds.Name], doc2.GetPropertyValue(PropertyIds.Name));
+
+            IProperty nameProperty = doc2[PropertyIds.Name];
+            Assert.NotNull(nameProperty.PropertyType);
+            Assert.AreEqual(properties[PropertyIds.Name], nameProperty.Value);
+            Assert.AreEqual(properties[PropertyIds.Name], nameProperty.FirstValue);
 
             doc.Delete(true);
 
@@ -230,17 +265,56 @@ namespace DotCMISUnitTest
             properties[PropertyIds.ObjectTypeId] = "cmis:folder";
 
             IFolder folder = rootFolder.CreateFolder(properties);
-            
+
             // check folder
             Assert.NotNull(folder);
             Assert.NotNull(folder.Id);
             Assert.AreEqual(properties[PropertyIds.Name], folder.Name);
             Assert.AreEqual(BaseTypeId.CmisFolder, folder.BaseTypeId);
+            Assert.AreEqual(rootFolder.Id, folder.FolderParent.Id);
 
             // check children
             foreach (ICmisObject cmisObject in folder.GetChildren())
             {
                 Assert.Fail("Folder shouldn't have children!");
+            }
+
+            // check descendants
+            bool? descSupport = Session.RepositoryInfo.Capabilities.IsGetDescendantsSupported;
+            if (descSupport.HasValue && descSupport.Value)
+            {
+                IList<ITree<IFileableCmisObject>> list = folder.GetDescendants(-1);
+
+                if (list != null)
+                {
+                    foreach (ITree<IFileableCmisObject> desc in list)
+                    {
+                        Assert.Fail("Folder shouldn't have children!");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("GetDescendants not supported!");
+            }
+
+            // check folder tree
+            bool? folderTreeSupport = Session.RepositoryInfo.Capabilities.IsGetFolderTreeSupported;
+            if (folderTreeSupport.HasValue && folderTreeSupport.Value)
+            {
+                IList<ITree<IFileableCmisObject>> list = folder.GetFolderTree(-1);
+
+                if (list != null)
+                {
+                    foreach (ITree<IFileableCmisObject> desc in list)
+                    {
+                        Assert.Fail("Folder shouldn't have children!");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("GetFolderTree not supported!");
             }
 
             folder.Delete(true);
