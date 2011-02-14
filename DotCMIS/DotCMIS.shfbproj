@@ -21,7 +21,7 @@
       <DocumentationSource sourceFile="DotCMIS.csproj" xmlns="" />
     </DocumentationSources>
     <HelpTitle>Apache Chemistry DotCMIS</HelpTitle>
-    <HelpFileFormat>HtmlHelp1, Website</HelpFileFormat>
+    <HelpFileFormat>HtmlHelp1</HelpFileFormat>
     <NamingMethod>MemberName</NamingMethod>
     <PresentationStyle>vs2005</PresentationStyle>
     <MissingTags>Summary, Parameter, Returns, TypeParameter</MissingTags>
@@ -44,7 +44,9 @@
     <FeedbackEMailAddress>chemistry-dev%40incubator.apache.org</FeedbackEMailAddress>
     <CopyrightText>Apache Software Foundation</CopyrightText>
     <CopyrightHref>http://www.apache.org</CopyrightHref>
-    <BinaryTOC>False</BinaryTOC>
+    <BinaryTOC>True</BinaryTOC>
+    <KeepLogFile>False</KeepLogFile>
+    <CleanIntermediates>True</CleanIntermediates>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in
        order for Visual Studio to perform the build.  The others are optional
