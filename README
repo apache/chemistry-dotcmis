@@ -1,1 +1,30 @@
-DotCMIS 0.1
+Apache Chemistry DotCMIS 0.1
+============================
+
+Apache Chemistry DotCMIS is a Content Management Interoperability Services (CMIS)
+client library for the .NET framework 3.5 or higher.
+
+See http://chemistry.apache.org/dotnet/dotcmis.html for more information.
+
+See http://chemistry.apache.org/dotnet/getting-started-with-dotcmis.html for code samples.
+
+
+This is the very first release of DotCMIS. All CMIS operations and both bindings have 
+been implemented. The API is complete and is not supposed to change in following releases. 
+The most frequently used operations have been successfully tested against a small number 
+of repositories from different vendors.
+
+However, the current test coverage is not sufficient to identify all kinds of problems and
+compatibility issues. The code base will be tested and improved in the following releases. 
+If you find a problem, please let us know: https://issues.apache.org/jira/browse/CMIS
+
+
+Known stumbling blocks
+----------------------
+
+- The Web Services binding only works with HTTPS. The .NET framework does not allow calls
+  with UsernameTokens over plain HTTP.
+
+- Not all CMIS Web Services endpoints are compatible with the .NET framework for a number
+  of reasons. Use the AtomPub binding if available. It's also faster.
+
