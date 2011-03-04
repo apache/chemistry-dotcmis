@@ -50,7 +50,7 @@ namespace DotCMISUnitTest
         {
             string content1 = "my content";
 
-            IObjectData doc = CreateDocument(RepositoryInfo.RootFolderId, "dottest", content1);
+            IObjectData doc = CreateDocument(TestFolder.Id, "dottest", content1);
 
             string content2 = GetTextContent(doc.Id);
             Assert.AreEqual(content1, content2);
@@ -61,7 +61,7 @@ namespace DotCMISUnitTest
         [Test]
         public void TestCreateFolder()
         {
-            IObjectData folder0 = CreateFolder(RepositoryInfo.RootFolderId, "folder0");
+            IObjectData folder0 = CreateFolder(TestFolder.Id, "folder0");
             IObjectData folder1 = CreateFolder(folder0.Id, "folder1");
             IObjectData folder2 = CreateFolder(folder1.Id, "folder2");
             IObjectData folder3 = CreateFolder(folder2.Id, "folder3");

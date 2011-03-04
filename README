@@ -6,7 +6,8 @@ client library for the .NET framework 3.5 or higher.
 
 See http://chemistry.apache.org/dotnet/dotcmis.html for more information.
 
-See http://chemistry.apache.org/dotnet/getting-started-with-dotcmis.html for code samples.
+See http://chemistry.apache.org/dotnet/getting-started-with-dotcmis.html for code samples
+and DotCMISDoc.chm for the API documentation.
 
 
 This is the very first release of DotCMIS. All CMIS operations and both bindings have 
@@ -28,3 +29,13 @@ Known stumbling blocks
 - Not all CMIS Web Services endpoints are compatible with the .NET framework for a number
   of reasons. Use the AtomPub binding if available. It's also faster.
 
+  
+Strong-Name signing
+-------------------
+
+The DLL included in this release is signed with a public/private key pair that is also 
+included in this package. This allows you to deploy it to the global assembly cache (GAC) 
+and to make changes to the DotCMIS source code without recompiling your application.
+However, since the private key is publicly available, this strong name cannot be trusted.
+If a trust relationship between your application and the DotCMIS DLL is important to you, 
+you have to rebuild the DLL from the source code and sign it yourself.

@@ -177,11 +177,9 @@ namespace DotCMISUnitTest
         [Test]
         public void SmokeTestCreateDocument()
         {
-            IFolder rootFolder = Session.GetRootFolder();
-
             IDictionary<string, object> properties = new Dictionary<string, object>();
             properties[PropertyIds.Name] = "test-smoke.txt";
-            properties[PropertyIds.ObjectTypeId] = "cmis:document";
+            properties[PropertyIds.ObjectTypeId] = DefaultDocumentType;
 
             byte[] content = UTF8Encoding.UTF8.GetBytes("Hello World!");
 
@@ -191,7 +189,7 @@ namespace DotCMISUnitTest
             contentStream.Length = content.Length;
             contentStream.Stream = new MemoryStream(content);
 
-            IDocument doc = rootFolder.CreateDocument(properties, contentStream, null);
+            IDocument doc = TestFolder.CreateDocument(properties, contentStream, null);
 
             // check doc
             Assert.NotNull(doc);
@@ -260,13 +258,11 @@ namespace DotCMISUnitTest
         [Test]
         public void SmokeTestVersioning()
         {
-            IFolder rootFolder = Session.GetRootFolder();
-
             IDictionary<string, object> properties = new Dictionary<string, object>();
             properties[PropertyIds.Name] = "test-version-smoke.txt";
-            properties[PropertyIds.ObjectTypeId] = "cmis:document";
+            properties[PropertyIds.ObjectTypeId] = DefaultDocumentType;
 
-            IDocument doc = rootFolder.CreateDocument(properties, null, null);
+            IDocument doc = TestFolder.CreateDocument(properties, null, null);
             Assert.NotNull(doc);
             Assert.NotNull(doc.Id);
             Assert.AreEqual(properties[PropertyIds.Name], doc.Name);
@@ -317,20 +313,18 @@ namespace DotCMISUnitTest
         [Test]
         public void SmokeTestCreateFolder()
         {
-            IFolder rootFolder = Session.GetRootFolder();
-
             IDictionary<string, object> properties = new Dictionary<string, object>();
             properties[PropertyIds.Name] = "test-smoke";
-            properties[PropertyIds.ObjectTypeId] = "cmis:folder";
+            properties[PropertyIds.ObjectTypeId] = DefaultFolderType;
 
-            IFolder folder = rootFolder.CreateFolder(properties);
+            IFolder folder = TestFolder.CreateFolder(properties);
 
             // check folder
             Assert.NotNull(folder);
             Assert.NotNull(folder.Id);
             Assert.AreEqual(properties[PropertyIds.Name], folder.Name);
             Assert.AreEqual(BaseTypeId.CmisFolder, folder.BaseTypeId);
-            Assert.AreEqual(rootFolder.Id, folder.FolderParent.Id);
+            Assert.AreEqual(TestFolder.Id, folder.FolderParent.Id);
             Assert.False(folder.IsRootFolder);
             Assert.True(folder.Path.StartsWith("/"));
             Assert.True(folder.AllowableActions.Actions.Contains(Actions.CanGetProperties));
@@ -384,7 +378,7 @@ namespace DotCMISUnitTest
             // check parents
             IFolder parent = folder.FolderParent;
             Assert.NotNull(parent);
-            Assert.AreEqual(rootFolder.Id, parent.Id);
+            Assert.AreEqual(TestFolder.Id, parent.Id);
 
             IList<IFolder> parents = folder.Parents;
             Assert.NotNull(parents);
@@ -393,7 +387,7 @@ namespace DotCMISUnitTest
             bool found = false;
             foreach (IFolder p in parents)
             {
-                if (rootFolder.Id == p.Id)
+                if (TestFolder.Id == p.Id)
                 {
                     found = true;
                     break;

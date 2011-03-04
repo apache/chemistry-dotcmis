@@ -55,6 +55,7 @@ namespace DotCMISUnitTest
 
         public string DefaultDocumentType { get; set; }
         public string DefaultFolderType { get; set; }
+        public IFolder TestFolder { get; set; }
 
         [SetUp]
         public void Init()
@@ -66,7 +67,7 @@ namespace DotCMISUnitTest
 
             Session = ConnectFromConfig();
         }
-        
+
         public ISession ConnectFromConfig()
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
@@ -74,6 +75,18 @@ namespace DotCMISUnitTest
             foreach (string key in ConfigurationManager.AppSettings.AllKeys)
             {
                 parameters[key] = ConfigurationManager.AppSettings.Get(key);
+            }
+
+            string documentType = ConfigurationManager.AppSettings.Get("test.documenttype");
+            if (documentType != null)
+            {
+                DefaultDocumentType = documentType;
+            }
+
+            string folderType = ConfigurationManager.AppSettings.Get("test.foldertype");
+            if (folderType != null)
+            {
+                DefaultFolderType = folderType;
             }
 
             SessionFactory factory = SessionFactory.NewInstance();
@@ -92,6 +105,19 @@ namespace DotCMISUnitTest
             Assert.NotNull(session.Binding);
             Assert.NotNull(session.RepositoryInfo);
             Assert.NotNull(session.RepositoryInfo.Id);
+
+            string testRootFolderPath = ConfigurationManager.AppSettings.Get("test.rootfolder");
+            if (testRootFolderPath == null)
+            {
+                TestFolder = session.GetRootFolder();
+            }
+            else
+            {
+                TestFolder = session.GetObjectByPath(testRootFolderPath) as IFolder;
+            }
+
+            Assert.NotNull(TestFolder);
+            Assert.NotNull(TestFolder.Id);
 
             return session;
         }
