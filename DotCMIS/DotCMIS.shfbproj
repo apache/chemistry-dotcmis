@@ -41,7 +41,7 @@
     </ApiFilter>
     <SelfBranded>True</SelfBranded>
     <FeedbackEMailLinkText>Apache Chemistry developer mailing list</FeedbackEMailLinkText>
-    <FeedbackEMailAddress>chemistry-dev%40incubator.apache.org</FeedbackEMailAddress>
+    <FeedbackEMailAddress>dev%40chemistry.apache.org</FeedbackEMailAddress>
     <CopyrightText>Apache Software Foundation</CopyrightText>
     <CopyrightHref>http://www.apache.org</CopyrightHref>
     <BinaryTOC>True</BinaryTOC>

@@ -24,7 +24,9 @@ rem It requires Cygwin.
 
 set DOTCMISVERSION=0.1
 set DOTCMISZIP=chemistry-dotcmis-%DOTCMISVERSION%.zip
-set DOTCMISRC=RC1
+set DOTCMISRC=RC2
+
+set CYGWIN=ntea
 
 echo Building...
 cd DotCMIS
@@ -51,19 +53,24 @@ xcopy DotCMIS release\src /E
 rmdir /S /Q release\src\bin
 rmdir /S /Q release\src\obj
 rmdir /S /Q release\src\doc
+chmod -R a+rwx release
 
 echo Creating release file...
-del %DOTCMISZIP%
+rmdir /S /Q artifacts
+mkdir artifacts
+
 cd release
-zip -r  ..\%DOTCMISZIP% *
+zip -r  ../artifacts/%DOTCMISZIP% *
 cd ..
 
 echo Signing release file...
+cd artifacts
 gpg --armor --output %DOTCMISZIP%.asc --detach-sig %DOTCMISZIP%
 gpg --print-md MD5 %DOTCMISZIP% > %DOTCMISZIP%.md5
 gpg --print-md SHA512 %DOTCMISZIP% > %DOTCMISZIP%.sha
 gpg --print-md MD5 %DOTCMISZIP%.asc > %DOTCMISZIP%.asc.md5
 gpg --print-md SHA512 %DOTCMISZIP%.asc > %DOTCMISZIP%.asc.sha
+cd ..
 
 echo Creating RC tag
 rem svn copy https://svn.apache.org/repos/asf/chemistry/dotcmis/trunk https://svn.apache.org/repos/asf/chemistry/dotcmis/tags/chemistry-dotcmis-%DOTCMISVERSION%-%DOTCMISRC%
