@@ -55,6 +55,9 @@ namespace DotCMIS
         // authentication provider
         public const string AuthenticationProviderClass = "org.apache.chemistry.dotcmis.binding.auth.classname";
 
+        // compression flag
+        public const string Compression = "org.apache.chemistry.dotcmis.binding.compression";
+
         // binding caches
         public const string CacheSizeRepositories = "org.apache.chemistry.dotcmis.binding.cache.repositories.size";
         public const string CacheSizeTypes = "org.apache.chemistry.dotcmis.binding.cache.types.size";

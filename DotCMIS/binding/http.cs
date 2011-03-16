@@ -18,6 +18,7 @@
  */
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -33,31 +34,31 @@ namespace DotCMIS.Binding.Impl
 
         public static Response InvokeGET(UrlBuilder url, BindingSession session)
         {
-            return Invoke(url, "GET", null, null, session, null, null);
+            return Invoke(url, "GET", null, null, session, null, null, null);
         }
 
         public static Response InvokeGET(UrlBuilder url, BindingSession session, int? offset, int? length)
         {
-            return Invoke(url, "GET", null, null, session, offset, length);
+            return Invoke(url, "GET", null, null, session, offset, length, null);
         }
 
         public static Response InvokePOST(UrlBuilder url, String contentType, Output writer, BindingSession session)
         {
-            return Invoke(url, "POST", contentType, writer, session, null, null);
+            return Invoke(url, "POST", contentType, writer, session, null, null, null);
         }
 
-        public static Response InvokePUT(UrlBuilder url, String contentType, Output writer, BindingSession session)
+        public static Response InvokePUT(UrlBuilder url, String contentType, IDictionary<string, string> headers, Output writer, BindingSession session)
         {
-            return Invoke(url, "PUT", contentType, writer, session, null, null);
+            return Invoke(url, "PUT", contentType, writer, session, null, null, headers);
         }
 
         public static Response InvokeDELETE(UrlBuilder url, BindingSession session)
         {
-            return Invoke(url, "DELETE", null, null, session, null, null);
+            return Invoke(url, "DELETE", null, null, session, null, null, null);
         }
 
         private static Response Invoke(UrlBuilder url, String method, String contentType, Output writer, BindingSession session,
-                int? offset, int? length)
+                int? offset, int? length, IDictionary<string, string> headers)
         {
             try
             {
@@ -67,11 +68,21 @@ namespace DotCMIS.Binding.Impl
                 // create connection           
                 HttpWebRequest conn = (HttpWebRequest)WebRequest.Create(url.Url);
                 conn.Method = method;
+                conn.UserAgent = "Apache Chemistry DotCMIS";
 
                 // set content type
                 if (contentType != null)
                 {
                     conn.ContentType = contentType;
+                }
+
+                // set additional headers
+                if (headers != null)
+                {
+                    foreach (KeyValuePair<string, string> header in headers)
+                    {
+                        conn.Headers.Add(header.Key, header.Value);
+                    }
                 }
 
                 // authenticate
@@ -90,6 +101,13 @@ namespace DotCMIS.Binding.Impl
                 else if (offset != null)
                 {
                     conn.AddRange(offset ?? 0);
+                }
+
+                // compression
+                string compressionFlag = session.GetValue(SessionParameter.Compression) as string;
+                if (compressionFlag != null && compressionFlag.ToLower().Equals("true"))
+                {
+                    conn.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
                 }
 
                 // send data
@@ -253,6 +271,73 @@ namespace DotCMIS.Binding.Impl
         public override string ToString()
         {
             return Url.ToString();
+        }
+    }
+
+    internal class MimeHelper
+    {
+        public const string ContentDisposition = "Content-Disposition";
+        public const string DispositionAttachment = "attachment";
+        public const string DispositionFilename = "filename";
+
+        private const string MIMESpecials = "()<>@,;:\\\"/[]?=" + "\t ";
+        private const string RFC2231Specials = "*'%" + MIMESpecials;
+        private static char[] HexDigits = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+        public static string EncodeContentDisposition(string disposition, string filename)
+        {
+            if (disposition == null)
+            {
+                disposition = DispositionAttachment;
+            }
+            return disposition + EncodeRFC2231(DispositionFilename, filename);
+        }
+
+        protected static string EncodeRFC2231(string key, string value)
+        {
+            StringBuilder buf = new StringBuilder();
+            bool encoded = EncodeRFC2231value(value, buf);
+            if (encoded)
+            {
+                return "; " + key + "*=" + buf.ToString();
+            }
+            else
+            {
+                return "; " + key + "=" + value;
+            }
+        }
+
+        protected static bool EncodeRFC2231value(string value, StringBuilder buf)
+        {
+            buf.Append("UTF-8");
+            buf.Append("''"); // no language
+            byte[] bytes;
+            try
+            {
+                bytes = UTF8Encoding.UTF8.GetBytes(value);
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+
+            bool encoded = false;
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                int ch = bytes[i] & 0xff;
+                if (ch <= 32 || ch >= 127 || RFC2231Specials.IndexOf((char)ch) != -1)
+                {
+                    buf.Append('%');
+                    buf.Append(HexDigits[ch >> 4]);
+                    buf.Append(HexDigits[ch & 0xf]);
+                    encoded = true;
+                }
+                else
+                {
+                    buf.Append((char)ch);
+                }
+            }
+            return encoded;
         }
     }
 }

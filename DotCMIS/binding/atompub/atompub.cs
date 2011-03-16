@@ -453,7 +453,7 @@ namespace DotCMIS.Binding.AtomPub
 
         protected HttpUtils.Response Put(UrlBuilder url, string contentType, HttpUtils.Output writer)
         {
-            HttpUtils.Response resp = HttpUtils.InvokePUT(url, contentType, writer, Session);
+            HttpUtils.Response resp = HttpUtils.InvokePUT(url, contentType, null, writer, Session);
 
             if ((int)resp.StatusCode < 200 || (int)resp.StatusCode > 299)
             {
@@ -1945,7 +1945,7 @@ namespace DotCMIS.Binding.AtomPub
             {
                 int b;
                 byte[] buffer = new byte[4096];
-                while ((b = contentStream.Stream.Read(buffer, 0, buffer.Length)) > -1)
+                while ((b = contentStream.Stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     stream.Write(buffer, 0, b);
                 }
@@ -1953,8 +1953,16 @@ namespace DotCMIS.Binding.AtomPub
                 contentStream.Stream.Close();
             };
 
+            IDictionary<string, string> headers = null;
+            if (contentStream.FileName != null)
+            {
+                headers = new Dictionary<string, string>();
+                headers.Add(MimeHelper.ContentDisposition,
+                    MimeHelper.EncodeContentDisposition(MimeHelper.DispositionAttachment, contentStream.FileName));
+            }
+
             // send content
-            HttpUtils.Response resp = HttpUtils.InvokePUT(url, contentStream.MimeType, output, Session);
+            HttpUtils.Response resp = HttpUtils.InvokePUT(url, contentStream.MimeType, headers, output, Session);
 
             // check response code
             if (resp.StatusCode != HttpStatusCode.OK && resp.StatusCode != HttpStatusCode.Created && resp.StatusCode != HttpStatusCode.NoContent)

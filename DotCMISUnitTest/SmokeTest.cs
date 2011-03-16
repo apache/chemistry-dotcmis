@@ -245,7 +245,18 @@ namespace DotCMISUnitTest
             Assert.AreEqual(properties[PropertyIds.Name], nameProperty.Value);
             Assert.AreEqual(properties[PropertyIds.Name], nameProperty.FirstValue);
 
-            doc.Delete(true);
+
+            byte[] content2 = UTF8Encoding.UTF8.GetBytes("Hello Universe!");
+
+            ContentStream contentStream2 = new ContentStream();
+            contentStream2.FileName = properties[PropertyIds.Name] as string;
+            contentStream2.MimeType = "text/plain";
+            contentStream2.Length = content2.Length;
+            contentStream2.Stream = new MemoryStream(content2);
+
+            // doc.SetContentStream(contentStream2, true);
+
+            doc2.Delete(true);
 
             try
             {
