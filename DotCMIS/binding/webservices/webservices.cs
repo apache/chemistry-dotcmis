@@ -26,6 +26,7 @@ using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
 using DotCMIS.Exceptions;
 using DotCMIS.Enums;
+using System.ServiceModel.Channels;
 
 namespace DotCMIS.Binding.WebServices
 {
@@ -214,14 +215,37 @@ namespace DotCMIS.Binding.WebServices
         {
             object portObject = null;
 
-            BasicHttpBinding binding = new BasicHttpBinding();
-            binding.MessageEncoding = WSMessageEncoding.Mtom;
-            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
-            binding.TransferMode = TransferMode.Streamed;
+            CustomBinding binding;
 
-            long messageSize = session.GetValue(SessionParameter.MessageSize, 4 * 1024 * 1024);
-            binding.MaxReceivedMessageSize = messageSize;
-            binding.MaxBufferSize = (messageSize > Int32.MaxValue ? Int32.MaxValue : (int)messageSize);
+            string wcfBinding = session.GetValue(SessionParameter.WebServicesWCFBinding) as string;
+
+            if (wcfBinding != null)
+            {
+                binding = new CustomBinding(wcfBinding);
+            }
+            else
+            {
+                long messageSize = session.GetValue(SessionParameter.MessageSize, 4 * 1024 * 1024);
+
+                List<BindingElement> elements = new List<BindingElement>();
+
+                SecurityBindingElement securityElement = SecurityBindingElement.CreateUserNameOverTransportBindingElement();
+                securityElement.SecurityHeaderLayout = SecurityHeaderLayout.LaxTimestampFirst;
+                //securityElement.IncludeTimestamp = false;
+                elements.Add(securityElement);
+
+                MtomMessageEncodingBindingElement mtomElement = new MtomMessageEncodingBindingElement();
+                mtomElement.MessageVersion = MessageVersion.Soap11;
+                mtomElement.MaxBufferSize = (messageSize > Int32.MaxValue ? Int32.MaxValue : (int)messageSize);
+                elements.Add(mtomElement);
+
+                HttpsTransportBindingElement transportElement = new HttpsTransportBindingElement();
+                transportElement.MaxReceivedMessageSize = messageSize;
+                transportElement.TransferMode = TransferMode.Streamed;
+                elements.Add(transportElement);
+
+                binding = new CustomBinding(elements);
+            }
 
             if (serviceKey == SessionParameter.WebServicesRepositoryService)
             {
@@ -509,7 +533,7 @@ namespace DotCMIS.Binding.WebServices
 
             try
             {
-                cmisObjectInFolderContainerType[] descendants = port.getDescendants(repositoryId, folderId, filter, depth.ToString(),
+                cmisObjectInFolderContainerType[] descendants = port.getDescendants(repositoryId, folderId, depth.ToString(), filter,
                     includeAllowableActions, (enumIncludeRelationships?)CmisValue.CmisToSerializerEnum(includeRelationships),
                     renditionFilter, includePathSegment, Converter.ConvertExtension(extension));
 
@@ -544,7 +568,7 @@ namespace DotCMIS.Binding.WebServices
 
             try
             {
-                cmisObjectInFolderContainerType[] descendants = port.getFolderTree(repositoryId, folderId, filter, depth.ToString(),
+                cmisObjectInFolderContainerType[] descendants = port.getFolderTree(repositoryId, folderId, depth.ToString(), filter,
                     includeAllowableActions, (enumIncludeRelationships?)CmisValue.CmisToSerializerEnum(includeRelationships),
                     renditionFilter, includePathSegment, Converter.ConvertExtension(extension));
 

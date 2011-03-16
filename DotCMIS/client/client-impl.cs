@@ -473,6 +473,21 @@ namespace DotCMIS.Client.Impl
             {
                 throw new ArgumentException("Object Id must be set!");
             }
+
+            return GetObject(objectId.Id, context);
+        }
+
+        public ICmisObject GetObject(string objectId)
+        {
+            return GetObject(objectId, DefaultContext);
+        }
+
+        public ICmisObject GetObject(string objectId, IOperationContext context)
+        {
+            if (objectId == null)
+            {
+                throw new ArgumentException("Object Id must be set!");
+            }
             if (context == null)
             {
                 throw new ArgumentException("Operation context must be set!");
@@ -483,7 +498,7 @@ namespace DotCMIS.Client.Impl
             // ask the cache first
             if (context.CacheEnabled)
             {
-                result = Cache.GetById(objectId.Id, context.CacheKey);
+                result = Cache.GetById(objectId, context.CacheKey);
                 if (result != null)
                 {
                     return result;
@@ -491,7 +506,7 @@ namespace DotCMIS.Client.Impl
             }
 
             // get the object
-            IObjectData objectData = Binding.GetObjectService().GetObject(RepositoryId, objectId.Id, context.FilterString,
+            IObjectData objectData = Binding.GetObjectService().GetObject(RepositoryId, objectId, context.FilterString,
                 context.IncludeAllowableActions, context.IncludeRelationships, context.RenditionFilterString, context.IncludePolicies,
                 context.IncludeAcls, null);
 

@@ -1204,11 +1204,11 @@ namespace DotCMIS.Binding
             RenditionData result = new RenditionData();
             result.StreamId = rendition.streamId;
             result.MimeType = rendition.mimetype;
-            result.Length = Int64.Parse(rendition.length);
+            result.Length = rendition.length == null ? null : (long?)Int64.Parse(rendition.length);
             result.Kind = rendition.kind;
             result.Title = rendition.title;
-            result.Height = Int64.Parse(rendition.height);
-            result.Width = Int64.Parse(rendition.width);
+            result.Height = rendition.height == null ? null : (long?)Int64.Parse(rendition.height);
+            result.Width = rendition.width == null ? null : (long?)Int64.Parse(rendition.width);
             result.RenditionDocumentId = rendition.renditionDocumentId;
 
             ConvertExtension(rendition, result);

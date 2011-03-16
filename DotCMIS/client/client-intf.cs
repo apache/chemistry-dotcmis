@@ -173,8 +173,31 @@ namespace DotCMIS.Client
         IFolder GetRootFolder(IOperationContext context);
         IItemEnumerable<IDocument> GetCheckedOutDocs();
         IItemEnumerable<IDocument> GetCheckedOutDocs(IOperationContext context);
+
+        /// <summary>
+        /// Gets a CMIS object from the session cache. If the object is not in the cache or the cache is 
+        /// turned off per default <see cref="DotCMIS.Client.IOperationContext"/>, it will load the object 
+        /// from the repository and puts it into the cache.
+        /// </summary>
+        /// <param name="objectId">the object id</param>
         ICmisObject GetObject(IObjectId objectId);
         ICmisObject GetObject(IObjectId objectId, IOperationContext context);
+
+        /// <summary>
+        /// Gets a CMIS object from the session cache. If the object is not in the cache or the cache is 
+        /// turned off per default <see cref="DotCMIS.Client.IOperationContext"/>, it will load the object 
+        /// from the repository and puts it into the cache.
+        /// </summary>
+        /// <param name="objectId">the object id</param>
+        ICmisObject GetObject(string objectId);
+        ICmisObject GetObject(string objectId, IOperationContext context);
+
+        /// <summary>
+        /// Gets a CMIS object from the session cache. If the object is not in the cache or the cache is 
+        /// turned off per default <see cref="DotCMIS.Client.IOperationContext"/>, it will load the object
+        /// from the repository and puts it into the cache.
+        /// </summary>
+        /// <param name="path">the path to the object</param>
         ICmisObject GetObjectByPath(string path);
         ICmisObject GetObjectByPath(string path, IOperationContext context);
 

@@ -50,6 +50,8 @@ namespace DotCMIS
         public const string WebServicesPolicyService = "org.apache.chemistry.dotcmis.binding.webservices.PolicyService";
         public const string WebServicesAclService = "org.apache.chemistry.dotcmis.binding.webservices.ACLService";
 
+        public const string WebServicesWCFBinding = "org.apache.chemistry.dotcmis.binding.webservices.wcfbinding";
+
         // authentication provider
         public const string AuthenticationProviderClass = "org.apache.chemistry.dotcmis.binding.auth.classname";
 

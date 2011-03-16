@@ -22,6 +22,8 @@ using System.Net;
 using DotCMIS.Binding.Impl;
 using DotCMIS.Binding.Services;
 using DotCMIS.CMISWebServicesReference;
+using System.ServiceModel.Description;
+using System.ServiceModel.Channels;
 
 namespace DotCMIS.Binding
 {
@@ -70,59 +72,98 @@ namespace DotCMIS.Binding
         {
             string user = GetUser();
             string password = GetPassword();
-            if (user == null || password == null)
+
+            // AtomPub authentictaion
+            WebRequest request = connection as WebRequest;
+            if (request != null)
             {
+                if (user != null || password != null)
+                {
+                    request.Credentials = new NetworkCredential(user ?? "", password ?? "");
+                }
                 return;
             }
 
-            if (connection is RepositoryServicePortClient)
+            // Web Services authentication
+            RepositoryServicePortClient repositoryServicePortClient = connection as RepositoryServicePortClient;
+            if (repositoryServicePortClient != null)
             {
-                ((RepositoryServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((RepositoryServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(repositoryServicePortClient.Endpoint, repositoryServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is NavigationServicePortClient)
+
+            NavigationServicePortClient navigationServicePortClient = connection as NavigationServicePortClient;
+            if (navigationServicePortClient != null)
             {
-                ((NavigationServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((NavigationServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(navigationServicePortClient.Endpoint, navigationServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is ObjectServicePortClient)
+
+            ObjectServicePortClient objectServicePortClient = connection as ObjectServicePortClient;
+            if (objectServicePortClient != null)
             {
-                ((ObjectServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((ObjectServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(objectServicePortClient.Endpoint, objectServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is VersioningServicePortClient)
+
+            VersioningServicePortClient versioningServicePortClient = connection as VersioningServicePortClient;
+            if (versioningServicePortClient != null)
             {
-                ((VersioningServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((VersioningServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(versioningServicePortClient.Endpoint, versioningServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is DiscoveryServicePortClient)
+
+            DiscoveryServicePortClient discoveryServicePortClient = connection as DiscoveryServicePortClient;
+            if (discoveryServicePortClient != null)
             {
-                ((DiscoveryServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((DiscoveryServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(discoveryServicePortClient.Endpoint, discoveryServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is RelationshipServicePortClient)
+
+            RelationshipServicePortClient relationshipServicePortClient = connection as RelationshipServicePortClient;
+            if (relationshipServicePortClient != null)
             {
-                ((RelationshipServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((RelationshipServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(relationshipServicePortClient.Endpoint, relationshipServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is MultiFilingServicePortClient)
+
+            MultiFilingServicePortClient multiFilingServicePortClient = connection as MultiFilingServicePortClient;
+            if (multiFilingServicePortClient != null)
             {
-                ((MultiFilingServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((MultiFilingServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(multiFilingServicePortClient.Endpoint, multiFilingServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is PolicyServicePortClient)
+
+            PolicyServicePortClient policyServicePortClient = connection as PolicyServicePortClient;
+            if (policyServicePortClient != null)
             {
-                ((PolicyServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((PolicyServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(multiFilingServicePortClient.Endpoint, multiFilingServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is ACLServicePortClient)
+
+            ACLServicePortClient aclServicePortClient = connection as ACLServicePortClient;
+            if (aclServicePortClient != null)
             {
-                ((ACLServicePortClient)connection).ClientCredentials.UserName.UserName = user;
-                ((ACLServicePortClient)connection).ClientCredentials.UserName.Password = password;
+                AddUsernameCredentials(aclServicePortClient.Endpoint, aclServicePortClient.ClientCredentials, user, password);
+                return;
             }
-            else if (connection is WebRequest)
+        }
+
+        protected void AddUsernameCredentials(ServiceEndpoint endpoint, ClientCredentials clientCredentials, string user, string password)
+        {
+            if (user != null || password != null)
             {
-                ((WebRequest)connection).Credentials = new NetworkCredential(user, password);
+                clientCredentials.UserName.UserName = user ?? "";
+                clientCredentials.UserName.Password = password ?? "";
+            }
+            else
+            {
+                CustomBinding binding = endpoint.Binding as CustomBinding;
+                if (binding != null)
+                {
+                    // remove SecurityBindingElement is neither a username nor a password have been set
+                    binding.Elements.RemoveAll<SecurityBindingElement>();
+                }
             }
         }
     }
