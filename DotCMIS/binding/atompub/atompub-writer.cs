@@ -169,25 +169,17 @@ namespace DotCMIS.Binding.AtomPub
 
         private void WriteContent(XmlWriter writer)
         {
-            byte[] byteArray = null;
-
-            if (stream is MemoryStream)
+            using (BinaryReader br = new BinaryReader(stream))
             {
-                byteArray = ((MemoryStream)stream).ToArray();
-            }
-            else
-            {
-                MemoryStream memStream = new MemoryStream();
                 byte[] buffer = new byte[BufferSize];
-                int bytes;
-                while ((bytes = stream.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    memStream.Write(buffer, 0, bytes);
-                }
-                byteArray = memStream.ToArray();
-            }
+                int readBytes = 0;
 
-            writer.WriteBase64(byteArray, 0, byteArray.Length);
+                do
+                {
+                    readBytes = br.Read(buffer, 0, BufferSize);
+                    writer.WriteBase64(buffer, 0, readBytes);
+                } while (BufferSize <= readBytes);
+            }
         }
     }
 
