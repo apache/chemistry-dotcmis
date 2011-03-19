@@ -236,7 +236,6 @@ namespace DotCMIS.Binding.WebServices
                 string enableUnsecuredResponseFlag = session.GetValue(SessionParameter.EnableUnsecuredResponse) as string;
                 if (enableUnsecuredResponseFlag != null && enableUnsecuredResponseFlag.ToLower().Equals("true"))
                 {
-                    securityElement.EnableUnsecuredResponse = true;
                     PropertyInfo eur = securityElement.GetType().GetProperty("EnableUnsecuredResponse");
                     if (eur != null)
                     {
