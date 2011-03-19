@@ -51,6 +51,7 @@ namespace DotCMIS
         public const string WebServicesAclService = "org.apache.chemistry.dotcmis.binding.webservices.ACLService";
 
         public const string WebServicesWCFBinding = "org.apache.chemistry.dotcmis.binding.webservices.wcfbinding";
+        public const string EnableUnsecuredResponse = "org.apache.chemistry.dotcmis.binding.webservices.enableUnsecuredResponse"; // requires hotfix 971493 or the .NET framework 4 
 
         // authentication provider
         public const string AuthenticationProviderClass = "org.apache.chemistry.dotcmis.binding.auth.classname";

@@ -27,6 +27,7 @@ using DotCMIS.Data.Extensions;
 using DotCMIS.Exceptions;
 using DotCMIS.Enums;
 using System.ServiceModel.Channels;
+using System.Reflection;
 
 namespace DotCMIS.Binding.WebServices
 {
@@ -231,7 +232,18 @@ namespace DotCMIS.Binding.WebServices
 
                 SecurityBindingElement securityElement = SecurityBindingElement.CreateUserNameOverTransportBindingElement();
                 securityElement.SecurityHeaderLayout = SecurityHeaderLayout.LaxTimestampFirst;
-                //securityElement.IncludeTimestamp = false;
+
+                string enableUnsecuredResponseFlag = session.GetValue(SessionParameter.EnableUnsecuredResponse) as string;
+                if (enableUnsecuredResponseFlag != null && enableUnsecuredResponseFlag.ToLower().Equals("true"))
+                {
+                    securityElement.EnableUnsecuredResponse = true;
+                    PropertyInfo eur = securityElement.GetType().GetProperty("EnableUnsecuredResponse");
+                    if (eur != null)
+                    {
+                        eur.GetSetMethod().Invoke(securityElement, new object[] { true });
+                    }
+                }
+
                 elements.Add(securityElement);
 
                 MtomMessageEncodingBindingElement mtomElement = new MtomMessageEncodingBindingElement();
