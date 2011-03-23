@@ -171,6 +171,12 @@ namespace DotCMISUnitTest
                 Assert.NotNull(hit);
                 Assert.NotNull(hit["cmis:objectId"]);
                 Console.WriteLine(hit.GetPropertyValueById(PropertyIds.Name) + " (" + hit.GetPropertyValueById(PropertyIds.ObjectId) + ")");
+
+                foreach (IPropertyData prop in hit.Properties)
+                {
+                    string name = prop.QueryName;
+                    object value = prop.FirstValue;
+                }
             }
         }
 
@@ -198,6 +204,12 @@ namespace DotCMISUnitTest
             Assert.AreEqual(BaseTypeId.CmisDocument, doc.BaseTypeId);
             Assert.True(doc.AllowableActions.Actions.Contains(Actions.CanGetProperties));
             Assert.False(doc.AllowableActions.Actions.Contains(Actions.CanGetChildren));
+
+            // check type
+            IObjectType type = doc.ObjectType;
+            Assert.NotNull(type);
+            Assert.NotNull(type.Id);
+            Assert.AreEqual(properties[PropertyIds.ObjectTypeId], type.Id);
 
             // check versions
             IList<IDocument> versions = doc.GetAllVersions();

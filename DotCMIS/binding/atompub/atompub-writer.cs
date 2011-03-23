@@ -17,16 +17,14 @@
  * under the License.
  */
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DotCMIS.CMISWebServicesReference;
-using System.IO;
-using DotCMIS.Exceptions;
-using System.Xml;
 using System.Globalization;
+using System.IO;
+using System.Text;
+using System.Xml;
 using System.Xml.Serialization;
+using DotCMIS.CMISWebServicesReference;
 using DotCMIS.Enums;
+using DotCMIS.Exceptions;
 
 namespace DotCMIS.Binding.AtomPub
 {

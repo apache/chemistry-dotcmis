@@ -18,11 +18,11 @@
  */
 using System;
 using System.Collections.Generic;
+using System.IO;
 using DotCMIS.Binding;
 using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
 using DotCMIS.Enums;
-using System.IO;
 
 namespace DotCMIS.Client
 {

@@ -18,11 +18,9 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Reflection;
-using DotCMIS.CMISWebServicesReference;
 using System.Xml.Serialization;
+using DotCMIS.CMISWebServicesReference;
 
 namespace DotCMIS.Enums
 {

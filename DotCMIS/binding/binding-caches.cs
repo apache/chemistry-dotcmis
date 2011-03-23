@@ -63,7 +63,7 @@ namespace DotCMIS.Binding
         private IBindingCacheLevel root;
         private string name;
         private object cacheLock = new object();
- 
+
         public Cache()
             : this("Cache")
         {
@@ -146,7 +146,10 @@ namespace DotCMIS.Binding
 
                 cacheLevel[keys[keys.Length - 1]] = value;
 
-                Trace.WriteLine(name + ": put [" + GetFormattedKeys(keys) + "] = " + value);
+                if (DotCMISDebug.DotCMISSwitch.TraceVerbose)
+                {
+                    Trace.WriteLine(name + ": put [" + GetFormattedKeys(keys) + "] = " + value);
+                }
             }
             finally
             {
@@ -216,7 +219,10 @@ namespace DotCMIS.Binding
 
                 cacheLevel.Remove(keys[keys.Length - 1]);
 
-                Trace.WriteLine(name + ": removed [" + GetFormattedKeys(keys) + "]");
+                if (DotCMISDebug.DotCMISSwitch.TraceVerbose)
+                {
+                    Trace.WriteLine(name + ": removed [" + GetFormattedKeys(keys) + "]");
+                }
             }
             finally
             {

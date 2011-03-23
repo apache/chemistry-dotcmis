@@ -22,8 +22,6 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using DotCMIS.CMISWebServicesReference;
-using DotCMIS.Exceptions;
-using System.Globalization;
 
 namespace DotCMIS.Binding.AtomPub
 {

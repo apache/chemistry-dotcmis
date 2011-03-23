@@ -18,11 +18,9 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DotCMIS.Enums;
 using DotCMIS.Data;
 using DotCMIS.Data.Impl;
+using DotCMIS.Enums;
 
 namespace DotCMIS.Client.Impl
 {

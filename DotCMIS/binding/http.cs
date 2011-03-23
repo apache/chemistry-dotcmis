@@ -17,14 +17,15 @@
  * under the License.
  */
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
+using DotCMIS.Util;
 
 namespace DotCMIS.Binding.Impl
 {
@@ -63,7 +64,10 @@ namespace DotCMIS.Binding.Impl
             try
             {
                 // log before connect
-                Trace.WriteLine(method + " " + url);
+                if (DotCMISDebug.DotCMISSwitch.TraceInfo)
+                {
+                    Trace.WriteLine(method + " " + url);
+                }
 
                 // create connection           
                 HttpWebRequest conn = (HttpWebRequest)WebRequest.Create(url.Url);

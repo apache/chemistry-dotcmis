@@ -18,16 +18,16 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using DotCMIS.Binding.Impl;
 using DotCMIS.Binding.Services;
 using DotCMIS.CMISWebServicesReference;
 using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
-using DotCMIS.Exceptions;
 using DotCMIS.Enums;
-using System.ServiceModel.Channels;
-using System.Reflection;
+using DotCMIS.Exceptions;
 
 namespace DotCMIS.Binding.WebServices
 {

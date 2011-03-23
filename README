@@ -1,4 +1,4 @@
-Apache Chemistry DotCMIS 0.1
+Apache Chemistry DotCMIS 0.2
 ============================
 
 Apache Chemistry DotCMIS is a Content Management Interoperability Services (CMIS)
@@ -10,7 +10,7 @@ See http://chemistry.apache.org/dotnet/getting-started-with-dotcmis.html for cod
 and DotCMISDoc.chm for the API documentation.
 
 
-This is the very first release of DotCMIS. All CMIS operations and both bindings have 
+This is the second release of DotCMIS. All CMIS operations and both bindings have 
 been implemented. The API is complete and is not supposed to change in following releases. 
 The most frequently used operations have been successfully tested against a small number 
 of repositories from different vendors.
@@ -20,15 +20,36 @@ compatibility issues. The code base will be tested and improved in the following
 If you find a problem, please let us know: https://issues.apache.org/jira/browse/CMIS
 
 
+Change log 
+----------
+
+DotCMIS 0.2:
+
+- Web Services compatibility has been improved. 
+- AtomPub content encoding and link cache have been improved.
+- Content-Disposition header has been added to the AtomPub setContentStream operation.
+- Compression option has been added to the AtomPub binding.
+- Another GetObject() convenience method has been added to ISession.
+- Several bug fixes.
+
+
 Known stumbling blocks
 ----------------------
 
-- The Web Services binding only works with HTTPS. The .NET framework does not allow calls
-  with UsernameTokens over plain HTTP.
+- The Web Services binding only works with HTTPS. 
+  The .NET framework does not allow calls with UsernameTokens over plain HTTP.
 
-- Not all CMIS Web Services endpoints are compatible with the .NET framework for a number
-  of reasons. Use the AtomPub binding if available. It's also faster.
+- Not all CMIS Web Services endpoints are compatible with the .NET framework for 
+  a number of reasons.
+  
+- Content is buffered in main memory when the Web Services binding is used. 
+  That can cause problems with huge documents. 
+  The maxium document size can be controlled with the SessionParameter.MessageSize 
+  parameter. The default is 4 MB. The absolute maximum is 2 GB.
 
+=> Use the AtomPub binding whenever possible! 
+   It causes less trouble, is faster, streams and can deal with documents of any size.
+  
   
 Strong-Name signing
 -------------------

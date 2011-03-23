@@ -19,11 +19,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
 using DotCMIS.Binding.Impl;
 using DotCMIS.Binding.Services;
 using DotCMIS.CMISWebServicesReference;
-using System.ServiceModel.Description;
-using System.ServiceModel.Channels;
 
 namespace DotCMIS.Binding
 {

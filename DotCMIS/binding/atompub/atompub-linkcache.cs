@@ -18,15 +18,31 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using DotCMIS.Binding.Impl;
 using System.Web;
+using DotCMIS.Binding.Impl;
 
 namespace DotCMIS.Binding.AtomPub
 {
     internal class LinkCache
     {
+        private static HashSet<string> KnownLinks = new HashSet<string>();
+
+        static LinkCache()
+        {
+            KnownLinks.Add(AtomPubConstants.RelACL);
+            KnownLinks.Add(AtomPubConstants.RelDown);
+            KnownLinks.Add(AtomPubConstants.RelUp);
+            KnownLinks.Add(AtomPubConstants.RelFolderTree);
+            KnownLinks.Add(AtomPubConstants.RelRelationships);
+            KnownLinks.Add(AtomPubConstants.RelSelf);
+            KnownLinks.Add(AtomPubConstants.RelAllowableActions);
+            KnownLinks.Add(AtomPubConstants.RelEditMedia);
+            KnownLinks.Add(AtomPubConstants.RelPolicies);
+            KnownLinks.Add(AtomPubConstants.RelVersionHistory);
+            KnownLinks.Add(AtomPubConstants.LinkRelContent);
+        }
+
         private const int CacheSizeRepositories = 10;
         private const int CacheSizeTypes = 100;
         private const int CacheSizeLinks = 400;
@@ -98,7 +114,10 @@ namespace DotCMIS.Binding.AtomPub
 
         public void AddLink(string repositoryId, string id, string rel, string type, string link)
         {
-            linkCache.Put(new string[] { repositoryId, id, rel, type }, link);
+            if (KnownLinks.Contains(rel))
+            {
+                linkCache.Put(new string[] { repositoryId, id, rel, type }, link);
+            }
         }
 
         public void RemoveLinks(string repositoryId, string id)
@@ -135,7 +154,10 @@ namespace DotCMIS.Binding.AtomPub
 
         public void AddTypeLink(string repositoryId, string id, string rel, string type, string link)
         {
-            typeLinkCache.Put(new string[] { repositoryId, id, rel, type }, link);
+            if (KnownLinks.Contains(rel))
+            {
+                typeLinkCache.Put(new string[] { repositoryId, id, rel, type }, link);
+            }
         }
 
         public void RemoveTypeLinks(string repositoryId, string id)
