@@ -233,7 +233,7 @@ namespace DotCMIS.Binding.WebServices
                 SecurityBindingElement securityElement = SecurityBindingElement.CreateUserNameOverTransportBindingElement();
                 securityElement.SecurityHeaderLayout = SecurityHeaderLayout.LaxTimestampFirst;
 
-                string enableUnsecuredResponseFlag = session.GetValue(SessionParameter.EnableUnsecuredResponse) as string;
+                string enableUnsecuredResponseFlag = session.GetValue(SessionParameter.WebServicesEnableUnsecuredResponse) as string;
                 if (enableUnsecuredResponseFlag != null && enableUnsecuredResponseFlag.ToLower().Equals("true"))
                 {
                     PropertyInfo eur = securityElement.GetType().GetProperty("EnableUnsecuredResponse");
@@ -256,6 +256,30 @@ namespace DotCMIS.Binding.WebServices
                 elements.Add(transportElement);
 
                 binding = new CustomBinding(elements);
+
+                string openTimeOut = session.GetValue(SessionParameter.WebServicesOpenTimeout) as string;
+                if (openTimeOut != null)
+                {
+                    binding.OpenTimeout = TimeSpan.Parse(openTimeOut);
+                }
+
+                string closeTimeOut = session.GetValue(SessionParameter.WebServicesCloseTimeout) as string;
+                if (closeTimeOut != null)
+                {
+                    binding.CloseTimeout = TimeSpan.Parse(closeTimeOut);
+                }
+
+                string sendTimeOut = session.GetValue(SessionParameter.WebServicesSendTimeout) as string;
+                if (sendTimeOut != null)
+                {
+                    binding.SendTimeout = TimeSpan.Parse(sendTimeOut);
+                }
+
+                string receiveTimeOut = session.GetValue(SessionParameter.WebServicesReceiveTimeout) as string;
+                if (receiveTimeOut != null)
+                {
+                    binding.ReceiveTimeout = TimeSpan.Parse(receiveTimeOut);
+                }
             }
 
             if (serviceKey == SessionParameter.WebServicesRepositoryService)
