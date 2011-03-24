@@ -303,24 +303,43 @@ namespace DotCMISUnitTest
 
             // check children
             found = false;
-            IObjectInFolderList children = Binding.GetNavigationService().GetChildren(RepositoryInfo.Id, folderId, null, null, null, null, null, null, null, null, null);
+            bool hasMore = true;
+            long maxItems = 100;
+            long skipCount = 0;
 
-            Assert.NotNull(children);
-            if (children.NumItems != null)
+            while (hasMore)
             {
-                Assert.True(children.NumItems > 0);
-            }
+                IObjectInFolderList children = Binding.GetNavigationService().GetChildren(RepositoryInfo.Id, folderId, null, null, null, null, null, null, maxItems, skipCount, null);
 
-            foreach (ObjectInFolderData obj in children.Objects)
-            {
-                Assert.NotNull(obj);
-                Assert.NotNull(obj.Object);
-                Assert.NotNull(obj.Object.Id);
-                if (obj.Object.Id == objectId)
+                Assert.NotNull(children);
+                if (children.NumItems != null)
                 {
-                    found = true;
+                    Assert.True(children.NumItems > 0);
+                }
+
+                foreach (ObjectInFolderData obj in children.Objects)
+                {
+                    Assert.NotNull(obj);
+                    Assert.NotNull(obj.Object);
+                    Assert.NotNull(obj.Object.Id);
+                    if (obj.Object.Id == objectId)
+                    {
+                        found = true;
+                    }
+                }
+
+                skipCount = skipCount + maxItems;
+
+                if (children.HasMoreItems.HasValue)
+                {
+                    hasMore = children.HasMoreItems.Value;
+                }
+                else
+                {
+                    hasMore = children.Objects.Count == maxItems;
                 }
             }
+
             Assert.True(found);
 
             // check descendants
