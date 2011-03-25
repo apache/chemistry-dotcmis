@@ -74,6 +74,19 @@ namespace DotCMIS.Binding.Impl
                 conn.Method = method;
                 conn.UserAgent = "Apache Chemistry DotCMIS";
 
+                // timeouts
+                int connectTimeout = session.GetValue(SessionParameter.ConnectTimeout, -2);
+                if (connectTimeout >= -1)
+                {
+                    conn.Timeout = connectTimeout;
+                }
+
+                int readTimeout = session.GetValue(SessionParameter.ReadTimeout, -2);
+                if (readTimeout >= -1)
+                {
+                    conn.ReadWriteTimeout = readTimeout;
+                }
+
                 // set content type
                 if (contentType != null)
                 {

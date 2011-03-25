@@ -47,10 +47,10 @@ namespace DotCMIS
         public const string WebServicesAclService = "org.apache.chemistry.dotcmis.binding.webservices.ACLService";
 
         public const string WebServicesWCFBinding = "org.apache.chemistry.dotcmis.binding.webservices.wcfbinding";
-        public const string WebServicesOpenTimeout = "org.apache.chemistry.dotcmis.binding.webservices.openTimeout";
-        public const string WebServicesCloseTimeout = "org.apache.chemistry.dotcmis.binding.webservices.closeTimeout";
-        public const string WebServicesSendTimeout = "org.apache.chemistry.dotcmis.binding.webservices.sendTimeout";
-        public const string WebServicesReceiveTimeout = "org.apache.chemistry.dotcmis.binding.webservices.receiveTimeout";
+        public const string WebServicesOpenTimeout = "org.apache.chemistry.dotcmis.binding.webservices.opentimeout";
+        public const string WebServicesCloseTimeout = "org.apache.chemistry.dotcmis.binding.webservices.closetimeout";
+        public const string WebServicesSendTimeout = "org.apache.chemistry.dotcmis.binding.webservices.sendtimeout";
+        public const string WebServicesReceiveTimeout = "org.apache.chemistry.dotcmis.binding.webservices.receivetimeout";
 
         public const string WebServicesEnableUnsecuredResponse = "org.apache.chemistry.dotcmis.binding.webservices.enableUnsecuredResponse"; // requires hotfix 971493 or the .NET framework 4 
 
@@ -59,6 +59,10 @@ namespace DotCMIS
 
         // compression flag
         public const string Compression = "org.apache.chemistry.dotcmis.binding.compression";
+
+        // timeouts
+        public const string ConnectTimeout = "org.apache.chemistry.dotcmis.binding.connecttimeout";
+        public const string ReadTimeout = "org.apache.chemistry.dotcmis.binding.readtimeout";
 
         // binding caches
         public const string CacheSizeRepositories = "org.apache.chemistry.dotcmis.binding.cache.repositories.size";
