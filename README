@@ -29,6 +29,7 @@ DotCMIS 0.2:
 - AtomPub content encoding and link cache have been improved.
 - Content-Disposition header has been added to the AtomPub setContentStream operation.
 - Compression option has been added to the AtomPub binding.
+- Timeout settings have been added to both bindings.
 - Another GetObject() convenience method has been added to ISession.
 - Several bug fixes.
 
