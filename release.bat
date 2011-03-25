@@ -22,9 +22,9 @@ rem
 rem This batch file creates a release.
 rem It requires Cygwin.
 
-set DOTCMISVERSION=0.1
+set DOTCMISVERSION=0.2
 set DOTCMISZIP=chemistry-dotcmis-%DOTCMISVERSION%.zip
-set DOTCMISRC=RC2
+set DOTCMISRC=RC1
 
 set CYGWIN=ntea
 
