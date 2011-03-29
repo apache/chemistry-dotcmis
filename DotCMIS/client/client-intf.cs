@@ -930,6 +930,7 @@ namespace DotCMIS.Client
     /// </summary>
     public interface IFolderProperties
     {
+        string ParentId { get; }
         IList<IObjectType> AllowedChildObjectTypes { get; }
     }
 

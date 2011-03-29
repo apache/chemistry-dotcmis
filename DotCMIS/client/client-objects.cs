@@ -1161,6 +1161,8 @@ namespace DotCMIS.Client.Impl
             return failed.Ids;
         }
 
+        public string ParentId { get { return GetPropertyValue(PropertyIds.ParentId) as string; } }
+
         public IList<IObjectType> AllowedChildObjectTypes
         {
             get
