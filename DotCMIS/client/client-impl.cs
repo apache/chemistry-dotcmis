@@ -565,6 +565,21 @@ namespace DotCMIS.Client.Impl
             return result;
         }
 
+        public void RemoveObjectFromCache(IObjectId objectId)
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                return;
+            }
+
+            RemoveObjectFromCache(objectId.Id);
+        }
+
+        public void RemoveObjectFromCache(string objectId)
+        {
+            Cache.Remove(objectId);
+        }
+
         // discovery
 
         public IItemEnumerable<IQueryResult> Query(string statement, bool searchAllVersions)

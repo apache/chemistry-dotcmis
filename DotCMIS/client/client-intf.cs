@@ -201,6 +201,18 @@ namespace DotCMIS.Client
         ICmisObject GetObjectByPath(string path);
         ICmisObject GetObjectByPath(string path, IOperationContext context);
 
+        /// <summary>
+        ///  Removes the given object from the cache.
+        /// </summary>
+        /// <param name="objectId">the object id</param>
+        void RemoveObjectFromCache(IObjectId objectId);
+
+        /// <summary>
+        ///  Removes the given object from the cache.
+        /// </summary>
+        /// <param name="objectId">the object id</param>
+        void RemoveObjectFromCache(string objectId);
+
         // discovery
 
         /// <summary>

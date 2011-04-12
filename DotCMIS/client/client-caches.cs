@@ -35,6 +35,7 @@ namespace DotCMIS.Client.Impl.Cache
         void PutPath(string path, ICmisObject cmisObject, string cacheKey);
         ICmisObject GetById(string objectId, string cacheKey);
         ICmisObject GetByPath(string path, string cacheKey);
+        void Remove(string objectId);
         void Clear();
         int CacheSize { get; }
     }
@@ -51,6 +52,7 @@ namespace DotCMIS.Client.Impl.Cache
         public void PutPath(string path, ICmisObject cmisObject, string cacheKey) { }
         public ICmisObject GetById(string objectId, string cacheKey) { return null; }
         public ICmisObject GetByPath(string path, string cacheKey) { return null; }
+        public void Remove(string objectId) { }
         public void Clear() { }
         public int CacheSize { get { return 0; } }
     }
@@ -271,7 +273,7 @@ namespace DotCMIS.Client.Impl.Cache
         public void PutPath(string path, ICmisObject cmisObject, string cacheKey)
         {
             // no path, no object, no id, no cache key - no cache
-            if (path ==null || cmisObject == null || cmisObject.Id == null || cacheKey == null)
+            if (path == null || cmisObject == null || cmisObject.Id == null || cacheKey == null)
             {
                 return;
             }
@@ -281,6 +283,24 @@ namespace DotCMIS.Client.Impl.Cache
             {
                 Put(cmisObject, cacheKey);
                 pathToIdCache.Add(path, cmisObject.Id);
+            }
+            finally
+            {
+                Unlock();
+            }
+        }
+
+        public void Remove(string objectId)
+        {
+            if (objectId == null)
+            {
+                return;
+            }
+
+            Lock();
+            try
+            {
+                objectCache.Remove(objectId);
             }
             finally
             {
