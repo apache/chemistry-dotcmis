@@ -328,7 +328,7 @@ namespace DotCMIS.Binding.WebServices
                 portObject = new ACLServicePortClient(binding, new EndpointAddress(wsdlUrl));
             }
 
-            AbstractAuthenticationProvider authenticationProvider = session.GetAuthenticationProvider();
+            IAuthenticationProvider authenticationProvider = session.GetAuthenticationProvider();
             if (authenticationProvider != null)
             {
                 authenticationProvider.Authenticate(portObject);

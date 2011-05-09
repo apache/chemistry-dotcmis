@@ -38,6 +38,7 @@ namespace DotCMIS.Binding
         IMultiFilingService GetMultiFilingService();
         IAclService GetAclService();
         IPolicyService GetPolicyService();
+        IAuthenticationProvider GetAuthenticationProvider();
         void ClearAllCaches();
         void ClearRepositoryCache(string repositoryId);
     }
@@ -49,11 +50,22 @@ namespace DotCMIS.Binding
         int GetValue(string key, int defValue);
     }
 
-    public abstract class AbstractAuthenticationProvider
+    public interface IAuthenticationProvider
+    {
+        void Authenticate(object connection);
+
+        void HandleResponse(object connection);
+    }
+
+    public abstract class AbstractAuthenticationProvider : IAuthenticationProvider
     {
         public IBindingSession Session { get; set; }
 
         public abstract void Authenticate(object connection);
+
+        public void HandleResponse(object connection)
+        {
+        }
 
         public string GetUser()
         {

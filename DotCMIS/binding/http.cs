@@ -103,7 +103,7 @@ namespace DotCMIS.Binding.Impl
                 }
 
                 // authenticate
-                AbstractAuthenticationProvider authProvider = session.GetAuthenticationProvider();
+                IAuthenticationProvider authProvider = session.GetAuthenticationProvider();
                 if (authProvider != null)
                 {
                     conn.PreAuthenticate = true;
@@ -141,6 +141,12 @@ namespace DotCMIS.Binding.Impl
                 try
                 {
                     HttpWebResponse response = (HttpWebResponse)conn.GetResponse();
+
+                    if (authProvider != null)
+                    {
+                        authProvider.HandleResponse(response);
+                    }
+
                     return new Response(response);
                 }
                 catch (WebException we)

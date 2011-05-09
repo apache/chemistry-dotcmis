@@ -142,6 +142,11 @@ namespace DotCMIS.Binding.Impl
             return spi.GetPolicyService();
         }
 
+        public IAuthenticationProvider GetAuthenticationProvider()
+        {
+            return session.GetAuthenticationProvider();
+        }
+
         public void ClearAllCaches()
         {
             CheckSession();
@@ -375,9 +380,9 @@ namespace DotCMIS.Binding.Impl
             return GetValue(TypeDefinitionCache) as TypeDefinitionCache;
         }
 
-        public AbstractAuthenticationProvider GetAuthenticationProvider()
+        public IAuthenticationProvider GetAuthenticationProvider()
         {
-            return GetValue(AuthenticationProvider) as AbstractAuthenticationProvider;
+            return GetValue(AuthenticationProvider) as IAuthenticationProvider;
         }
 
         public void Lock()
