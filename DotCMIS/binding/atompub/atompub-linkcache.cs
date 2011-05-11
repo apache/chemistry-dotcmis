@@ -224,7 +224,7 @@ namespace DotCMIS.Binding.AtomPub
                         object paramValue;
                         if (parameters.TryGetValue(param.ToString(), out paramValue))
                         {
-                            result.Append(HttpUtility.UrlEncode(UrlBuilder.NormalizeParameter(paramValue)));
+                            result.Append(paramValue == null ? "" : Uri.EscapeDataString(UrlBuilder.NormalizeParameter(paramValue)));
                         }
 
                         param = new StringBuilder();

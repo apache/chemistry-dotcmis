@@ -259,7 +259,7 @@ namespace DotCMIS.Binding.Impl
                 return this;
             }
 
-            string valueStr = HttpUtility.UrlEncode(NormalizeParameter(value));
+            string valueStr = Uri.EscapeDataString(UrlBuilder.NormalizeParameter(value));
 
             if (uri.Query != null && uri.Query.Length > 1)
             {
