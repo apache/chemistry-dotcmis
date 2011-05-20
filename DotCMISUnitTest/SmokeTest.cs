@@ -59,8 +59,8 @@ namespace DotCMISUnitTest
             Assert.AreEqual(BaseTypeId.CmisDocument, documentType.BaseTypeId);
             Assert.True(documentType.IsBaseType);
             Assert.IsNullOrEmpty(documentType.ParentTypeId);
-            Assert.NotNull(documentType.PropertyDefintions);
-            Assert.True(documentType.PropertyDefintions.Count >= 9);
+            Assert.NotNull(documentType.PropertyDefinitions);
+            Assert.True(documentType.PropertyDefinitions.Count >= 9);
 
             IObjectType folderType = Session.GetTypeDefinition("cmis:folder");
             Assert.NotNull(folderType);
@@ -69,8 +69,8 @@ namespace DotCMISUnitTest
             Assert.AreEqual(BaseTypeId.CmisFolder, folderType.BaseTypeId);
             Assert.True(folderType.IsBaseType);
             Assert.IsNullOrEmpty(folderType.ParentTypeId);
-            Assert.NotNull(folderType.PropertyDefintions);
-            Assert.True(folderType.PropertyDefintions.Count >= 9);
+            Assert.NotNull(folderType.PropertyDefinitions);
+            Assert.True(folderType.PropertyDefinitions.Count >= 9);
 
             // getTypeChildren
             Session.Clear();
@@ -86,7 +86,7 @@ namespace DotCMISUnitTest
                 Assert.NotNull(type.Id);
                 Assert.True(type.IsBaseType);
                 Assert.IsNullOrEmpty(type.ParentTypeId);
-                Assert.NotNull(type.PropertyDefintions);
+                Assert.NotNull(type.PropertyDefinitions);
 
                 Session.Clear();
                 IObjectType type2 = Session.GetTypeDefinition(type.Id);
@@ -116,7 +116,7 @@ namespace DotCMISUnitTest
                 Assert.NotNull(type.Id);
                 Assert.True(type.IsBaseType);
                 Assert.IsNullOrEmpty(type.ParentTypeId);
-                Assert.NotNull(type.PropertyDefintions);
+                Assert.NotNull(type.PropertyDefinitions);
 
                 Session.Clear();
                 IObjectType type2 = Session.GetTypeDefinition(type.Id);

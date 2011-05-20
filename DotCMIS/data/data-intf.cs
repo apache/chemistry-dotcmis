@@ -100,7 +100,7 @@ namespace DotCMIS.Data
         bool? IsControllablePolicy { get; }
         bool? IsControllableAcl { get; }
         IPropertyDefinition this[string propertyId] { get; }
-        IList<IPropertyDefinition> PropertyDefintions { get; }
+        IList<IPropertyDefinition> PropertyDefinitions { get; }
     }
 
     public interface IDocumentTypeDefinition : ITypeDefinition

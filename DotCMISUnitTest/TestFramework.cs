@@ -425,9 +425,9 @@ namespace DotCMISUnitTest
             Assert.AreEqual(expected.LocalName, actual.LocalName);
             Assert.AreEqual(expected.LocalNamespace, actual.LocalNamespace);
             Assert.AreEqual(expected.QueryName, actual.QueryName);
-            Assert.AreEqual(expected.PropertyDefintions.Count, actual.PropertyDefintions.Count);
+            Assert.AreEqual(expected.PropertyDefinitions.Count, actual.PropertyDefinitions.Count);
 
-            foreach (IPropertyDefinition propDef in expected.PropertyDefintions)
+            foreach (IPropertyDefinition propDef in expected.PropertyDefinitions)
             {
                 Assert.NotNull(propDef);
                 Assert.NotNull(propDef.Id);

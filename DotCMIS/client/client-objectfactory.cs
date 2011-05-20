@@ -177,7 +177,7 @@ namespace DotCMIS.Client.Impl
                 throw new ArgumentNullException("objectType");
             }
 
-            if (objectType.PropertyDefintions == null)
+            if (objectType.PropertyDefinitions == null)
             {
                 throw new ArgumentException("Object type has no property defintions!");
             }

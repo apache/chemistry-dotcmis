@@ -94,7 +94,7 @@ namespace DotCMIS.Client.Impl
                 throw new ArgumentNullException("objectType");
             }
 
-            if (objectType.PropertyDefintions == null || objectType.PropertyDefintions.Count < 9)
+            if (objectType.PropertyDefinitions == null || objectType.PropertyDefinitions.Count < 9)
             {
                 // there must be at least the 9 standard properties that all objects have
                 throw new ArgumentException("Object type must have property defintions!");

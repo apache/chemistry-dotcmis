@@ -136,7 +136,7 @@ namespace DotCMIS.Data.Impl
                 return propertyDefinition;
             }
         }
-        public IList<IPropertyDefinition> PropertyDefintions
+        public IList<IPropertyDefinition> PropertyDefinitions
         {
             get
             {
@@ -163,9 +163,9 @@ namespace DotCMIS.Data.Impl
             IsControllableAcl = typeDefinition.IsControllableAcl;
 
 
-            if (typeDefinition.PropertyDefintions != null)
+            if (typeDefinition.PropertyDefinitions != null)
             {
-                foreach (IPropertyDefinition propDef in typeDefinition.PropertyDefintions)
+                foreach (IPropertyDefinition propDef in typeDefinition.PropertyDefinitions)
                 {
                     AddPropertyDefinition(propDef);
                 }
