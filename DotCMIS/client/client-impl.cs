@@ -45,13 +45,23 @@ namespace DotCMIS.Client.Impl
 
         public ISession CreateSession(IDictionary<string, string> parameters)
         {
-            Session session = new Session(parameters);
+            return CreateSession(parameters, null, null, null);
+        }
+
+        public ISession CreateSession(IDictionary<string, string> parameters, IObjectFactory objectFactory, AbstractAuthenticationProvider authenticationProvider, ICache cache)
+        {
+            Session session = new Session(parameters, objectFactory, authenticationProvider, cache);
             session.Connect();
 
             return session;
         }
 
         public IList<IRepository> GetRepositories(IDictionary<string, string> parameters)
+        {
+            return GetRepositories(parameters, null, null, null);
+        }
+
+        public IList<IRepository> GetRepositories(IDictionary<string, string> parameters, IObjectFactory objectFactory, AbstractAuthenticationProvider authenticationProvider, ICache cache)
         {
             ICmisBinding binding = CmisBindingHelper.CreateBinding(parameters);
 
@@ -60,7 +70,7 @@ namespace DotCMIS.Client.Impl
             IList<IRepository> result = new List<IRepository>();
             foreach (IRepositoryInfo data in repositoryInfos)
             {
-                result.Add(new Repository(data, parameters, this));
+                result.Add(new Repository(data, parameters, this, objectFactory, authenticationProvider, cache));
             }
 
             return result;
@@ -73,6 +83,11 @@ namespace DotCMIS.Client.Impl
     internal class CmisBindingHelper
     {
         public static ICmisBinding CreateBinding(IDictionary<string, string> parameters)
+        {
+            return CreateBinding(parameters, null);
+        }
+
+        public static ICmisBinding CreateBinding(IDictionary<string, string> parameters, AbstractAuthenticationProvider authenticationProvider)
         {
             if (parameters == null)
             {
@@ -88,36 +103,36 @@ namespace DotCMIS.Client.Impl
             switch (bt)
             {
                 case BindingType.AtomPub:
-                    return CreateAtomPubBinding(parameters);
+                    return CreateAtomPubBinding(parameters, authenticationProvider);
                 case BindingType.WebServices:
-                    return CreateWebServiceBinding(parameters);
+                    return CreateWebServiceBinding(parameters, authenticationProvider);
                 case BindingType.Custom:
-                    return CreateCustomBinding(parameters);
+                    return CreateCustomBinding(parameters, authenticationProvider);
                 default:
                     throw new CmisRuntimeException("Ambiguous session parameter: " + parameters);
             }
         }
 
-        private static ICmisBinding CreateCustomBinding(IDictionary<string, string> parameters)
+        private static ICmisBinding CreateCustomBinding(IDictionary<string, string> parameters, AbstractAuthenticationProvider authenticationProvider)
         {
             CmisBindingFactory factory = CmisBindingFactory.NewInstance();
-            ICmisBinding binding = factory.CreateCmisBinding(parameters);
+            ICmisBinding binding = factory.CreateCmisBinding(parameters, authenticationProvider);
 
             return binding;
         }
 
-        private static ICmisBinding CreateWebServiceBinding(IDictionary<string, string> parameters)
+        private static ICmisBinding CreateWebServiceBinding(IDictionary<string, string> parameters, AbstractAuthenticationProvider authenticationProvider)
         {
             CmisBindingFactory factory = CmisBindingFactory.NewInstance();
-            ICmisBinding binding = factory.CreateCmisWebServicesBinding(parameters);
+            ICmisBinding binding = factory.CreateCmisWebServicesBinding(parameters, authenticationProvider);
 
             return binding;
         }
 
-        private static ICmisBinding CreateAtomPubBinding(IDictionary<string, string> parameters)
+        private static ICmisBinding CreateAtomPubBinding(IDictionary<string, string> parameters, AbstractAuthenticationProvider authenticationProvider)
         {
             CmisBindingFactory factory = CmisBindingFactory.NewInstance();
-            ICmisBinding binding = factory.CreateCmisAtomPubBinding(parameters);
+            ICmisBinding binding = factory.CreateCmisAtomPubBinding(parameters, authenticationProvider);
 
             return binding;
         }
@@ -129,20 +144,26 @@ namespace DotCMIS.Client.Impl
     public class Repository : RepositoryInfo, IRepository
     {
         private IDictionary<string, string> parameters;
-        private ISessionFactory sessionFactory;
+        private SessionFactory sessionFactory;
+        private IObjectFactory objectFactory;
+        private AbstractAuthenticationProvider authenticationProvider;
+        private ICache cache;
 
-        public Repository(IRepositoryInfo info, IDictionary<string, string> parameters, ISessionFactory sessionFactory)
+        public Repository(IRepositoryInfo info, IDictionary<string, string> parameters, SessionFactory sessionFactory, IObjectFactory objectFactory, AbstractAuthenticationProvider authenticationProvider, ICache cache)
             : base(info)
         {
             this.parameters = new Dictionary<string, string>(parameters);
             this.parameters[SessionParameter.RepositoryId] = Id;
 
             this.sessionFactory = sessionFactory;
+            this.objectFactory = objectFactory;
+            this.authenticationProvider = authenticationProvider;
+            this.cache = cache;
         }
 
         public ISession CreateSession()
         {
-            return sessionFactory.CreateSession(parameters);
+            return sessionFactory.CreateSession(parameters, objectFactory, authenticationProvider, cache);
         }
     }
 
@@ -168,6 +189,7 @@ namespace DotCMIS.Client.Impl
         public string RepositoryId { get { return RepositoryInfo.Id; } }
 
         public IObjectFactory ObjectFactory { get; protected set; }
+        protected AbstractAuthenticationProvider AuthenticationProvider { get; set; }
         protected ICache Cache { get; set; }
         protected bool cachePathOmit;
 
@@ -200,7 +222,7 @@ namespace DotCMIS.Client.Impl
             }
         }
 
-        public Session(IDictionary<string, string> parameters)
+        public Session(IDictionary<string, string> parameters, IObjectFactory objectFactory, AbstractAuthenticationProvider authenticationProvider, ICache cache)
         {
             if (parameters == null)
             {
@@ -209,8 +231,9 @@ namespace DotCMIS.Client.Impl
 
             this.parameters = parameters;
 
-            ObjectFactory = CreateObjectFactory();
-            Cache = CreateCache();
+            ObjectFactory = (objectFactory == null ? CreateObjectFactory() : objectFactory);
+            AuthenticationProvider = authenticationProvider;
+            Cache = (cache == null ? CreateCache() : cache);
 
             string cachePathOmitStr;
             if (parameters.TryGetValue(SessionParameter.CachePathOmit, out cachePathOmitStr))
@@ -228,7 +251,7 @@ namespace DotCMIS.Client.Impl
             Lock();
             try
             {
-                Binding = CmisBindingHelper.CreateBinding(parameters);
+                Binding = CmisBindingHelper.CreateBinding(parameters, AuthenticationProvider);
 
                 string repositoryId;
                 if (!parameters.TryGetValue(SessionParameter.RepositoryId, out repositoryId))

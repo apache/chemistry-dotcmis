@@ -35,6 +35,11 @@ namespace DotCMIS.Binding.Impl
         private BindingRepositoryService repositoryServiceWrapper;
 
         public CmisBinding(IDictionary<string, string> sessionParameters)
+            : this(sessionParameters, null)
+        {
+        }
+
+        public CmisBinding(IDictionary<string, string> sessionParameters, AbstractAuthenticationProvider authenticationProvider)
         {
             if (sessionParameters == null)
             {
@@ -54,20 +59,28 @@ namespace DotCMIS.Binding.Impl
             }
 
             // set up authentication provider
-            string authenticationProviderClass;
-            if (sessionParameters.TryGetValue(SessionParameter.AuthenticationProviderClass, out authenticationProviderClass))
+            if (authenticationProvider == null)
             {
-                try
+                string authenticationProviderClass;
+                if (sessionParameters.TryGetValue(SessionParameter.AuthenticationProviderClass, out authenticationProviderClass))
                 {
-                    Type authProvType = Type.GetType(authenticationProviderClass);
-                    AbstractAuthenticationProvider authenticationProvider = (AbstractAuthenticationProvider)Activator.CreateInstance(authProvType);
-                    authenticationProvider.Session = session;
-                    session.PutValue(BindingSession.AuthenticationProvider, authenticationProvider);
+                    try
+                    {
+                        Type authProvType = Type.GetType(authenticationProviderClass);
+                        authenticationProvider = (AbstractAuthenticationProvider)Activator.CreateInstance(authProvType);
+                        authenticationProvider.Session = session;
+                        session.PutValue(BindingSession.AuthenticationProvider, authenticationProvider);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new CmisRuntimeException("Could not load authentictaion provider: " + e.Message, e);
+                    }
                 }
-                catch (Exception e)
-                {
-                    throw new CmisRuntimeException("Could not load authentictaion provider: " + e.Message, e);
-                }
+            }
+            else
+            {
+                authenticationProvider.Session = session;
+                session.PutValue(BindingSession.AuthenticationProvider, authenticationProvider);
             }
 
             // initialize the SPI

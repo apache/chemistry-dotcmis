@@ -218,37 +218,43 @@ namespace DotCMIS.Binding
             }
         }
 
-        public ICmisBinding CreateCmisBinding(IDictionary<string, string> sessionParameters)
+        public ICmisBinding CreateCmisBinding(IDictionary<string, string> sessionParameters, AbstractAuthenticationProvider authenticationProvider)
         {
             CheckSessionParameters(sessionParameters, true);
             AddDefaultParameters(sessionParameters);
 
-            return new CmisBinding(sessionParameters);
+            return new CmisBinding(sessionParameters, authenticationProvider);
         }
 
-        public ICmisBinding CreateCmisAtomPubBinding(IDictionary<string, string> sessionParameters)
+        public ICmisBinding CreateCmisAtomPubBinding(IDictionary<string, string> sessionParameters, AbstractAuthenticationProvider authenticationProvider)
         {
             CheckSessionParameters(sessionParameters, false);
             sessionParameters[SessionParameter.BindingSpiClass] = BindingSpiAtomPub;
-            if (!sessionParameters.ContainsKey(SessionParameter.AuthenticationProviderClass))
+            if (authenticationProvider == null)
             {
-                sessionParameters[SessionParameter.AuthenticationProviderClass] = StandardAuthenticationProviderClass;
+                if (!sessionParameters.ContainsKey(SessionParameter.AuthenticationProviderClass))
+                {
+                    sessionParameters[SessionParameter.AuthenticationProviderClass] = StandardAuthenticationProviderClass;
+                }
             }
 
             AddDefaultParameters(sessionParameters);
 
             Check(sessionParameters, SessionParameter.AtomPubUrl);
 
-            return new CmisBinding(sessionParameters);
+            return new CmisBinding(sessionParameters, authenticationProvider);
         }
 
-        public ICmisBinding CreateCmisWebServicesBinding(IDictionary<string, string> sessionParameters)
+        public ICmisBinding CreateCmisWebServicesBinding(IDictionary<string, string> sessionParameters, AbstractAuthenticationProvider authenticationProvider)
         {
             CheckSessionParameters(sessionParameters, false);
             sessionParameters[SessionParameter.BindingSpiClass] = BindingSpiWebServices;
-            if (!sessionParameters.ContainsKey(SessionParameter.AuthenticationProviderClass))
+            if (authenticationProvider == null)
             {
-                sessionParameters[SessionParameter.AuthenticationProviderClass] = StandardAuthenticationProviderClass;
+                if (!sessionParameters.ContainsKey(SessionParameter.AuthenticationProviderClass))
+                {
+                    sessionParameters[SessionParameter.AuthenticationProviderClass] = StandardAuthenticationProviderClass;
+                }
             }
 
             AddDefaultParameters(sessionParameters);
@@ -263,7 +269,7 @@ namespace DotCMIS.Binding
             Check(sessionParameters, SessionParameter.WebServicesRepositoryService);
             Check(sessionParameters, SessionParameter.WebServicesVersioningService);
 
-            return new CmisBinding(sessionParameters);
+            return new CmisBinding(sessionParameters, authenticationProvider);
         }
 
         // ---- internals ----
