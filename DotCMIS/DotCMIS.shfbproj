@@ -33,7 +33,10 @@
         <Filter entryType="Class" fullName="DotCMIS.Data.Extensions.CmisExtensionElement" filterName="CmisExtensionElement" isExposed="False" />
         <Filter entryType="Class" fullName="DotCMIS.Data.Extensions.ExtensionsData" filterName="ExtensionsData" isExposed="False" />
       </Filter>
-      <Filter entryType="Namespace" fullName="DotCMIS.Data.Impl" isExposed="False" />
+      <Filter entryType="Namespace" fullName="DotCMIS.Data.Impl" isExposed="False">
+        <Filter entryType="Class" fullName="DotCMIS.Data.Impl.Ace" filterName="Ace" isExposed="True" />
+		<Filter entryType="Class" fullName="DotCMIS.Data.Impl.ContentStream" filterName="ContentStream" isExposed="True" />
+	  </Filter>
       <Filter entryType="Namespace" fullName="DotCMIS.Enums" isExposed="True">
         <Filter entryType="Class" fullName="DotCMIS.Enums.CmisValue" filterName="CmisValue" isExposed="False" />
         <Filter entryType="Class" fullName="DotCMIS.Enums.CmisValueAttribute" filterName="CmisValueAttribute" isExposed="False" />
