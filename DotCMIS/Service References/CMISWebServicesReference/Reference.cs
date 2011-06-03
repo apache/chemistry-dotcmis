@@ -6985,8 +6985,6 @@ namespace DotCMIS.CMISWebServicesReference {
         
         private cmisPropertyDefinitionType[] itemsField;
         
-        private System.Xml.XmlElement[] anyField;
-        
         private System.Xml.XmlAttribute[] anyAttrField;
         
         public cmisTypeDefinitionType() {
@@ -7193,18 +7191,6 @@ namespace DotCMIS.CMISWebServicesReference {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlAnyElementAttribute(Order=16)]
-        public System.Xml.XmlElement[] Any {
-            get {
-                return this.anyField;
-            }
-            set {
-                this.anyField = value;
-                this.RaisePropertyChanged("Any");
-            }
-        }
-        
-        /// <remarks/>
         [System.Xml.Serialization.XmlAnyAttributeAttribute()]
         public System.Xml.XmlAttribute[] AnyAttr {
             get {
@@ -7238,6 +7224,8 @@ namespace DotCMIS.CMISWebServicesReference {
         
         private cmisChoiceBoolean[] choiceField;
         
+        private System.Xml.XmlElement[] anyField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public cmisPropertyBoolean defaultValue {
@@ -7259,6 +7247,18 @@ namespace DotCMIS.CMISWebServicesReference {
             set {
                 this.choiceField = value;
                 this.RaisePropertyChanged("choice");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=2)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
             }
         }
     }
@@ -7661,8 +7661,6 @@ namespace DotCMIS.CMISWebServicesReference {
         
         private bool openChoiceFieldSpecified;
         
-        private System.Xml.XmlElement[] anyField;
-        
         private System.Xml.XmlAttribute[] anyAttrField;
         
         /// <remarks/>
@@ -7858,18 +7856,6 @@ namespace DotCMIS.CMISWebServicesReference {
         }
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlAnyElementAttribute(Order=14)]
-        public System.Xml.XmlElement[] Any {
-            get {
-                return this.anyField;
-            }
-            set {
-                this.anyField = value;
-                this.RaisePropertyChanged("Any");
-            }
-        }
-        
-        /// <remarks/>
         [System.Xml.Serialization.XmlAnyAttributeAttribute()]
         public System.Xml.XmlAttribute[] AnyAttr {
             get {
@@ -7966,6 +7952,8 @@ namespace DotCMIS.CMISWebServicesReference {
         
         private cmisChoiceUri[] choiceField;
         
+        private System.Xml.XmlElement[] anyField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
         public cmisPropertyUri defaultValue {
@@ -7989,6 +7977,18 @@ namespace DotCMIS.CMISWebServicesReference {
                 this.RaisePropertyChanged("choice");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=2)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8004,6 +8004,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private string maxLengthField;
         
         private cmisChoiceString[] choiceField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -8040,6 +8042,18 @@ namespace DotCMIS.CMISWebServicesReference {
                 this.RaisePropertyChanged("choice");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=3)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8053,6 +8067,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private cmisPropertyHtml defaultValueField;
         
         private cmisChoiceHtml[] choiceField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -8075,6 +8091,18 @@ namespace DotCMIS.CMISWebServicesReference {
             set {
                 this.choiceField = value;
                 this.RaisePropertyChanged("choice");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=2)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
             }
         }
     }
@@ -8102,6 +8130,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private bool precisionFieldSpecified;
         
         private cmisChoiceDecimal[] choiceField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -8198,6 +8228,18 @@ namespace DotCMIS.CMISWebServicesReference {
                 this.RaisePropertyChanged("choice");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=5)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8230,6 +8272,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private bool resolutionFieldSpecified;
         
         private cmisChoiceDateTime[] choiceField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -8278,6 +8322,18 @@ namespace DotCMIS.CMISWebServicesReference {
                 this.RaisePropertyChanged("choice");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=3)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8311,6 +8367,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private string minValueField;
         
         private cmisChoiceInteger[] choiceField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -8359,6 +8417,18 @@ namespace DotCMIS.CMISWebServicesReference {
                 this.RaisePropertyChanged("choice");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=4)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8372,6 +8442,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private cmisPropertyId defaultValueField;
         
         private cmisChoiceId[] choiceField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -8396,6 +8468,18 @@ namespace DotCMIS.CMISWebServicesReference {
                 this.RaisePropertyChanged("choice");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=2)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8405,6 +8489,20 @@ namespace DotCMIS.CMISWebServicesReference {
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://docs.oasis-open.org/ns/cmis/core/200908/")]
     public partial class cmisTypePolicyDefinitionType : cmisTypeDefinitionType {
+        
+        private System.Xml.XmlElement[] anyField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=0)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8418,6 +8516,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private string[] allowedSourceTypesField;
         
         private string[] allowedTargetTypesField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("allowedSourceTypes", Order=0)]
@@ -8442,6 +8542,18 @@ namespace DotCMIS.CMISWebServicesReference {
                 this.RaisePropertyChanged("allowedTargetTypes");
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=2)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8451,6 +8563,20 @@ namespace DotCMIS.CMISWebServicesReference {
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://docs.oasis-open.org/ns/cmis/core/200908/")]
     public partial class cmisTypeFolderDefinitionType : cmisTypeDefinitionType {
+        
+        private System.Xml.XmlElement[] anyField;
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=0)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
+            }
+        }
     }
     
     /// <remarks/>
@@ -8464,6 +8590,8 @@ namespace DotCMIS.CMISWebServicesReference {
         private bool versionableField;
         
         private enumContentStreamAllowed contentStreamAllowedField;
+        
+        private System.Xml.XmlElement[] anyField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -8486,6 +8614,18 @@ namespace DotCMIS.CMISWebServicesReference {
             set {
                 this.contentStreamAllowedField = value;
                 this.RaisePropertyChanged("contentStreamAllowed");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAnyElementAttribute(Order=2)]
+        public System.Xml.XmlElement[] Any {
+            get {
+                return this.anyField;
+            }
+            set {
+                this.anyField = value;
+                this.RaisePropertyChanged("Any");
             }
         }
     }

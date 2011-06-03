@@ -1451,10 +1451,17 @@ namespace DotCMIS.Binding
                 result.Children = new List<ICmisExtensionElement>();
                 foreach (XmlNode node in xmlElement.ChildNodes)
                 {
-                    ICmisExtensionElement element = CreateCmisExtensionElement(node);
-                    if (element != null)
+                    if (node.NodeType == XmlNodeType.Text || node.NodeType == XmlNodeType.CDATA || node.NodeType == XmlNodeType.SignificantWhitespace)
                     {
-                        result.Children.Add(element);
+                        result.Value = node.Value;
+                    }
+                    else if (node.NodeType == XmlNodeType.Element)
+                    {
+                        ICmisExtensionElement element = CreateCmisExtensionElement(node);
+                        if (element != null)
+                        {
+                            result.Children.Add(element);
+                        }
                     }
                 }
             }
