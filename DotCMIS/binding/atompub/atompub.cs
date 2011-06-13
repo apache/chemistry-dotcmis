@@ -2128,6 +2128,14 @@ namespace DotCMIS.Binding.AtomPub
                 ThrowLinkException(repositoryId, objectId, AtomPubConstants.RelSelf, AtomPubConstants.MediatypeEntry);
             }
 
+            // prefer working copy link if available
+            // (workaround for non-compliant repositories)
+            string wcLink = GetLink(repositoryId, objectId, AtomPubConstants.RelWorkingCopy, AtomPubConstants.MediatypeEntry);
+            if (wcLink != null)
+            {
+                link = wcLink;
+            }
+
             Delete(new UrlBuilder(link));
         }
 
@@ -2147,6 +2155,14 @@ namespace DotCMIS.Binding.AtomPub
             if (link == null)
             {
                 ThrowLinkException(repositoryId, objectId, AtomPubConstants.RelSelf, AtomPubConstants.MediatypeEntry);
+            }
+
+            // prefer working copy link if available
+            // (workaround for non-compliant repositories)
+            string wcLink = GetLink(repositoryId, objectId, AtomPubConstants.RelWorkingCopy, AtomPubConstants.MediatypeEntry);
+            if (wcLink != null)
+            {
+                link = wcLink;
             }
 
             UrlBuilder url = new UrlBuilder(link);

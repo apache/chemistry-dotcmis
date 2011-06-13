@@ -111,6 +111,7 @@ namespace DotCMIS.Data.Impl
     {
         private List<IPropertyDefinition> propertyDefintionList = new List<IPropertyDefinition>();
         private Dictionary<string, IPropertyDefinition> propertyDefintionDict = new Dictionary<string, IPropertyDefinition>();
+        private string parentTypeId;
 
         public string Id { get; set; }
         public string LocalName { get; set; }
@@ -119,7 +120,11 @@ namespace DotCMIS.Data.Impl
         public string QueryName { get; set; }
         public string Description { get; set; }
         public BaseTypeId BaseTypeId { get; set; }
-        public string ParentTypeId { get; set; }
+        public string ParentTypeId
+        {
+            get { return parentTypeId; }
+            set { parentTypeId = (value == null || value.Length == 0 ? null : value); }
+        }
         public bool? IsCreatable { get; set; }
         public bool? IsFileable { get; set; }
         public bool? IsQueryable { get; set; }

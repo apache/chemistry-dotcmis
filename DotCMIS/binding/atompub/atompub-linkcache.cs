@@ -40,6 +40,7 @@ namespace DotCMIS.Binding.AtomPub
             KnownLinks.Add(AtomPubConstants.RelEditMedia);
             KnownLinks.Add(AtomPubConstants.RelPolicies);
             KnownLinks.Add(AtomPubConstants.RelVersionHistory);
+            KnownLinks.Add(AtomPubConstants.RelWorkingCopy);
             KnownLinks.Add(AtomPubConstants.LinkRelContent);
         }
 
