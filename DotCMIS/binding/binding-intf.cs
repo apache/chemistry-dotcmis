@@ -91,7 +91,10 @@ namespace DotCMIS.Binding
             {
                 if (user != null || password != null)
                 {
-                    request.Credentials = new NetworkCredential(user ?? "", password ?? "");
+                    if (request.Headers.GetValues("Authorization") == null)
+                    {
+                        request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes((user ?? "") + ":" + (password ?? ""))));
+                    }
                 }
                 return;
             }
