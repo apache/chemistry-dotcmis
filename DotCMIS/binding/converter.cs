@@ -27,11 +27,84 @@ using DotCMIS.Data;
 using DotCMIS.Data.Extensions;
 using DotCMIS.Data.Impl;
 using DotCMIS.Enums;
+using DotCMIS.Exceptions;
 
 namespace DotCMIS.Binding
 {
     internal class Converter
     {
+        private const string CMISNamespaceURI = "http://docs.oasis-open.org/ns/cmis/core/200908/";
+
+        private delegate void ProcessAnyElement(XmlElement element);
+
+        /// <summary>
+        /// Walks through CMIS Any elements.
+        /// </summary>
+        private static void ProcessAnyElements(XmlElement[] any, ProcessAnyElement proc)
+        {
+            try
+            {
+                if (any != null)
+                {
+                    foreach (XmlElement element in any)
+                    {
+                        if (element.NamespaceURI.Equals(CMISNamespaceURI) && element.FirstChild != null)
+                        {
+                            proc(element);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw new CmisRuntimeException(e.Message, e);
+            }
+        }
+
+        /// <summary>
+        /// Deserializes a string.
+        /// </summary>
+        private static string DeserializeString(XmlElement element)
+        {
+            return element.FirstChild.Value;
+        }
+
+        /// <summary>
+        /// Deserializes an integer.
+        /// </summary>
+        private static long? DeserializeInteger(XmlElement element)
+        {
+            string s = DeserializeString(element);
+            return s == null ? (long?)null : Int64.Parse(s);
+        }
+
+        /// <summary>
+        /// Deserializes a boolean.
+        /// </summary>
+        private static Boolean DeserializeBoolean(XmlElement element)
+        {
+            return "true".Equals(DeserializeString(element), StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Deserializes an enum.
+        /// </summary>
+        private static T DeserializeEnum<T>(XmlElement element)
+        {
+            return CmisValue.GetCmisEnum<T>(DeserializeString(element));
+        }
+
+        /// <summary>
+        /// Deserializes an elemenet.
+        /// </summary>
+        private static T DeserializeElement<T>(XmlElement element)
+        {
+            XmlRootAttribute xmlRoot = new XmlRootAttribute(element.LocalName);
+            xmlRoot.Namespace = CMISNamespaceURI;
+            XmlSerializer s = new XmlSerializer(typeof(T), xmlRoot);
+            return (T)s.Deserialize(new XmlNodeReader(element));
+        }
+
         /// <summary>
         /// Converts a repository info.
         /// </summary>
@@ -172,6 +245,18 @@ namespace DotCMIS.Binding
                 docType.IsVersionable = docTypeDef.versionable;
                 docType.ContentStreamAllowed = (ContentStreamAllowed)CmisValue.SerializerToCmisEnum(docTypeDef.contentStreamAllowed);
 
+                ProcessAnyElements(docTypeDef.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("versionable"))
+                    {
+                        docType.IsVersionable = DeserializeBoolean(element);
+                    }
+                    else if (element.LocalName.Equals("contentStreamAllowed"))
+                    {
+                        docType.ContentStreamAllowed = DeserializeEnum<ContentStreamAllowed>(element);
+                    }
+                });
+
                 result = docType;
             }
             else if (typeDef is cmisTypeFolderDefinitionType)
@@ -204,6 +289,26 @@ namespace DotCMIS.Binding
                         relType.AllowedTargetTypeIds.Add(id);
                     }
                 }
+
+                ProcessAnyElements(relTypeDef.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("allowedSourceTypes"))
+                    {
+                        if (relType.AllowedSourceTypeIds == null)
+                        {
+                            relType.AllowedSourceTypeIds = new List<string>();
+                        }
+                        relType.AllowedSourceTypeIds.Add(element.FirstChild.Value);
+                    }
+                    else if (element.LocalName.Equals("allowedTargetTypes"))
+                    {
+                        if (relType.AllowedTargetTypeIds == null)
+                        {
+                            relType.AllowedTargetTypeIds = new List<string>();
+                        }
+                        relType.AllowedTargetTypeIds.Add(element.FirstChild.Value);
+                    }
+                });
 
                 result = relType;
             }
@@ -258,6 +363,28 @@ namespace DotCMIS.Binding
                     foreach (cmisChoiceBoolean c in cpd.choice) { pd.Choices.Add(ConvertChoice(c)); }
                 }
 
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisPropertyBoolean prop = DeserializeElement<cmisPropertyBoolean>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<bool>();
+                            foreach (bool value in prop.value) { pd.DefaultValue.Add(value); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choice"))
+                    {
+                        cmisChoiceBoolean choice = DeserializeElement<cmisChoiceBoolean>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null) { pd.Choices = new List<IChoice<bool>>(); }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                });
+
                 result = pd;
             }
             else if (propDef is cmisPropertyDateTimeDefinitionType)
@@ -280,6 +407,32 @@ namespace DotCMIS.Binding
                 {
                     pd.DateTimeResolution = (DateTimeResolution)CmisValue.SerializerToCmisEnum(cpd.resolution);
                 }
+
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisChoiceDateTime prop = DeserializeElement<cmisChoiceDateTime>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<DateTime>();
+                            foreach (DateTime value in prop.value) { pd.DefaultValue.Add(value); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choiceDateTime"))
+                    {
+                        cmisChoiceDateTime choice = DeserializeElement<cmisChoiceDateTime>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null) { pd.Choices = new List<IChoice<DateTime>>(); }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                    else if (element.LocalName.Equals("maxLength"))
+                    {
+                        pd.DateTimeResolution = DeserializeEnum<DateTimeResolution>(element);
+                    }
+                });
 
                 result = pd;
             }
@@ -312,6 +465,40 @@ namespace DotCMIS.Binding
                     pd.Precision = (DecimalPrecision)CmisValue.SerializerToCmisEnum(cpd.precision);
                 }
 
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisChoiceDecimal prop = DeserializeElement<cmisChoiceDecimal>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<decimal>();
+                            foreach (decimal value in prop.value) { pd.DefaultValue.Add(value); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choiceDateTime"))
+                    {
+                        cmisChoiceDecimal choice = DeserializeElement<cmisChoiceDecimal>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null) { pd.Choices = new List<IChoice<decimal>>(); }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                    else if (element.LocalName.Equals("maxValue"))
+                    {
+                        pd.MaxValue = DeserializeInteger(element);
+                    }
+                    else if (element.LocalName.Equals("minValue"))
+                    {
+                        pd.MinValue = DeserializeInteger(element);
+                    }
+                    else if (element.LocalName.Equals("precision"))
+                    {
+                        pd.Precision = DeserializeEnum<DecimalPrecision>(element);
+                    }
+                });
+
                 result = pd;
             }
             else if (propDef is cmisPropertyHtmlDefinitionType)
@@ -330,6 +517,28 @@ namespace DotCMIS.Binding
                     foreach (cmisChoiceHtml c in cpd.choice) { pd.Choices.Add(ConvertChoice(c)); }
                 }
 
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisPropertyHtml prop = DeserializeElement<cmisPropertyHtml>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<string>();
+                            foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choiceHtml"))
+                    {
+                        cmisChoiceHtml choice = DeserializeElement<cmisChoiceHtml>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null) { pd.Choices = new List<IChoice<string>>(); }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                });
+
                 result = pd;
             }
             else if (propDef is cmisPropertyIdDefinitionType)
@@ -347,6 +556,28 @@ namespace DotCMIS.Binding
                     pd.Choices = new List<IChoice<string>>();
                     foreach (cmisChoiceId c in cpd.choice) { pd.Choices.Add(ConvertChoice(c)); }
                 }
+
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisPropertyId prop = DeserializeElement<cmisPropertyId>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<string>();
+                            foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choiceId"))
+                    {
+                        cmisChoiceId choice = DeserializeElement<cmisChoiceId>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null) { pd.Choices = new List<IChoice<string>>(); }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                });
 
                 result = pd;
             }
@@ -375,6 +606,28 @@ namespace DotCMIS.Binding
                     pd.MinValue = Int64.Parse(cpd.minValue);
                 }
 
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisPropertyInteger prop = DeserializeElement<cmisPropertyInteger>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<long>();
+                            foreach (string value in prop.value) { pd.DefaultValue.Add(Int64.Parse(value)); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choiceId"))
+                    {
+                        cmisChoiceInteger choice = DeserializeElement<cmisChoiceInteger>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null) { pd.Choices = new List<IChoice<long>>(); }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                });
+
                 result = pd;
             }
             else if (propDef is cmisPropertyStringDefinitionType)
@@ -398,6 +651,35 @@ namespace DotCMIS.Binding
                     pd.MaxLength = Int64.Parse(cpd.maxLength);
                 }
 
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisPropertyString prop = DeserializeElement<cmisPropertyString>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<string>();
+                            foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choiceString"))
+                    {
+                        cmisChoiceString choice = DeserializeElement<cmisChoiceString>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null)
+                            {
+                                pd.Choices = new List<IChoice<string>>();
+                            }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                    else if (element.LocalName.Equals("maxLength"))
+                    {
+                        pd.MaxLength = DeserializeInteger(element);
+                    }
+                });
+
                 result = pd;
             }
             else if (propDef is cmisPropertyUriDefinitionType)
@@ -415,6 +697,31 @@ namespace DotCMIS.Binding
                     pd.Choices = new List<IChoice<string>>();
                     foreach (cmisChoiceUri c in cpd.choice) { pd.Choices.Add(ConvertChoice(c)); }
                 }
+
+                ProcessAnyElements(cpd.Any, (element) =>
+                {
+                    if (element.LocalName.Equals("defaultValue"))
+                    {
+                        cmisPropertyUri prop = DeserializeElement<cmisPropertyUri>(element);
+                        if (prop != null && prop.value != null)
+                        {
+                            pd.DefaultValue = new List<string>();
+                            foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
+                        }
+                    }
+                    else if (element.LocalName.Equals("choiceUri"))
+                    {
+                        cmisChoiceUri choice = DeserializeElement<cmisChoiceUri>(element);
+                        if (choice != null)
+                        {
+                            if (pd.Choices == null)
+                            {
+                                pd.Choices = new List<IChoice<string>>();
+                            }
+                            pd.Choices.Add(ConvertChoice(choice));
+                        }
+                    }
+                });
 
                 result = pd;
             }

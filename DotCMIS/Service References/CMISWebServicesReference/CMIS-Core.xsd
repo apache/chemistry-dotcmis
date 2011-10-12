@@ -459,6 +459,7 @@
       <xs:element minOccurs="1" maxOccurs="1" name="queryable" type="xs:boolean" />
       <xs:element minOccurs="1" maxOccurs="1" name="orderable" type="xs:boolean" />
       <xs:element minOccurs="0" maxOccurs="1" name="openChoice" type="xs:boolean" />
+      <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </xs:sequence>
     <xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
   </xs:complexType>
@@ -468,7 +469,6 @@
         <xs:sequence>
           <xs:element minOccurs="0" maxOccurs="1" name="defaultValue" type="cmis:cmisPropertyBoolean" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceBoolean" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -479,7 +479,6 @@
         <xs:sequence>
           <xs:element minOccurs="0" maxOccurs="1" name="defaultValue" type="cmis:cmisPropertyId" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceId" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -492,7 +491,6 @@
           <xs:element minOccurs="0" maxOccurs="1" name="maxValue" type="xs:integer" />
           <xs:element minOccurs="0" maxOccurs="1" name="minValue" type="xs:integer" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceInteger" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -504,7 +502,6 @@
           <xs:element minOccurs="0" maxOccurs="1" name="defaultValue" type="cmis:cmisPropertyDateTime" />
           <xs:element minOccurs="0" maxOccurs="1" name="resolution" type="cmis:enumDateTimeResolution" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceDateTime" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -518,7 +515,6 @@
           <xs:element minOccurs="0" maxOccurs="1" name="minValue" type="xs:decimal" />
           <xs:element minOccurs="0" maxOccurs="1" name="precision" type="cmis:enumDecimalPrecision" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceDecimal" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -529,7 +525,6 @@
         <xs:sequence>
           <xs:element minOccurs="0" maxOccurs="1" name="defaultValue" type="cmis:cmisPropertyHtml" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceHtml" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -541,7 +536,6 @@
           <xs:element minOccurs="0" maxOccurs="1" name="defaultValue" type="cmis:cmisPropertyString" />
           <xs:element minOccurs="0" maxOccurs="1" name="maxLength" type="xs:integer" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceString" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -552,7 +546,6 @@
         <xs:sequence>
           <xs:element minOccurs="0" maxOccurs="1" name="defaultValue" type="cmis:cmisPropertyUri" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="choice" type="cmis:cmisChoiceUri" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -572,7 +565,7 @@
 						This is the id for the parent type definition. If
 						this is a base type,
 						this is not present.
-					</xs:documentation>
+			</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="1" maxOccurs="1" name="creatable" type="xs:boolean" />
@@ -597,6 +590,7 @@
         <xs:element name="propertyStringDefinition" type="cmis:cmisPropertyStringDefinitionType" />
         <xs:element name="propertyUriDefinition" type="cmis:cmisPropertyUriDefinitionType" />
       </xs:choice>
+      <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
     </xs:sequence>
     <xs:attributeGroup ref="cmis:cmisUndefinedAttribute" />
   </xs:complexType>
@@ -606,7 +600,6 @@
         <xs:sequence>
           <xs:element minOccurs="1" maxOccurs="1" name="versionable" type="xs:boolean" />
           <xs:element minOccurs="1" maxOccurs="1" name="contentStreamAllowed" type="cmis:enumContentStreamAllowed" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -614,9 +607,7 @@
   <xs:complexType name="cmisTypeFolderDefinitionType">
     <xs:complexContent mixed="false">
       <xs:extension base="cmis:cmisTypeDefinitionType">
-        <xs:sequence>
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
-        </xs:sequence>
+        <xs:sequence />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -626,7 +617,6 @@
         <xs:sequence>
           <xs:element minOccurs="0" maxOccurs="unbounded" name="allowedSourceTypes" type="xs:string" />
           <xs:element minOccurs="0" maxOccurs="unbounded" name="allowedTargetTypes" type="xs:string" />
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -634,9 +624,7 @@
   <xs:complexType name="cmisTypePolicyDefinitionType">
     <xs:complexContent mixed="false">
       <xs:extension base="cmis:cmisTypeDefinitionType">
-        <xs:sequence>
-          <xs:any minOccurs="0" maxOccurs="unbounded" namespace="##other" processContents="lax" />
-        </xs:sequence>
+        <xs:sequence />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
