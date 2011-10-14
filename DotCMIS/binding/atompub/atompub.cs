@@ -1917,6 +1917,45 @@ namespace DotCMIS.Binding.AtomPub
                 return new FailedToDeleteData();
             }
 
+            // If the server returned an internal server error, get the remaining
+            // children of the folder. We only retrieve the first level, since
+            // getDescendants() is not supported by all repositories.
+            if (resp.StatusCode == HttpStatusCode.InternalServerError)
+            {
+                link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+
+                if (link != null)
+                {
+                    url = new UrlBuilder(link);
+                    // we only want the object ids
+                    url.AddParameter(AtomPubConstants.ParamFilter, "cmis:objectId");
+                    url.AddParameter(AtomPubConstants.ParamAllowableActions, false);
+                    url.AddParameter(AtomPubConstants.ParamRelationships, IncludeRelationshipsFlag.None);
+                    url.AddParameter(AtomPubConstants.ParamRenditionFilter, "cmis:none");
+                    url.AddParameter(AtomPubConstants.ParamPathSegment, false);
+                    // 1000 children should be enough to indicate a problem
+                    url.AddParameter(AtomPubConstants.ParamMaxItems, 1000);
+                    url.AddParameter(AtomPubConstants.ParamSkipCount, 0);
+
+                    // read and parse
+                    resp = Read(url);
+                    AtomFeed feed = Parse<AtomFeed>(resp.Stream);
+
+                    // prepare result
+                    FailedToDeleteData result = new FailedToDeleteData();
+                    List<string> ids = new List<string>();
+                    result.Ids = ids;
+
+                    // get the children ids
+                    foreach (AtomEntry entry in feed.GetEntries())
+                    {
+                        ids.Add(entry.Id);
+                    }
+
+                    return result;
+                }
+            }
+
             throw ConvertStatusCode(resp.StatusCode, resp.Message, resp.ErrorContent, null);
         }
 
