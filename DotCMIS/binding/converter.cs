@@ -419,7 +419,7 @@ namespace DotCMIS.Binding
                             foreach (DateTime value in prop.value) { pd.DefaultValue.Add(value); }
                         }
                     }
-                    else if (element.LocalName.Equals("choiceDateTime"))
+                    else if (element.LocalName.Equals("choice"))
                     {
                         cmisChoiceDateTime choice = DeserializeElement<cmisChoiceDateTime>(element);
                         if (choice != null)
@@ -476,7 +476,7 @@ namespace DotCMIS.Binding
                             foreach (decimal value in prop.value) { pd.DefaultValue.Add(value); }
                         }
                     }
-                    else if (element.LocalName.Equals("choiceDateTime"))
+                    else if (element.LocalName.Equals("choice"))
                     {
                         cmisChoiceDecimal choice = DeserializeElement<cmisChoiceDecimal>(element);
                         if (choice != null)
@@ -528,7 +528,7 @@ namespace DotCMIS.Binding
                             foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
                         }
                     }
-                    else if (element.LocalName.Equals("choiceHtml"))
+                    else if (element.LocalName.Equals("choice"))
                     {
                         cmisChoiceHtml choice = DeserializeElement<cmisChoiceHtml>(element);
                         if (choice != null)
@@ -568,7 +568,7 @@ namespace DotCMIS.Binding
                             foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
                         }
                     }
-                    else if (element.LocalName.Equals("choiceId"))
+                    else if (element.LocalName.Equals("choice"))
                     {
                         cmisChoiceId choice = DeserializeElement<cmisChoiceId>(element);
                         if (choice != null)
@@ -617,7 +617,7 @@ namespace DotCMIS.Binding
                             foreach (string value in prop.value) { pd.DefaultValue.Add(Int64.Parse(value)); }
                         }
                     }
-                    else if (element.LocalName.Equals("choiceId"))
+                    else if (element.LocalName.Equals("choice"))
                     {
                         cmisChoiceInteger choice = DeserializeElement<cmisChoiceInteger>(element);
                         if (choice != null)
@@ -662,7 +662,7 @@ namespace DotCMIS.Binding
                             foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
                         }
                     }
-                    else if (element.LocalName.Equals("choiceString"))
+                    else if (element.LocalName.Equals("choice"))
                     {
                         cmisChoiceString choice = DeserializeElement<cmisChoiceString>(element);
                         if (choice != null)
@@ -709,7 +709,7 @@ namespace DotCMIS.Binding
                             foreach (string value in prop.value) { pd.DefaultValue.Add(value); }
                         }
                     }
-                    else if (element.LocalName.Equals("choiceUri"))
+                    else if (element.LocalName.Equals("choice"))
                     {
                         cmisChoiceUri choice = DeserializeElement<cmisChoiceUri>(element);
                         if (choice != null)
