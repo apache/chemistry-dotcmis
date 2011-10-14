@@ -79,6 +79,15 @@ namespace DotCMIS.Binding
         }
 
         /// <summary>
+        /// Deserializes a decimal.
+        /// </summary>
+        private static decimal? DeserializeDecimal(XmlElement element)
+        {
+            string s = DeserializeString(element);
+            return s == null ? (decimal?)null : Decimal.Parse(s);
+        }
+
+        /// <summary>
         /// Deserializes a boolean.
         /// </summary>
         private static Boolean DeserializeBoolean(XmlElement element)
@@ -487,11 +496,11 @@ namespace DotCMIS.Binding
                     }
                     else if (element.LocalName.Equals("maxValue"))
                     {
-                        pd.MaxValue = DeserializeInteger(element);
+                        pd.MaxValue = DeserializeDecimal(element);
                     }
                     else if (element.LocalName.Equals("minValue"))
                     {
-                        pd.MinValue = DeserializeInteger(element);
+                        pd.MinValue = DeserializeDecimal(element);
                     }
                     else if (element.LocalName.Equals("precision"))
                     {
@@ -625,6 +634,14 @@ namespace DotCMIS.Binding
                             if (pd.Choices == null) { pd.Choices = new List<IChoice<long>>(); }
                             pd.Choices.Add(ConvertChoice(choice));
                         }
+                    }
+                    else if (element.LocalName.Equals("maxValue"))
+                    {
+                        pd.MaxValue = DeserializeInteger(element);
+                    }
+                    else if (element.LocalName.Equals("minValue"))
+                    {
+                        pd.MinValue = DeserializeInteger(element);
                     }
                 });
 
