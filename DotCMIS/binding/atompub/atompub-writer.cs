@@ -145,14 +145,17 @@ namespace DotCMIS.Binding.AtomPub
         {
             string result = "";
 
-            foreach (cmisProperty property in cmisObject.properties.Items)
+            if (cmisObject.properties != null && cmisObject.properties.Items != null)
             {
-                if (PropertyIds.Name == property.propertyDefinitionId && property is cmisPropertyString)
+                foreach (cmisProperty property in cmisObject.properties.Items)
                 {
-                    string[] values = ((cmisPropertyString)property).value;
-                    if (values != null && values.Length > 0)
+                    if (PropertyIds.Name == property.propertyDefinitionId && property is cmisPropertyString)
                     {
-                        return values[0];
+                        string[] values = ((cmisPropertyString)property).value;
+                        if (values != null && values.Length > 0)
+                        {
+                            return values[0];
+                        }
                     }
                 }
             }
