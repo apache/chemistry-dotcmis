@@ -1866,7 +1866,7 @@ namespace DotCMIS.Binding
 
             if (element.Value != null)
             {
-                result.Value = element.Value;
+                result.InnerText = element.Value;
             }
             else if (element.Children != null)
             {
