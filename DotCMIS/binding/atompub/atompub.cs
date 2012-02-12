@@ -859,7 +859,6 @@ namespace DotCMIS.Binding.AtomPub
             }
 
             UrlBuilder url = new UrlBuilder(link);
-            url.AddParameter(AtomPubConstants.ParamTypeId, typeId);
             url.AddParameter(AtomPubConstants.ParamPropertyDefinitions, includePropertyDefinitions);
             url.AddParameter(AtomPubConstants.ParamMaxItems, maxItems);
             url.AddParameter(AtomPubConstants.ParamSkipCount, skipCount);
@@ -939,7 +938,6 @@ namespace DotCMIS.Binding.AtomPub
             }
 
             UrlBuilder url = new UrlBuilder(link);
-            url.AddParameter(AtomPubConstants.ParamTypeId, typeId);
             url.AddParameter(AtomPubConstants.ParamDepth, depth);
             url.AddParameter(AtomPubConstants.ParamPropertyDefinitions, includePropertyDefinitions);
 
