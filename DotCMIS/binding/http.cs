@@ -178,13 +178,22 @@ namespace DotCMIS.Binding.Impl
                 Message = httpResponse.StatusDescription;
                 ContentType = httpResponse.ContentType;
                 ContentLength = httpResponse.ContentLength == -1 ? null : (long?)httpResponse.ContentLength;
+                string contentTransferEncoding = httpResponse.Headers["Content-Transfer-Encoding"];
+                bool isBase64 = contentTransferEncoding != null && contentTransferEncoding.Equals("base64", StringComparison.CurrentCultureIgnoreCase);
 
                 if (httpResponse.StatusCode == HttpStatusCode.OK ||
                     httpResponse.StatusCode == HttpStatusCode.Created ||
                     httpResponse.StatusCode == HttpStatusCode.NonAuthoritativeInformation ||
                     httpResponse.StatusCode == HttpStatusCode.PartialContent)
                 {
-                    Stream = new BufferedStream(httpResponse.GetResponseStream(), 64 * 1024);
+                    if (isBase64)
+                    {
+                        Stream = new BufferedStream(new CryptoStream(httpResponse.GetResponseStream(), new FromBase64Transform(), CryptoStreamMode.Read), 64 * 1024);
+                    }
+                    else
+                    {  
+                        Stream = new BufferedStream(httpResponse.GetResponseStream(), 64 * 1024);
+                    }
                 }
                 else
                 {
