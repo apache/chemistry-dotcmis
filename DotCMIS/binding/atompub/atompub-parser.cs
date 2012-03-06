@@ -51,7 +51,7 @@ namespace DotCMIS.Binding.AtomPub
             allowableActionsXmlRoot.Namespace = AtomPubConstants.NamespaceRestAtom;
             AllowableActionsSerializer = new XmlSerializer(typeof(cmisAllowableActionsType), allowableActionsXmlRoot);
 
-            XmlRootAttribute aclXmlRoot = new XmlRootAttribute("accessControlList");
+            XmlRootAttribute aclXmlRoot = new XmlRootAttribute("acl");
             aclXmlRoot.Namespace = AtomPubConstants.NamespaceRestAtom;
             AclSerializer = new XmlSerializer(typeof(cmisAccessControlListType), aclXmlRoot);
         }
