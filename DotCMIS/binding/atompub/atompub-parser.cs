@@ -48,11 +48,11 @@ namespace DotCMIS.Binding.AtomPub
             ObjectSerializer = new XmlSerializer(typeof(cmisObjectType), objectXmlRoot);
 
             XmlRootAttribute allowableActionsXmlRoot = new XmlRootAttribute("allowableActions");
-            allowableActionsXmlRoot.Namespace = AtomPubConstants.NamespaceRestAtom;
+            allowableActionsXmlRoot.Namespace = AtomPubConstants.NamespaceCMIS;
             AllowableActionsSerializer = new XmlSerializer(typeof(cmisAllowableActionsType), allowableActionsXmlRoot);
 
             XmlRootAttribute aclXmlRoot = new XmlRootAttribute("acl");
-            aclXmlRoot.Namespace = AtomPubConstants.NamespaceRestAtom;
+            aclXmlRoot.Namespace = AtomPubConstants.NamespaceCMIS;
             AclSerializer = new XmlSerializer(typeof(cmisAccessControlListType), aclXmlRoot);
         }
 
