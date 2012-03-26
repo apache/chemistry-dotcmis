@@ -22,7 +22,7 @@ rem
 rem This batch file creates a release.
 rem It requires Cygwin.
 
-set DOTCMISVERSION=0.3
+set DOTCMISVERSION=0.4
 set DOTCMISZIP=chemistry-dotcmis-%DOTCMISVERSION%.zip
 set DOTCMISRC=RC1
 
@@ -67,9 +67,9 @@ echo Signing release file...
 cd artifacts
 gpg --armor --output %DOTCMISZIP%.asc --detach-sig %DOTCMISZIP%
 gpg --print-md MD5 %DOTCMISZIP% > %DOTCMISZIP%.md5
-gpg --print-md SHA512 %DOTCMISZIP% > %DOTCMISZIP%.sha
+gpg --print-md SHA1 %DOTCMISZIP% > %DOTCMISZIP%.sha
 gpg --print-md MD5 %DOTCMISZIP%.asc > %DOTCMISZIP%.asc.md5
-gpg --print-md SHA512 %DOTCMISZIP%.asc > %DOTCMISZIP%.asc.sha
+gpg --print-md SHA1 %DOTCMISZIP%.asc > %DOTCMISZIP%.asc.sha
 cd ..
 
 echo Creating RC tag
