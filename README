@@ -1,4 +1,4 @@
-Apache Chemistry DotCMIS 0.3
+Apache Chemistry DotCMIS 0.4
 ============================
 
 Apache Chemistry DotCMIS is a Content Management Interoperability Services (CMIS)
@@ -9,12 +9,17 @@ See http://chemistry.apache.org/dotnet/dotcmis.html for more information.
 See http://chemistry.apache.org/dotnet/getting-started-with-dotcmis.html for code samples
 and DotCMISDoc.chm for the API documentation.
 
-This third release is a bug fix release.
+This release is a bug fix release.
 If you find a problem, please let us know: https://issues.apache.org/jira/browse/CMIS
 
 
 Change log 
 ----------
+
+DotCMIS 0.4:
+
+- Several bug and interoptability fixes.
+
 
 DotCMIS 0.3:
 
