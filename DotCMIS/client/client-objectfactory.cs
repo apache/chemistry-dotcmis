@@ -63,6 +63,7 @@ namespace DotCMIS.Client.Impl
         public IAce CreateAce(string principal, IList<string> permissions)
         {
             Ace ace = new Ace();
+            ace.IsDirect = true;
             Principal acePrincipal = new Principal();
             acePrincipal.Id = principal;
             ace.Principal = acePrincipal;

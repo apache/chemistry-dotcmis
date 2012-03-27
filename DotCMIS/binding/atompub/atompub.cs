@@ -526,32 +526,43 @@ namespace DotCMIS.Binding.AtomPub
             // iterate through the original ACEs
             foreach (KeyValuePair<string, HashSet<string>> ace in originals)
             {
+                HashSet<string> permSet;
+                if (ace.Value == null)
+                {
+                    permSet = new HashSet<string>();
+                }
+                else
+                {
+                    permSet = new HashSet<string>(ace.Value);
+                }
+
                 // add permissions
-                HashSet<string> addPermissions = adds[ace.Key];
-                if (addPermissions != null)
+                HashSet<string> addPermissions;
+                if (adds.TryGetValue(ace.Key, out addPermissions))
                 {
                     foreach (string perm in addPermissions)
                     {
-                        ace.Value.Add(perm);
+                        permSet.Add(perm);
                     }
                 }
 
                 // remove permissions
-                HashSet<string> removePermissions = removes[ace.Key];
-                if (removePermissions != null)
+                HashSet<string> removePermissions;
+                if (adds.TryGetValue(ace.Key, out removePermissions))
                 {
                     foreach (string perm in removePermissions)
                     {
-                        ace.Value.Remove(perm);
+                        permSet.Remove(perm);
                     }
                 }
 
                 // create new ACE
                 Ace resultAce = new Ace();
+                resultAce.IsDirect = true;
                 Principal resultPrincipal = new Principal();
                 resultPrincipal.Id = ace.Key;
                 resultAce.Principal = resultPrincipal;
-                resultAce.Permissions = new List<string>(ace.Value);
+                resultAce.Permissions = new List<string>(permSet);
 
                 newACEs.Add(resultAce);
             }
@@ -559,9 +570,10 @@ namespace DotCMIS.Binding.AtomPub
             // find all ACEs that should be added but are not in the original ACE list
             foreach (KeyValuePair<string, HashSet<string>> ace in adds)
             {
-                if (!originals.ContainsKey(ace.Key) && ace.Value.Count > 0)
+                if (!originals.ContainsKey(ace.Key) && ace.Value != null && ace.Value.Count > 0)
                 {
                     Ace resultAce = new Ace();
+                    resultAce.IsDirect = true;
                     Principal resultPrincipal = new Principal();
                     resultPrincipal.Id = ace.Key;
                     resultAce.Principal = resultPrincipal;
