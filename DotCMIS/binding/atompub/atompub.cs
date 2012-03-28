@@ -548,7 +548,7 @@ namespace DotCMIS.Binding.AtomPub
 
                 // remove permissions
                 HashSet<string> removePermissions;
-                if (adds.TryGetValue(ace.Key, out removePermissions))
+                if (removes.TryGetValue(ace.Key, out removePermissions))
                 {
                     foreach (string perm in removePermissions)
                     {

@@ -23,7 +23,8 @@ rem This batch file creates a release.
 rem It requires Cygwin.
 
 set DOTCMISVERSION=0.4
-set DOTCMISZIP=chemistry-dotcmis-%DOTCMISVERSION%.zip
+set DOTCMISZIPSRC=chemistry-dotcmis-%DOTCMISVERSION%-src.zip
+set DOTCMISZIPBIN=chemistry-dotcmis-%DOTCMISVERSION%-bin.zip
 set DOTCMISRC=RC1
 
 set CYGWIN=ntea
@@ -33,43 +34,62 @@ cd DotCMIS
 call build.bat
 cd ..
 
-echo Creating release directory...
-rmdir /S /Q release
-mkdir release
+echo Creating release directories...
+rmdir /S /Q release-src
+mkdir release-src
+rmdir /S /Q release-bin
+mkdir release-bin
 
 echo Copying readme, etc...
-copy LICENSE release
-copy NOTICE release
-copy DEPENDENCIES release
-copy README release
+copy LICENSE release-src
+copy LICENSE release-bin
+copy NOTICE release-src
+copy NOTICE release-bin
+copy DEPENDENCIES release-src
+copy DEPENDENCIES release-bin
+copy README release-src
+copy README release-bin
 
 echo Copying binaries ...
-copy DotCMIS\bin\Release\DotCMIS.dll release
-copy DotCMIS\doc\DotCMISDoc.chm release
+copy DotCMIS\bin\Release\DotCMIS.dll release-bin
+copy DotCMIS\doc\DotCMISDoc.chm release-bin
+chmod -R a+rwx release-bin
 
 echo Copying source...
-mkdir release\src
-xcopy DotCMIS release\src /E
-rmdir /S /Q release\src\bin
-rmdir /S /Q release\src\obj
-rmdir /S /Q release\src\doc
-chmod -R a+rwx release
+mkdir release-src\src
+xcopy DotCMIS release-src\src /E
+rmdir /S /Q release-src\src\bin
+rmdir /S /Q release-src\src\obj
+rmdir /S /Q release-src\src\doc
+chmod -R a+rwx release-src
 
 echo Creating release file...
 rmdir /S /Q artifacts
 mkdir artifacts
 
-cd release
-zip -r  ../artifacts/%DOTCMISZIP% *
+cd release-src
+zip -r  ../artifacts/%DOTCMISZIPSRC% *
+cd ..
+
+cd release-bin
+zip -r  ../artifacts/%DOTCMISZIPBIN% *
 cd ..
 
 echo Signing release file...
 cd artifacts
-gpg --armor --output %DOTCMISZIP%.asc --detach-sig %DOTCMISZIP%
-gpg --print-md MD5 %DOTCMISZIP% > %DOTCMISZIP%.md5
-gpg --print-md SHA1 %DOTCMISZIP% > %DOTCMISZIP%.sha
-gpg --print-md MD5 %DOTCMISZIP%.asc > %DOTCMISZIP%.asc.md5
-gpg --print-md SHA1 %DOTCMISZIP%.asc > %DOTCMISZIP%.asc.sha
+
+gpg --armor --output %DOTCMISZIPSRC%.asc --detach-sig %DOTCMISZIPSRC%
+gpg --print-md MD5 %DOTCMISZIPSRC% > %DOTCMISZIPSRC%.md5
+gpg --print-md SHA1 %DOTCMISZIPSRC% > %DOTCMISZIPSRC%.sha
+gpg --print-md MD5 %DOTCMISZIPSRC%.asc > %DOTCMISZIPSRC%.asc.md5
+gpg --print-md SHA1 %DOTCMISZIPSRC%.asc > %DOTCMISZIPSRC%.asc.sha
+
+gpg --armor --output %DOTCMISZIPBIN%.asc --detach-sig %DOTCMISZIPBIN%
+gpg --print-md MD5 %DOTCMISZIPBIN% > %DOTCMISZIPBIN%.md5
+gpg --print-md SHA1 %DOTCMISZIPBIN% > %DOTCMISZIPBIN%.sha
+gpg --print-md MD5 %DOTCMISZIPBIN%.asc > %DOTCMISZIPBIN%.asc.md5
+gpg --print-md SHA1 %DOTCMISZIPBIN%.asc > %DOTCMISZIPBIN%.asc.sha
+
 cd ..
 
 echo Creating RC tag
