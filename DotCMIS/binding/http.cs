@@ -132,7 +132,6 @@ namespace DotCMIS.Binding.Impl
                 if (writer != null)
                 {
                     conn.SendChunked = true;
-                    conn.AllowWriteStreamBuffering = false;
                     Stream requestStream = conn.GetRequestStream();
                     writer(requestStream);
                     requestStream.Close();
@@ -163,7 +162,7 @@ namespace DotCMIS.Binding.Impl
 
         internal class Response
         {
-            private WebResponse response;
+            private readonly WebResponse response;
 
             public HttpStatusCode StatusCode { get; private set; }
             public string Message { get; private set; }

@@ -86,9 +86,10 @@ namespace DotCMIS.Binding
             string password = GetPassword();
 
             // AtomPub authentictaion
-            WebRequest request = connection as WebRequest;
+            HttpWebRequest request = connection as HttpWebRequest;
             if (request != null)
             {
+                request.AllowWriteStreamBuffering = false;
                 if (user != null || password != null)
                 {
                     if (request.Headers.GetValues("Authorization") == null)
@@ -179,6 +180,28 @@ namespace DotCMIS.Binding
                     // remove SecurityBindingElement is neither a username nor a password have been set
                     binding.Elements.RemoveAll<SecurityBindingElement>();
                 }
+            }
+        }
+    }
+
+    public class NtlmAuthenticationProvider : AbstractAuthenticationProvider
+    {
+        private CookieContainer Cookies { get; set; }
+
+        public NtlmAuthenticationProvider()
+        {
+            Cookies = new CookieContainer();
+        }
+
+        public override void Authenticate(object connection)
+        {
+            HttpWebRequest hwr = connection as HttpWebRequest;
+
+            if (hwr != null)
+            {
+                hwr.Credentials = CredentialCache.DefaultNetworkCredentials;
+                hwr.CookieContainer = Cookies;
+                hwr.AllowWriteStreamBuffering = true;
             }
         }
     }
