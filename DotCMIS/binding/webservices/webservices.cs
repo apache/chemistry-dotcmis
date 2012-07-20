@@ -253,6 +253,7 @@ namespace DotCMIS.Binding.WebServices
                 HttpsTransportBindingElement transportElement = new HttpsTransportBindingElement();
                 transportElement.MaxReceivedMessageSize = messageSize;
                 transportElement.TransferMode = TransferMode.Streamed;
+                transportElement.AllowCookies = true;
                 elements.Add(transportElement);
 
                 binding = new CustomBinding(elements);

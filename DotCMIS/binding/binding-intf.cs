@@ -24,6 +24,7 @@ using System.ServiceModel.Description;
 using DotCMIS.Binding.Impl;
 using DotCMIS.Binding.Services;
 using DotCMIS.CMISWebServicesReference;
+using System.Security.Principal;
 
 namespace DotCMIS.Binding
 {
@@ -60,6 +61,7 @@ namespace DotCMIS.Binding
     public abstract class AbstractAuthenticationProvider : IAuthenticationProvider
     {
         public IBindingSession Session { get; set; }
+        public CookieContainer Cookies { get; set; }
 
         public abstract void Authenticate(object connection);
 
@@ -80,93 +82,113 @@ namespace DotCMIS.Binding
 
     public class StandardAuthenticationProvider : AbstractAuthenticationProvider
     {
+        public StandardAuthenticationProvider()
+        {
+            Cookies = new CookieContainer();
+        }
+
         public override void Authenticate(object connection)
+        {
+            HttpWebRequest request = connection as HttpWebRequest;
+            if (request != null)
+            {
+                // AtomPub and browser binding authentictaion
+                HttpAuthenticate(request);
+            }
+            else
+            {
+                // Web Service binding authentication
+                WebServicesAuthenticate(connection);
+            }
+        }
+
+        protected virtual void HttpAuthenticate(HttpWebRequest request)
         {
             string user = GetUser();
             string password = GetPassword();
 
-            // AtomPub authentictaion
-            HttpWebRequest request = connection as HttpWebRequest;
-            if (request != null)
+            request.AllowWriteStreamBuffering = false;
+            request.CookieContainer = Cookies;
+            if (user != null || password != null)
             {
-                request.AllowWriteStreamBuffering = false;
-                if (user != null || password != null)
+                if (request.Headers.GetValues("Authorization") == null)
                 {
-                    if (request.Headers.GetValues("Authorization") == null)
-                    {
-                        request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes((user ?? "") + ":" + (password ?? ""))));
-                    }
+                    request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes((user ?? "") + ":" + (password ?? ""))));
                 }
-                return;
             }
+        }
 
-            // Web Services authentication
+        protected virtual void WebServicesAuthenticate(object connection)
+        {
             RepositoryServicePortClient repositoryServicePortClient = connection as RepositoryServicePortClient;
             if (repositoryServicePortClient != null)
             {
-                AddUsernameCredentials(repositoryServicePortClient.Endpoint, repositoryServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(repositoryServicePortClient.Endpoint, repositoryServicePortClient.ClientCredentials);
                 return;
             }
 
             NavigationServicePortClient navigationServicePortClient = connection as NavigationServicePortClient;
             if (navigationServicePortClient != null)
             {
-                AddUsernameCredentials(navigationServicePortClient.Endpoint, navigationServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(navigationServicePortClient.Endpoint, navigationServicePortClient.ClientCredentials);
                 return;
             }
 
             ObjectServicePortClient objectServicePortClient = connection as ObjectServicePortClient;
             if (objectServicePortClient != null)
             {
-                AddUsernameCredentials(objectServicePortClient.Endpoint, objectServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(objectServicePortClient.Endpoint, objectServicePortClient.ClientCredentials);
                 return;
             }
 
             VersioningServicePortClient versioningServicePortClient = connection as VersioningServicePortClient;
             if (versioningServicePortClient != null)
             {
-                AddUsernameCredentials(versioningServicePortClient.Endpoint, versioningServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(versioningServicePortClient.Endpoint, versioningServicePortClient.ClientCredentials);
                 return;
             }
 
             DiscoveryServicePortClient discoveryServicePortClient = connection as DiscoveryServicePortClient;
             if (discoveryServicePortClient != null)
             {
-                AddUsernameCredentials(discoveryServicePortClient.Endpoint, discoveryServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(discoveryServicePortClient.Endpoint, discoveryServicePortClient.ClientCredentials);
                 return;
             }
 
             RelationshipServicePortClient relationshipServicePortClient = connection as RelationshipServicePortClient;
             if (relationshipServicePortClient != null)
             {
-                AddUsernameCredentials(relationshipServicePortClient.Endpoint, relationshipServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(relationshipServicePortClient.Endpoint, relationshipServicePortClient.ClientCredentials);
                 return;
             }
 
             MultiFilingServicePortClient multiFilingServicePortClient = connection as MultiFilingServicePortClient;
             if (multiFilingServicePortClient != null)
             {
-                AddUsernameCredentials(multiFilingServicePortClient.Endpoint, multiFilingServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(multiFilingServicePortClient.Endpoint, multiFilingServicePortClient.ClientCredentials);
                 return;
             }
 
             PolicyServicePortClient policyServicePortClient = connection as PolicyServicePortClient;
             if (policyServicePortClient != null)
             {
-                AddUsernameCredentials(multiFilingServicePortClient.Endpoint, multiFilingServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(multiFilingServicePortClient.Endpoint, multiFilingServicePortClient.ClientCredentials);
                 return;
             }
 
             ACLServicePortClient aclServicePortClient = connection as ACLServicePortClient;
             if (aclServicePortClient != null)
             {
-                AddUsernameCredentials(aclServicePortClient.Endpoint, aclServicePortClient.ClientCredentials, user, password);
+                AddWebServicesCredentials(aclServicePortClient.Endpoint, aclServicePortClient.ClientCredentials);
                 return;
             }
         }
 
-        protected void AddUsernameCredentials(ServiceEndpoint endpoint, ClientCredentials clientCredentials, string user, string password)
+        protected virtual void AddWebServicesCredentials(ServiceEndpoint endpoint, ClientCredentials clientCredentials)
         {
+            string user = GetUser();
+            string password = GetPassword();
+
             if (user != null || password != null)
             {
                 clientCredentials.UserName.UserName = user ?? "";
@@ -177,31 +199,44 @@ namespace DotCMIS.Binding
                 CustomBinding binding = endpoint.Binding as CustomBinding;
                 if (binding != null)
                 {
-                    // remove SecurityBindingElement is neither a username nor a password have been set
+                    // remove SecurityBindingElement because neither a username nor a password have been set
                     binding.Elements.RemoveAll<SecurityBindingElement>();
                 }
             }
         }
     }
 
-    public class NtlmAuthenticationProvider : AbstractAuthenticationProvider
+    public class NtlmAuthenticationProvider : StandardAuthenticationProvider
     {
-        private CookieContainer Cookies { get; set; }
-
         public NtlmAuthenticationProvider()
         {
             Cookies = new CookieContainer();
         }
 
-        public override void Authenticate(object connection)
+        protected override void HttpAuthenticate(HttpWebRequest request)
         {
-            HttpWebRequest hwr = connection as HttpWebRequest;
-
-            if (hwr != null)
+            if (request != null)
             {
-                hwr.Credentials = CredentialCache.DefaultNetworkCredentials;
-                hwr.CookieContainer = Cookies;
-                hwr.AllowWriteStreamBuffering = true;
+                request.Credentials = CredentialCache.DefaultNetworkCredentials;
+                request.CookieContainer = Cookies;
+                request.AllowWriteStreamBuffering = true;
+            }
+        }
+
+        protected override void AddWebServicesCredentials(ServiceEndpoint endpoint, ClientCredentials clientCredentials)
+        {
+            CustomBinding binding = endpoint.Binding as CustomBinding;
+            if (binding != null)
+            {
+                // remove SecurityBindingElement
+                binding.Elements.RemoveAll<SecurityBindingElement>();
+
+                // add HTTP authentication
+                HttpsTransportBindingElement htbe = binding.Elements.Find<HttpsTransportBindingElement>();
+                htbe.AuthenticationScheme = AuthenticationSchemes.Negotiate;
+
+                clientCredentials.Windows.AllowedImpersonationLevel = TokenImpersonationLevel.Delegation;
+                clientCredentials.Windows.ClientCredential = CredentialCache.DefaultNetworkCredentials;
             }
         }
     }
