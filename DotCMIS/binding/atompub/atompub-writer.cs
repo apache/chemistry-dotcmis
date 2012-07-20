@@ -47,6 +47,7 @@ namespace DotCMIS.Binding.AtomPub
         public const string PrefixAtom = "atom";
         public const string PrefixCMIS = "cmis";
         public const string PrefixRestAtom = "cmisra";
+        public const string PrefixApacheChemistry = "chemistry";
     }
 
     internal class AtomEntryWriter
@@ -56,13 +57,14 @@ namespace DotCMIS.Binding.AtomPub
         private cmisObjectType cmisObject;
         private Stream stream;
         private string mediaType;
+        private string filename;
 
         public AtomEntryWriter(cmisObjectType cmisObject)
-            : this(cmisObject, null, null)
+            : this(cmisObject, null, null, null)
         {
         }
 
-        public AtomEntryWriter(cmisObjectType cmisObject, string mediaType, Stream stream)
+        public AtomEntryWriter(cmisObjectType cmisObject, string mediaType, string filename, Stream stream)
         {
             if (cmisObject == null || cmisObject.properties == null)
             {
@@ -76,6 +78,7 @@ namespace DotCMIS.Binding.AtomPub
 
             this.cmisObject = cmisObject;
             this.mediaType = mediaType;
+            this.filename = filename;
             this.stream = stream;
         }
 
@@ -94,6 +97,10 @@ namespace DotCMIS.Binding.AtomPub
                 writer.WriteAttributeString("xmlns", AtomWriter.PrefixAtom, null, AtomPubConstants.NamespaceAtom);
                 writer.WriteAttributeString("xmlns", AtomWriter.PrefixCMIS, null, AtomPubConstants.NamespaceCMIS);
                 writer.WriteAttributeString("xmlns", AtomWriter.PrefixRestAtom, null, AtomPubConstants.NamespaceRestAtom);
+                if (filename != null)
+                {
+                    writer.WriteAttributeString("xmlns", AtomWriter.PrefixApacheChemistry, null, AtomPubConstants.NamespaceApacheChemistry);
+                }
 
                 // atom:id
                 writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagAtomId, AtomPubConstants.NamespaceAtom);
@@ -118,6 +125,13 @@ namespace DotCMIS.Binding.AtomPub
                     writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContentMediatype, AtomPubConstants.NamespaceRestAtom);
                     writer.WriteString(mediaType);
                     writer.WriteEndElement();
+
+                    if (filename != null)
+                    {
+                        writer.WriteStartElement(AtomWriter.PrefixApacheChemistry, AtomPubConstants.TagContentFilename, AtomPubConstants.NamespaceApacheChemistry);
+                        writer.WriteString(filename);
+                        writer.WriteEndElement();
+                    }
 
                     writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContentBase64, AtomPubConstants.NamespaceRestAtom);
                     WriteContent(writer);

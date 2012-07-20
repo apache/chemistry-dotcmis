@@ -219,6 +219,7 @@ namespace DotCMIS
         public const string NamespaceAPP = "http://www.w3.org/2007/app";
         public const string NamespaceRestAtom = "http://docs.oasis-open.org/ns/cmis/restatom/200908/";
         public const string NamespaceXSI = "http://www.w3.org/2001/XMLSchema-instance";
+        public const string NamespaceApacheChemistry = "http://chemistry.apache.org/";
 
         // media types
         public const string MediatypeService = "application/atomsvc+xml";
@@ -353,6 +354,7 @@ namespace DotCMIS
         public const string TagContent = "content";
         public const string TagContentMediatype = "mediatype";
         public const string TagContentBase64 = "base64";
+        public const string TagContentFilename = "filename";
 
         // allowable actions
         public const string TagAllowableActions = "allowableActions";

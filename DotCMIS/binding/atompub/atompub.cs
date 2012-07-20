@@ -1517,16 +1517,18 @@ namespace DotCMIS.Binding.AtomPub
             cmisObject.properties = Converter.Convert(properties);
             cmisObject.policyIds = Converter.ConvertPolicies(policies);
 
-            String mediaType = null;
+            string mediaType = null;
             Stream stream = null;
+            string filename = null;
 
             if (contentStream != null)
             {
                 mediaType = contentStream.MimeType;
                 stream = contentStream.Stream;
+                filename = contentStream.FileName;
             }
 
-            AtomEntryWriter entryWriter = new AtomEntryWriter(cmisObject, mediaType, stream);
+            AtomEntryWriter entryWriter = new AtomEntryWriter(cmisObject, mediaType, filename, stream);
 
             // post the new folder object
             HttpUtils.Response resp = Post(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
@@ -2231,14 +2233,16 @@ namespace DotCMIS.Binding.AtomPub
 
             string mediaType = null;
             Stream stream = null;
+            string filename = null;
 
             if (contentStream != null)
             {
                 mediaType = contentStream.MimeType;
                 stream = contentStream.Stream;
+                filename = contentStream.FileName;
             }
 
-            AtomEntryWriter entryWriter = new AtomEntryWriter(cmisObject, mediaType, stream);
+            AtomEntryWriter entryWriter = new AtomEntryWriter(cmisObject, mediaType, filename, stream);
 
             // update
             HttpUtils.Response resp = Put(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
