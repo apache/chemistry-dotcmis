@@ -259,8 +259,15 @@ namespace DotCMIS.Client
         IItemEnumerable<IRelationship> GetRelationships(IObjectId objectId, bool includeSubRelationshipTypes,
                 RelationshipDirection? relationshipDirection, IObjectType type, IOperationContext context);
 
-        // permissions
+        // delete
+        void Delete(IObjectId objectId);
+        void Delete(IObjectId objectId, bool allVersions);
 
+        // content stream
+        IContentStream GetContentStream(IObjectId docId);
+        IContentStream GetContentStream(IObjectId docId, string streamId, long? offset, long? length);
+
+        // permissions
         IAcl GetAcl(IObjectId objectId, bool onlyBasicPermissions);
         IAcl ApplyAcl(IObjectId objectId, IList<IAce> addAces, IList<IAce> removeAces, AclPropagation? aclPropagation);
         void ApplyPolicy(IObjectId objectId, params IObjectId[] policyIds);
@@ -852,6 +859,12 @@ namespace DotCMIS.Client
         /// </summary>
         /// <returns>the content stream or <c>null</c> if the stream id is not associated with content</returns>
         IContentStream GetContentStream(string streamId);
+
+        /// <summary>
+        /// Gets the content stream identified by the given stream id with the given offset and length.
+        /// </summary>
+        /// <returns>the content stream or <c>null</c> if the stream id is not associated with content</returns>
+        IContentStream GetContentStream(string streamId, long? offset, long? length);
 
         /// <summary>
         /// Sets a new content stream for this document.

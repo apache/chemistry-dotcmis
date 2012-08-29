@@ -173,10 +173,14 @@ namespace DotCMIS.Client.Impl
     public class Session : ISession
     {
         private static HashSet<Updatability> CreateUpdatability = new HashSet<Updatability>();
+        private static HashSet<Updatability> CreateAndCheckoutUpdatability = new HashSet<Updatability>();
         static Session()
         {
             CreateUpdatability.Add(Updatability.OnCreate);
             CreateUpdatability.Add(Updatability.ReadWrite);
+            CreateAndCheckoutUpdatability.Add(Updatability.OnCreate);
+            CreateAndCheckoutUpdatability.Add(Updatability.ReadWrite);
+            CreateAndCheckoutUpdatability.Add(Updatability.WhenCheckedOut);
         }
 
         protected static IOperationContext FallbackContext = new OperationContext(null, false, true, false, IncludeRelationshipsFlag.None, null, true, null, true, 100);
@@ -678,7 +682,8 @@ namespace DotCMIS.Client.Impl
                 throw new ArgumentException("Properties must not be empty!");
             }
 
-            string newId = Binding.GetObjectService().CreateDocument(RepositoryId, ObjectFactory.ConvertProperties(properties, null, CreateUpdatability),
+            string newId = Binding.GetObjectService().CreateDocument(RepositoryId, ObjectFactory.ConvertProperties(properties, null,
+                (versioningState == VersioningState.CheckedOut ? CreateAndCheckoutUpdatability : CreateUpdatability)),
                 (folderId == null ? null : folderId.Id), contentStream, versioningState, ObjectFactory.ConvertPolicies(policies),
                 ObjectFactory.ConvertAces(addAces), ObjectFactory.ConvertAces(removeAces), null);
 
@@ -717,7 +722,9 @@ namespace DotCMIS.Client.Impl
             }
 
             string newId = Binding.GetObjectService().CreateDocumentFromSource(RepositoryId, source.Id,
-                ObjectFactory.ConvertProperties(properties, type, CreateUpdatability), (folderId == null ? null : folderId.Id),
+                ObjectFactory.ConvertProperties(properties, type,
+                (versioningState == VersioningState.CheckedOut ? CreateAndCheckoutUpdatability : CreateUpdatability)),
+                (folderId == null ? null : folderId.Id),
                 versioningState, ObjectFactory.ConvertPolicies(policies), ObjectFactory.ConvertAces(addAces),
                 ObjectFactory.ConvertAces(removeAces), null);
 
@@ -836,6 +843,51 @@ namespace DotCMIS.Client.Impl
             };
 
             return new CollectionEnumerable<IRelationship>(new PageFetcher<IRelationship>(DefaultContext.MaxItemsPerPage, fetchPageDelegate));
+        }
+
+        // delete
+        public void Delete(IObjectId objectId)
+        {
+            Delete(objectId, true);
+        }
+
+        public void Delete(IObjectId objectId, bool allVersions)
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentException("Invalid object id!");
+            }
+
+            Binding.GetObjectService().DeleteObject(RepositoryId, objectId.Id, allVersions, null);
+            RemoveObjectFromCache(objectId);
+        }
+
+        // content stream
+        public IContentStream GetContentStream(IObjectId docId)
+        {
+            return GetContentStream(docId, null, null, null);
+        }
+
+        public IContentStream GetContentStream(IObjectId docId, string streamId, long? offset, long? length)
+        {
+            if (docId == null || docId.Id == null)
+            {
+                throw new ArgumentException("Invalid document id!");
+            }
+
+            // get the content stream
+            IContentStream contentStream = null;
+            try
+            {
+                contentStream = Binding.GetObjectService().GetContentStream(RepositoryId, docId.Id, streamId, offset, length, null);
+            }
+            catch (CmisConstraintException)
+            {
+                // no content stream
+                return null;
+            }
+
+            return contentStream;
         }
 
         // permissions

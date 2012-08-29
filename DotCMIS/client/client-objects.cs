@@ -200,7 +200,7 @@ namespace DotCMIS.Client.Impl
             Lock();
             try
             {
-                Binding.GetObjectService().DeleteObject(RepositoryId, ObjectId, allVersions, null);
+                Session.Delete(this, allVersions);
             }
             finally
             {
@@ -931,14 +931,15 @@ namespace DotCMIS.Client.Impl
             return GetContentStream(null);
         }
 
-        public IContentStream GetContentStream(String streamId)
+        public IContentStream GetContentStream(string streamId)
         {
-            IContentStream contentStream;
-            try
-            {
-                contentStream = Binding.GetObjectService().GetContentStream(RepositoryId, ObjectId, streamId, null, null, null);
-            }
-            catch (CmisConstraintException)
+            return GetContentStream(streamId, null, null);
+        }
+
+        public IContentStream GetContentStream(string streamId, long? offset, long? length)
+        {
+            IContentStream contentStream = Session.GetContentStream(this, streamId, offset, length);
+            if (contentStream == null)
             {
                 // no content stream
                 return null;

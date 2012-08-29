@@ -1902,12 +1902,30 @@ namespace DotCMIS.Binding.AtomPub
         public IFailedToDeleteData DeleteTree(string repositoryId, string folderId, bool? allVersions, UnfileObject? unfileObjects,
             bool? continueOnFailure, ExtensionsData extension)
         {
-            // find the link
-            String link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeDescendants);
+            // find the down link
+            String link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, null);
+
+            if (link != null)
+            {
+                // found only a children link, but no descendants link
+                // -> try folder tree link
+                link = null;
+            }
+            else
+            {
+                // found no or two down links
+                // -> get only the descendants link
+                link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeDescendants);
+            }
 
             if (link == null)
             {
                 link = LoadLink(repositoryId, folderId, AtomPubConstants.RelFolderTree, AtomPubConstants.MediatypeDescendants);
+            }
+
+            if (link == null)
+            {
+                link = LoadLink(repositoryId, folderId, AtomPubConstants.RelFolderTree, AtomPubConstants.MediatypeFeed);
             }
 
             if (link == null)
