@@ -673,10 +673,6 @@ namespace DotCMIS.Client.Impl
         public IObjectId CreateDocument(IDictionary<string, object> properties, IObjectId folderId, IContentStream contentStream,
             VersioningState? versioningState, IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces)
         {
-            if (folderId != null && folderId.Id == null)
-            {
-                throw new ArgumentException("Folder Id must be set!");
-            }
             if (properties == null || properties.Count == 0)
             {
                 throw new ArgumentException("Properties must not be empty!");
@@ -764,10 +760,6 @@ namespace DotCMIS.Client.Impl
         public IObjectId CreatePolicy(IDictionary<string, object> properties, IObjectId folderId, IList<IPolicy> policies,
             IList<IAce> addAces, IList<IAce> removeAces)
         {
-            if (folderId == null || folderId.Id == null)
-            {
-                throw new ArgumentException("Folder Id must be set!");
-            }
             if (properties == null || properties.Count == 0)
             {
                 throw new ArgumentException("Properties must not be empty!");
