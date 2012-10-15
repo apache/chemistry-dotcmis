@@ -1502,11 +1502,25 @@ namespace DotCMIS.Binding.AtomPub
             CheckCreateProperties(properties);
 
             // find the link
-            string link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+            string link = null;
 
-            if (link == null)
+            if (folderId == null)
             {
-                ThrowLinkException(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+                link = LoadCollection(repositoryId, AtomPubConstants.CollectionUnfiled);
+
+                if (link == null)
+                {
+                    throw new CmisObjectNotFoundException("Unknown respository or unfiling not supported!");
+                }
+            }
+            else
+            {
+                link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+
+                if (link == null)
+                {
+                    ThrowLinkException(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+                }
             }
 
             UrlBuilder url = new UrlBuilder(link);
@@ -1636,11 +1650,25 @@ namespace DotCMIS.Binding.AtomPub
             CheckCreateProperties(properties);
 
             // find the link
-            string link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+            string link = null;
 
-            if (link == null)
+            if (folderId == null)
             {
-                ThrowLinkException(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+                link = LoadCollection(repositoryId, AtomPubConstants.CollectionUnfiled);
+
+                if (link == null)
+                {
+                    throw new CmisObjectNotFoundException("Unknown respository or unfiling not supported!");
+                }
+            }
+            else
+            {
+                link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+
+                if (link == null)
+                {
+                    ThrowLinkException(repositoryId, folderId, AtomPubConstants.RelDown, AtomPubConstants.MediatypeChildren);
+                }
             }
 
             UrlBuilder url = new UrlBuilder(link);
