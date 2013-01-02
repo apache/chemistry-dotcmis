@@ -217,7 +217,18 @@ namespace DotCMIS.Binding
         {
             if (request != null)
             {
-                request.Credentials = CredentialCache.DefaultNetworkCredentials;
+                string user = GetUser();
+                string password = GetPassword();
+
+                if ((user == string.Empty || user == null) && (password == string.Empty || password == null))
+                {
+                    request.Credentials = CredentialCache.DefaultNetworkCredentials;
+                }
+                else
+                {
+                    request.Credentials = new NetworkCredential(user, password);
+                }
+                
                 request.CookieContainer = Cookies;
                 request.AllowWriteStreamBuffering = true;
             }
