@@ -1,4 +1,4 @@
-Apache Chemistry DotCMIS 0.4
+Apache Chemistry DotCMIS 0.5
 ============================
 
 Apache Chemistry DotCMIS is a Content Management Interoperability Services (CMIS)
@@ -15,6 +15,12 @@ If you find a problem, please let us know: https://issues.apache.org/jira/browse
 
 Change log 
 ----------
+
+DotCMIS 0.5:
+
+- Interoptability improvements.
+- Added NTLM authentication.
+
 
 DotCMIS 0.4:
 
