@@ -619,6 +619,11 @@ namespace DotCMIS.Client.Impl
 
             if (SkipOffset == items.Count)
             {
+                if (!HasMoreItems)
+                {
+                    return false;
+                } 
+
                 page = IncrementPage();
                 items = page == null ? null : page.Items;
             }
