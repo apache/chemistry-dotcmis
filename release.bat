@@ -25,7 +25,7 @@ rem It requires Cygwin.
 set DOTCMISVERSION=0.5
 set DOTCMISZIPSRC=chemistry-dotcmis-%DOTCMISVERSION%-src.zip
 set DOTCMISZIPBIN=chemistry-dotcmis-%DOTCMISVERSION%-bin.zip
-set DOTCMISRC=RC1
+set DOTCMISRC=RC2
 
 set CYGWIN=ntea
 

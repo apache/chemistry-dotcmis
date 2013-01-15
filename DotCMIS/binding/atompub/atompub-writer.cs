@@ -189,11 +189,10 @@ namespace DotCMIS.Binding.AtomPub
                 byte[] buffer = new byte[BufferSize];
                 int readBytes = 0;
 
-                do
+                while ((readBytes = br.Read(buffer, 0, BufferSize)) != 0)
                 {
-                    readBytes = br.Read(buffer, 0, BufferSize);
                     writer.WriteBase64(buffer, 0, readBytes);
-                } while (BufferSize <= readBytes);
+                }
             }
         }
     }
