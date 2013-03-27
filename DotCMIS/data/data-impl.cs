@@ -505,7 +505,7 @@ namespace DotCMIS.Data.Impl
                 case PropertyType.Integer:
                     if (!(value is sbyte || value is byte || value is short || value is ushort || value is int || value is uint || value is long))
                     {
-                        throw new ArgumentException("Property '" + Id + "' is an Id property!");
+                        throw new ArgumentException("Property '" + Id + "' is an Integer property!");
                     }
                     break;
                 case PropertyType.Boolean:
