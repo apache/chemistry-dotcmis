@@ -635,6 +635,25 @@ namespace DotCMIS.Binding.AtomPub
             return result;
         }
 
+        protected IAcl GetAclInternal(string repositoryId, string objectId, bool? onlyBasicPermissions, IExtensionsData extension)
+        {
+            // find the link
+            String link = LoadLink(repositoryId, objectId, AtomPubConstants.RelACL, AtomPubConstants.MediatypeACL);
+
+            if (link == null)
+            {
+                ThrowLinkException(repositoryId, objectId, AtomPubConstants.RelACL, AtomPubConstants.MediatypeACL);
+            }
+
+            UrlBuilder url = new UrlBuilder(link);
+            url.AddParameter(AtomPubConstants.ParamOnlyBasicPermissions, onlyBasicPermissions);
+
+            // read and parse
+            HttpUtils.Response resp = Read(url);
+            AtomAcl acl = Parse<AtomAcl>(resp.Stream);
+
+            return Converter.Convert(acl.ACL, null);
+        }
 
         protected AtomAcl UpdateAcl(string repositoryId, string objectId, IAcl acl, AclPropagation? aclPropagation)
         {
@@ -2130,20 +2149,7 @@ namespace DotCMIS.Binding.AtomPub
                 return;
             }
 
-            IAcl originalAces = null;
-
-            // walk through the entry and find the current ACL
-            foreach (AtomElement element in entry.GetElements())
-            {
-                if (element.Object is cmisObjectType)
-                {
-                    // extract current ACL
-                    cmisObjectType cmisObject = (cmisObjectType)element.Object;
-                    originalAces = Converter.Convert(cmisObject.acl, cmisObject.exactACLSpecified ? (bool?)cmisObject.exactACL : null);
-
-                    break;
-                }
-            }
+            IAcl originalAces = GetAclInternal(repositoryId, entry.Id, false, null);
 
             if (originalAces != null)
             {
@@ -2742,22 +2748,7 @@ namespace DotCMIS.Binding.AtomPub
 
         public IAcl GetAcl(string repositoryId, string objectId, bool? onlyBasicPermissions, IExtensionsData extension)
         {
-            // find the link
-            String link = LoadLink(repositoryId, objectId, AtomPubConstants.RelACL, AtomPubConstants.MediatypeACL);
-
-            if (link == null)
-            {
-                ThrowLinkException(repositoryId, objectId, AtomPubConstants.RelACL, AtomPubConstants.MediatypeACL);
-            }
-
-            UrlBuilder url = new UrlBuilder(link);
-            url.AddParameter(AtomPubConstants.ParamOnlyBasicPermissions, onlyBasicPermissions);
-
-            // read and parse
-            HttpUtils.Response resp = Read(url);
-            AtomAcl acl = Parse<AtomAcl>(resp.Stream);
-
-            return Converter.Convert(acl.ACL, null);
+            return GetAclInternal(repositoryId, objectId, onlyBasicPermissions, extension);
         }
 
         public IAcl ApplyAcl(string repositoryId, string objectId, IAcl addAces, IAcl removeAces, AclPropagation? aclPropagation,
