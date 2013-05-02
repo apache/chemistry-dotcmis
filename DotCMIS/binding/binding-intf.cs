@@ -172,7 +172,7 @@ namespace DotCMIS.Binding
             PolicyServicePortClient policyServicePortClient = connection as PolicyServicePortClient;
             if (policyServicePortClient != null)
             {
-                AddWebServicesCredentials(multiFilingServicePortClient.Endpoint, multiFilingServicePortClient.ClientCredentials);
+                AddWebServicesCredentials(policyServicePortClient.Endpoint, policyServicePortClient.ClientCredentials);
                 return;
             }
 
