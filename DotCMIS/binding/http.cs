@@ -239,6 +239,14 @@ namespace DotCMIS.Binding.Impl
                 try { response.Close(); }
                 catch (Exception) { }
             }
+
+            public void CloseStream()
+            {
+                if (Stream != null)
+                {
+                    Stream.Close();
+                }
+            }
         }
     }
 

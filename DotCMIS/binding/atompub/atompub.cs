@@ -1987,6 +1987,7 @@ namespace DotCMIS.Binding.AtomPub
 
             // make the call
             HttpUtils.Response resp = HttpUtils.InvokeDELETE(url, Session);
+            resp.CloseStream();
 
             // check response code
             if (resp.StatusCode == HttpStatusCode.OK || resp.StatusCode == HttpStatusCode.Accepted || resp.StatusCode == HttpStatusCode.NoContent)
@@ -2084,6 +2085,7 @@ namespace DotCMIS.Binding.AtomPub
 
             // send content
             HttpUtils.Response resp = HttpUtils.InvokePUT(url, contentStream.MimeType, headers, output, Session);
+            resp.CloseStream();
 
             // check response code
             if (resp.StatusCode != HttpStatusCode.OK && resp.StatusCode != HttpStatusCode.Created && resp.StatusCode != HttpStatusCode.NoContent)
