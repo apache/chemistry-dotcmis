@@ -35,6 +35,9 @@ namespace DotCMIS.Binding
     {
         private const string CMISNamespaceURI = "http://docs.oasis-open.org/ns/cmis/core/200908/";
 
+        private static object SerializerLock = new object();
+        private static Dictionary<string, XmlSerializer> SerializerDict = new Dictionary<string, XmlSerializer>(16);
+
         private delegate void ProcessAnyElement(XmlElement element);
 
         /// <summary>
@@ -104,13 +107,25 @@ namespace DotCMIS.Binding
         }
 
         /// <summary>
-        /// Deserializes an elemenet.
+        /// Deserializes a choice or defaultValue elemenet.
         /// </summary>
         private static T DeserializeElement<T>(XmlElement element)
         {
-            XmlRootAttribute xmlRoot = new XmlRootAttribute(element.LocalName);
-            xmlRoot.Namespace = CMISNamespaceURI;
-            XmlSerializer s = new XmlSerializer(typeof(T), xmlRoot);
+            Type type = typeof(T);
+            XmlSerializer s;
+
+            lock (SerializerLock)
+            {
+                if (!SerializerDict.TryGetValue(type.Name, out s))
+                {
+                    // the local name can either be "choice" or "defaultValue"
+                    XmlRootAttribute xmlRoot = new XmlRootAttribute(element.LocalName);
+                    xmlRoot.Namespace = CMISNamespaceURI;
+                    s = new XmlSerializer(type, xmlRoot);
+                    SerializerDict.Add(type.Name, s);
+                }
+            }
+
             return (T)s.Deserialize(new XmlNodeReader(element));
         }
 
