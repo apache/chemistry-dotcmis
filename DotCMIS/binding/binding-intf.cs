@@ -247,7 +247,18 @@ namespace DotCMIS.Binding
                 htbe.AuthenticationScheme = AuthenticationSchemes.Negotiate;
 
                 clientCredentials.Windows.AllowedImpersonationLevel = TokenImpersonationLevel.Delegation;
-                clientCredentials.Windows.ClientCredential = CredentialCache.DefaultNetworkCredentials;
+
+                string user = GetUser();
+                string password = GetPassword();
+
+                if ((user == string.Empty || user == null) && (password == string.Empty || password == null))
+                {
+                    clientCredentials.Windows.ClientCredential = CredentialCache.DefaultNetworkCredentials;
+                }
+                else
+                {
+                    clientCredentials.Windows.ClientCredential = new NetworkCredential(user, password);
+                }
             }
         }
     }
