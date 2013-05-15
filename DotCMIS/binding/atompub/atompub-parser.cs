@@ -152,12 +152,12 @@ namespace DotCMIS.Binding.AtomPub
                         }
                         else
                         {
-                            skip(reader);
+                            Skip(reader);
                         }
                     }
                     else
                     {
-                        skip(reader);
+                        Skip(reader);
                     }
                 }
                 else if (reader.NodeType == XmlNodeType.EndElement)
@@ -234,7 +234,7 @@ namespace DotCMIS.Binding.AtomPub
                 }
             }
 
-            skip(reader);
+            Skip(reader);
 
             return null;
         }
@@ -262,12 +262,12 @@ namespace DotCMIS.Binding.AtomPub
                         }
                         else
                         {
-                            skip(reader);
+                            Skip(reader);
                         }
                     }
                     else
                     {
-                        skip(reader);
+                        Skip(reader);
                     }
                 }
                 else if (reader.NodeType == XmlNodeType.EndElement)
@@ -308,7 +308,7 @@ namespace DotCMIS.Binding.AtomPub
                     }
                     else
                     {
-                        skip(reader);
+                        Skip(reader);
                     }
                 }
                 else if (reader.NodeType == XmlNodeType.EndElement)
@@ -352,7 +352,7 @@ namespace DotCMIS.Binding.AtomPub
                 reader.MoveToElement();
             }
 
-            skip(reader);
+            Skip(reader);
 
             return new AtomElement(ns, ln, result);
         }
@@ -378,7 +378,7 @@ namespace DotCMIS.Binding.AtomPub
                         }
                         else
                         {
-                            skip(reader);
+                            Skip(reader);
                         }
                     }
                     else if (AtomPubConstants.NamespaceRestAtom == reader.NamespaceURI)
@@ -389,12 +389,12 @@ namespace DotCMIS.Binding.AtomPub
                         }
                         else
                         {
-                            skip(reader);
+                            Skip(reader);
                         }
                     }
                     else
                     {
-                        skip(reader);
+                        Skip(reader);
                     }
                 }
                 else if (reader.NodeType == XmlNodeType.EndElement)
@@ -507,7 +507,7 @@ namespace DotCMIS.Binding.AtomPub
                 }
             }
 
-            skip(reader);
+            Skip(reader);
 
             return null;
         }
@@ -529,7 +529,7 @@ namespace DotCMIS.Binding.AtomPub
                     }
                     else
                     {
-                        skip(reader);
+                        Skip(reader);
                     }
                 }
                 else if (reader.NodeType == XmlNodeType.EndElement)
@@ -558,7 +558,7 @@ namespace DotCMIS.Binding.AtomPub
                 reader.MoveToElement();
             }
 
-            skip(reader);
+            Skip(reader);
 
             return new AtomElement(reader.NamespaceURI, reader.LocalName, result);
         }
@@ -621,7 +621,7 @@ namespace DotCMIS.Binding.AtomPub
             return text;
         }
 
-        private void skip(XmlReader reader)
+        private void Skip(XmlReader reader)
         {
             if (!reader.IsEmptyElement)
             {
@@ -630,7 +630,10 @@ namespace DotCMIS.Binding.AtomPub
                 {
                     if (reader.NodeType == XmlNodeType.Element)
                     {
-                        level++;
+                        if (!reader.IsEmptyElement)
+                        {
+                            level++;
+                        }
                     }
                     else if (reader.NodeType == XmlNodeType.EndElement)
                     {
