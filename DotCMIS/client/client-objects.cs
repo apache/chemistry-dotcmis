@@ -97,7 +97,7 @@ namespace DotCMIS.Client.Impl
             if (objectType.PropertyDefinitions == null || objectType.PropertyDefinitions.Count < 9)
             {
                 // there must be at least the 9 standard properties that all objects have
-                throw new ArgumentException("Object type must have property defintions!");
+                throw new ArgumentException("Object type must have property definitions!");
             }
 
             this.Session = session;
