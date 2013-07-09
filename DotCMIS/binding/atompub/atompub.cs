@@ -1950,12 +1950,14 @@ namespace DotCMIS.Binding.AtomPub
             bool? continueOnFailure, ExtensionsData extension)
         {
             // find the down link
-            String link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, null);
+            string link = LoadLink(repositoryId, folderId, AtomPubConstants.RelDown, null);
+            string childrenLink = null;
 
             if (link != null)
             {
                 // found only a children link, but no descendants link
                 // -> try folder tree link
+                childrenLink = link;
                 link = null;
             }
             else
@@ -1973,6 +1975,11 @@ namespace DotCMIS.Binding.AtomPub
             if (link == null)
             {
                 link = LoadLink(repositoryId, folderId, AtomPubConstants.RelFolderTree, AtomPubConstants.MediatypeFeed);
+            }
+
+            if (link == null)
+            {
+                link = childrenLink;
             }
 
             if (link == null)

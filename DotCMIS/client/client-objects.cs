@@ -1582,18 +1582,25 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                StringBuilder result = new StringBuilder();
-                foreach (object value in Values)
+                if (Values == null)
                 {
-                    if (result.Length > 0)
+                    return "[]";
+                }
+                else
+                {
+                    StringBuilder result = new StringBuilder();
+                    foreach (object value in Values)
                     {
-                        result.Append(", ");
+                        if (result.Length > 0)
+                        {
+                            result.Append(", ");
+                        }
+
+                        result.Append(FormatValue(value));
                     }
 
-                    result.Append(FormatValue(value));
+                    return "[" + result.ToString() + "]";
                 }
-
-                return "[" + result.ToString() + "]";
             }
         }
 
