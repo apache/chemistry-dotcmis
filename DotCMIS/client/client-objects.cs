@@ -690,12 +690,7 @@ namespace DotCMIS.Client.Impl
 
         public void RemoveFromFolder(IObjectId folderId)
         {
-            if (folderId == null || folderId.Id == null)
-            {
-                throw new ArgumentException("Folder Id must be set!");
-            }
-
-            Binding.GetMultiFilingService().RemoveObjectFromFolder(RepositoryId, ObjectId, folderId.Id, null);
+            Binding.GetMultiFilingService().RemoveObjectFromFolder(RepositoryId, ObjectId, folderId == null ? null : folderId.Id, null);
         }
     }
 

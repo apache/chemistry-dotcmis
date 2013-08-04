@@ -136,6 +136,19 @@ namespace DotCMIS.Binding.Impl
                     writer(requestStream);
                     requestStream.Close();
                 }
+                else
+                {
+#if __MonoCS__
+                    //around for MONO HTTP DELETE issue
+                    //http://stackoverflow.com/questions/11785597/monotouch-iphone-call-to-httpwebrequest-getrequeststream-connects-to-server
+                    if (method == "DELETE")
+                    {
+                        conn.ContentLength = 0;
+                        Stream requestStream = conn.GetRequestStream();
+                        requestStream.Close();
+                    }
+#endif
+                }
 
                 // connect
                 try
@@ -191,7 +204,7 @@ namespace DotCMIS.Binding.Impl
                         Stream = new BufferedStream(new CryptoStream(httpResponse.GetResponseStream(), new FromBase64Transform(), CryptoStreamMode.Read), 64 * 1024);
                     }
                     else
-                    {  
+                    {
                         Stream = new BufferedStream(httpResponse.GetResponseStream(), 64 * 1024);
                     }
                 }

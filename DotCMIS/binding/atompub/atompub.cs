@@ -1789,11 +1789,11 @@ namespace DotCMIS.Binding.AtomPub
             // get the content
             if (offset != null && offset > Int32.MaxValue)
             {
-                throw new CmisInvalidArgumentException("Offset >" + Int32.MaxValue);
+                throw new CmisInvalidArgumentException("Offset >" + Int32.MaxValue.ToString());
             }
             if (length != null && length > Int32.MaxValue)
             {
-                throw new CmisInvalidArgumentException("Length >" + Int32.MaxValue);
+                throw new CmisInvalidArgumentException("Length >" + Int32.MaxValue.ToString());
             }
             HttpUtils.Response resp = HttpUtils.InvokeGET(url, Session, (int?)offset, (int?)length);
 

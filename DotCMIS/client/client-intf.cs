@@ -1152,7 +1152,7 @@ namespace DotCMIS.Client
         /// <remarks>
         /// Since repositories are not obligated to add property ids to their
         /// query result properties, this method might not always work as expected with
-        /// some repositories. Use <see cref="this[string]"/> instead.
+        /// some repositories. Use <see cref="P:this[string]"/> instead.
         /// </remarks>
         IPropertyData GetPropertyById(string propertyId);
 

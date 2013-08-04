@@ -335,7 +335,7 @@ namespace DotCMIS.Client.Impl
                 case BaseTypeId.CmisRelationship:
                     return new Relationship(session, type, objectData, context);
                 default:
-                    throw new CmisRuntimeException("Unsupported type: " + objectData.BaseTypeId);
+                    throw new CmisRuntimeException("Unsupported type: " + objectData.BaseTypeId.ToString());
             }
         }
 

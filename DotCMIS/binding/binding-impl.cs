@@ -363,9 +363,9 @@ namespace DotCMIS.Binding.Impl
                         throw new CmisRuntimeException("SPI class is not set!");
                     }
                 }
-                catch (CmisBaseException ce)
+                catch (CmisBaseException)
                 {
-                    throw ce;
+                    throw;
                 }
                 catch (Exception e)
                 {

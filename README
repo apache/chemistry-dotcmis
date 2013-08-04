@@ -16,21 +16,26 @@ If you find a problem, please let us know: https://issues.apache.org/jira/browse
 Change log 
 ----------
 
+DotCMIS 0.6:
+
+- Bug fixes.
+
+
 DotCMIS 0.5:
 
-- Interoptability improvements.
+- Interoperability improvements.
 - Added NTLM authentication.
 
 
 DotCMIS 0.4:
 
-- Several bug and interoptability fixes.
+- Several bug and interoperability fixes.
 
 
 DotCMIS 0.3:
 
 - DotCMIS only requires the .NET Client Profile.
-- Several bug and interoptability fixes.
+- Several bug and interoperability fixes.
 
 
 DotCMIS 0.2:
@@ -55,7 +60,7 @@ Known stumbling blocks
   
 - Content is buffered in main memory when the Web Services binding is used. 
   That can cause problems with huge documents. 
-  The maxium document size can be controlled with the SessionParameter.MessageSize 
+  The maximum document size can be controlled with the SessionParameter.MessageSize 
   parameter. The default is 4 MB. The absolute maximum is 2 GB.
 
 => Use the AtomPub binding whenever possible! 

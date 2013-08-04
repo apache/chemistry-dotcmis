@@ -126,7 +126,10 @@ namespace DotCMIS.Binding
                 }
             }
 
-            return (T)s.Deserialize(new XmlNodeReader(element));
+            using (XmlNodeReader reader = new XmlNodeReader(element))
+            {
+                return (T)s.Deserialize(reader);
+            }
         }
 
         /// <summary>
@@ -1885,7 +1888,6 @@ namespace DotCMIS.Binding
             }
             else if (element.Children != null)
             {
-                List<XmlElement> children = new List<XmlElement>();
                 foreach (ICmisExtensionElement child in element.Children)
                 {
                     XmlElement xml = CreateXmlElement(doc, child);
