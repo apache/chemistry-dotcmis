@@ -257,29 +257,30 @@ namespace DotCMIS.Binding.WebServices
                 elements.Add(transportElement);
 
                 binding = new CustomBinding(elements);
+                TimeSpan timeout;
 
                 string openTimeOut = session.GetValue(SessionParameter.WebServicesOpenTimeout) as string;
-                if (openTimeOut != null)
+                if (openTimeOut != null && TimeSpan.TryParse(openTimeOut, out timeout))
                 {
-                    binding.OpenTimeout = TimeSpan.Parse(openTimeOut);
+                    binding.OpenTimeout = timeout;
                 }
 
                 string closeTimeOut = session.GetValue(SessionParameter.WebServicesCloseTimeout) as string;
-                if (closeTimeOut != null)
+                if (closeTimeOut != null && TimeSpan.TryParse(closeTimeOut, out timeout))
                 {
-                    binding.CloseTimeout = TimeSpan.Parse(closeTimeOut);
+                    binding.CloseTimeout = timeout;
                 }
 
                 string sendTimeOut = session.GetValue(SessionParameter.WebServicesSendTimeout) as string;
-                if (sendTimeOut != null)
+                if (sendTimeOut != null && TimeSpan.TryParse(sendTimeOut, out timeout))
                 {
-                    binding.SendTimeout = TimeSpan.Parse(sendTimeOut);
+                    binding.SendTimeout = timeout;
                 }
 
                 string receiveTimeOut = session.GetValue(SessionParameter.WebServicesReceiveTimeout) as string;
-                if (receiveTimeOut != null)
+                if (receiveTimeOut != null && TimeSpan.TryParse(receiveTimeOut, out timeout))
                 {
-                    binding.ReceiveTimeout = TimeSpan.Parse(receiveTimeOut);
+                    binding.ReceiveTimeout = timeout;
                 }
             }
 

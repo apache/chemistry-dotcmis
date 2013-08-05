@@ -44,14 +44,9 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (objectLock)
                 {
                     return objectType;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -80,7 +75,7 @@ namespace DotCMIS.Client.Impl
         private IList<IRelationship> relationships;
         private IDictionary<ExtensionLevel, IList<ICmisExtensionElement>> extensions;
 
-        private object objectLock = new object();
+        protected object objectLock = new object();
 
         protected void Initialize(ISession session, IObjectType objectType, IObjectData objectData, IOperationContext context)
         {
@@ -176,8 +171,7 @@ namespace DotCMIS.Client.Impl
 
         protected string GetPropertyQueryName(string propertyId)
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 IPropertyDefinition propDef = objectType[propertyId];
                 if (propDef == null)
@@ -187,24 +181,15 @@ namespace DotCMIS.Client.Impl
 
                 return propDef.QueryName;
             }
-            finally
-            {
-                Unlock();
-            }
         }
 
         // --- object ---
 
         public void Delete(bool allVersions)
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 Session.Delete(this, allVersions);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -233,8 +218,7 @@ namespace DotCMIS.Client.Impl
 
             string newObjectId = null;
 
-            Lock();
-            try
+            lock (objectLock)
             {
                 string objectId = ObjectId;
                 string changeToken = ChangeToken;
@@ -254,10 +238,6 @@ namespace DotCMIS.Client.Impl
                         Session.ObjectFactory.ConvertProperties(properties, this.objectType, updatebility), null);
 
                 newObjectId = objectId;
-            }
-            finally
-            {
-                Unlock();
             }
 
             if (refresh)
@@ -306,14 +286,9 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (objectLock)
                 {
                     return new List<IProperty>(properties.Values);
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -327,8 +302,7 @@ namespace DotCMIS.Client.Impl
                     throw new ArgumentNullException("propertyId");
                 }
 
-                Lock();
-                try
+                lock (objectLock)
                 {
                     IProperty property;
                     if (properties.TryGetValue(propertyId, out property))
@@ -336,10 +310,6 @@ namespace DotCMIS.Client.Impl
                         return property;
                     }
                     return null;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -358,14 +328,9 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (objectLock)
                 {
                     return allowableActions;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -376,14 +341,9 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (objectLock)
                 {
                     return renditions;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -418,14 +378,9 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (objectLock)
                 {
                     return acl;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -434,14 +389,9 @@ namespace DotCMIS.Client.Impl
 
         public void ApplyPolicy(params IObjectId[] policyId)
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 Session.ApplyPolicy(this, policyId);
-            }
-            finally
-            {
-                Unlock();
             }
 
             Refresh();
@@ -449,14 +399,9 @@ namespace DotCMIS.Client.Impl
 
         public void RemovePolicy(params IObjectId[] policyId)
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 Session.RemovePolicy(this, policyId);
-            }
-            finally
-            {
-                Unlock();
             }
 
             Refresh();
@@ -466,14 +411,9 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (objectLock)
                 {
                     return policies;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -484,14 +424,9 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (objectLock)
                 {
                     return relationships;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -515,8 +450,7 @@ namespace DotCMIS.Client.Impl
 
         public void Refresh()
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 IOperationContext oc = CreationContext;
 
@@ -527,36 +461,17 @@ namespace DotCMIS.Client.Impl
                 // reset this object
                 Initialize(Session, ObjectType, objectData, CreationContext);
             }
-            finally
-            {
-                Unlock();
-            }
         }
 
         public void RefreshIfOld(long durationInMillis)
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 if (((DateTime.UtcNow - RefreshTimestamp).Ticks / 10000) > durationInMillis)
                 {
                     Refresh();
                 }
             }
-            finally
-            {
-                Unlock();
-            }
-        }
-
-        protected void Lock()
-        {
-            Monitor.Enter(objectLock);
-        }
-
-        protected void Unlock()
-        {
-            Monitor.Exit(objectLock);
         }
     }
 
@@ -773,18 +688,13 @@ namespace DotCMIS.Client.Impl
         {
             string newObjectId = null;
 
-            Lock();
-            try
+            lock (objectLock)
             {
                 string objectId = ObjectId;
                 bool? contentCopied;
 
                 Binding.GetVersioningService().CheckOut(RepositoryId, ref objectId, null, out contentCopied);
                 newObjectId = objectId;
-            }
-            finally
-            {
-                Unlock();
             }
 
             if (newObjectId == null)
@@ -805,8 +715,7 @@ namespace DotCMIS.Client.Impl
         {
             String newObjectId = null;
 
-            Lock();
-            try
+            lock (objectLock)
             {
                 string objectId = ObjectId;
 
@@ -820,10 +729,6 @@ namespace DotCMIS.Client.Impl
                     contentStream, checkinComment, of.ConvertPolicies(policies), of.ConvertAces(addAces), of.ConvertAces(removeAces), null);
 
                 newObjectId = objectId;
-            }
-            finally
-            {
-                Unlock();
             }
 
             if (newObjectId == null)
@@ -845,15 +750,10 @@ namespace DotCMIS.Client.Impl
             string objectId;
             string versionSeriesId;
 
-            Lock();
-            try
+            lock (objectLock)
             {
                 objectId = ObjectId;
                 versionSeriesId = VersionSeriesId;
-            }
-            finally
-            {
-                Unlock();
             }
 
             IList<IObjectData> versions = Binding.GetVersioningService().GetAllVersions(RepositoryId, objectId, versionSeriesId,
@@ -890,15 +790,10 @@ namespace DotCMIS.Client.Impl
             string objectId;
             string versionSeriesId;
 
-            Lock();
-            try
+            lock (objectLock)
             {
                 objectId = ObjectId;
                 versionSeriesId = VersionSeriesId;
-            }
-            finally
-            {
-                Unlock();
             }
 
             if (versionSeriesId == null)
@@ -977,8 +872,7 @@ namespace DotCMIS.Client.Impl
         {
             string newObjectId = null;
 
-            Lock();
-            try
+            lock (objectLock)
             {
                 string objectId = ObjectId;
                 string changeToken = ChangeToken;
@@ -986,10 +880,6 @@ namespace DotCMIS.Client.Impl
                 Binding.GetObjectService().SetContentStream(RepositoryId, ref objectId, overwrite, ref changeToken, contentStream, null);
 
                 newObjectId = objectId;
-            }
-            finally
-            {
-                Unlock();
             }
 
             if (refresh)
@@ -1025,8 +915,7 @@ namespace DotCMIS.Client.Impl
         {
             string newObjectId = null;
 
-            Lock();
-            try
+            lock (objectLock)
             {
                 string objectId = ObjectId;
                 string changeToken = ChangeToken;
@@ -1034,10 +923,6 @@ namespace DotCMIS.Client.Impl
                 Binding.GetObjectService().DeleteContentStream(RepositoryId, ref objectId, ref changeToken, null);
 
                 newObjectId = objectId;
-            }
-            finally
-            {
-                Unlock();
             }
 
             if (refresh)
@@ -1165,8 +1050,7 @@ namespace DotCMIS.Client.Impl
             {
                 IList<IObjectType> result = new List<IObjectType>();
 
-                Lock();
-                try
+                lock (objectLock)
                 {
                     IList<string> otids = GetPropertyValue(PropertyIds.AllowedChildObjectTypeIds) as IList<string>;
                     if (otids == null)
@@ -1178,10 +1062,6 @@ namespace DotCMIS.Client.Impl
                     {
                         result.Add(Session.GetTypeDefinition(otid));
                     }
-                }
-                finally
-                {
-                    Unlock();
                 }
 
                 return result;
@@ -1359,8 +1239,7 @@ namespace DotCMIS.Client.Impl
             {
                 string path;
 
-                Lock();
-                try
+                lock (objectLock)
                 {
                     // get the path property
                     path = GetPropertyValue(PropertyIds.Path) as string;
@@ -1381,10 +1260,6 @@ namespace DotCMIS.Client.Impl
                             }
                         }
                     }
-                }
-                finally
-                {
-                    Unlock();
                 }
 
                 // we still don't know the path ... it's not a CMIS compliant repository
@@ -1460,8 +1335,7 @@ namespace DotCMIS.Client.Impl
 
         public ICmisObject GetSource(IOperationContext context)
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 IObjectId sourceId = SourceId;
                 if (sourceId == null)
@@ -1470,10 +1344,6 @@ namespace DotCMIS.Client.Impl
                 }
 
                 return Session.GetObject(sourceId, context);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -1498,8 +1368,7 @@ namespace DotCMIS.Client.Impl
 
         public ICmisObject GetTarget(IOperationContext context)
         {
-            Lock();
-            try
+            lock (objectLock)
             {
                 IObjectId targetId = TargetId;
                 if (targetId == null)
@@ -1508,10 +1377,6 @@ namespace DotCMIS.Client.Impl
                 }
 
                 return Session.GetObject(targetId, context);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 

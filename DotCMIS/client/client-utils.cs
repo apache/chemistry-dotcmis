@@ -436,7 +436,7 @@ namespace DotCMIS.Client.Impl
         private long? totalNumItems = null;
         private bool? hasMoreItems = null;
 
-        protected T current;
+        protected T Current;
 
         public AbstractEnumerator(long skipCount, PageFetcher<T> pageFetcher)
         {
@@ -444,8 +444,8 @@ namespace DotCMIS.Client.Impl
             this.pageFetcher = pageFetcher;
         }
 
-        T IEnumerator<T>.Current { get { return current; } }
-        object IEnumerator.Current { get { return current; } }
+        T IEnumerator<T>.Current { get { return Current; } }
+        object IEnumerator.Current { get { return Current; } }
 
         public void Reset()
         {
@@ -633,7 +633,7 @@ namespace DotCMIS.Client.Impl
                 return false;
             }
 
-            current = items[IncrementSkipOffset()];
+            Current = items[IncrementSkipOffset()];
 
             return true;
         }
@@ -678,7 +678,7 @@ namespace DotCMIS.Client.Impl
                 return false;
             }
 
-            current = items[IncrementSkipOffset()];
+            Current = items[IncrementSkipOffset()];
 
             return true;
         }

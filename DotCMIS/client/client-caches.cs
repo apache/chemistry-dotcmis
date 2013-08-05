@@ -73,8 +73,7 @@ namespace DotCMIS.Client.Impl.Cache
 
         public void Initialize(ISession session, IDictionary<string, string> parameters)
         {
-            Lock();
-            try
+            lock (cacheLock)
             {
                 // cache size
                 cacheSize = 1000;
@@ -142,23 +141,14 @@ namespace DotCMIS.Client.Impl.Cache
 
                 InitializeInternals();
             }
-            finally
-            {
-                Unlock();
-            }
         }
 
         private void InitializeInternals()
         {
-            Lock();
-            try
+            lock (cacheLock)
             {
                 objectCache = new LRUCache<string, IDictionary<string, ICmisObject>>(cacheSize, TimeSpan.FromMilliseconds(cacheTtl));
                 pathToIdCache = new LRUCache<string, string>(pathToIdSize, TimeSpan.FromMilliseconds(pathToIdTtl));
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -169,34 +159,23 @@ namespace DotCMIS.Client.Impl.Cache
 
         public bool ContainsId(string objectId, string cacheKey)
         {
-            Lock();
-            try
+            lock (cacheLock)
             {
                 return objectCache.Get(objectId) != null;
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
         public bool ContainsPath(string path, string cacheKey)
         {
-            Lock();
-            try
+            lock (cacheLock)
             {
                 return pathToIdCache.Get(path) != null;
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
         public ICmisObject GetById(string objectId, string cacheKey)
         {
-            Lock();
-            try
+            lock (cacheLock)
             {
                 IDictionary<string, ICmisObject> cacheKeyDict = objectCache.Get(objectId);
                 if (cacheKeyDict == null)
@@ -212,16 +191,11 @@ namespace DotCMIS.Client.Impl.Cache
 
                 return null;
             }
-            finally
-            {
-                Unlock();
-            }
         }
 
         public ICmisObject GetByPath(string path, string cacheKey)
         {
-            Lock();
-            try
+            lock (cacheLock)
             {
                 string id = pathToIdCache.Get(path);
                 if (id == null)
@@ -230,10 +204,6 @@ namespace DotCMIS.Client.Impl.Cache
                 }
 
                 return GetById(id, cacheKey);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -245,8 +215,7 @@ namespace DotCMIS.Client.Impl.Cache
                 return;
             }
 
-            Lock();
-            try
+            lock (cacheLock)
             {
                 IDictionary<string, ICmisObject> cacheKeyDict = objectCache.Get(cmisObject.Id);
                 if (cacheKeyDict == null)
@@ -264,10 +233,6 @@ namespace DotCMIS.Client.Impl.Cache
                     pathToIdCache.Add(path, cmisObject.Id);
                 }
             }
-            finally
-            {
-                Unlock();
-            }
         }
 
         public void PutPath(string path, ICmisObject cmisObject, string cacheKey)
@@ -278,15 +243,10 @@ namespace DotCMIS.Client.Impl.Cache
                 return;
             }
 
-            Lock();
-            try
+            lock (cacheLock)
             {
                 Put(cmisObject, cacheKey);
                 pathToIdCache.Add(path, cmisObject.Id);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -297,30 +257,15 @@ namespace DotCMIS.Client.Impl.Cache
                 return;
             }
 
-            Lock();
-            try
+            lock (cacheLock)
             {
                 objectCache.Remove(objectId);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
         public int CacheSize
         {
             get { return cacheSize; }
-        }
-
-        protected void Lock()
-        {
-            Monitor.Enter(cacheLock);
-        }
-
-        protected void Unlock()
-        {
-            Monitor.Exit(cacheLock);
         }
     }
 }

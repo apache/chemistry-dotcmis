@@ -202,26 +202,16 @@ namespace DotCMIS.Client.Impl
         {
             get
             {
-                Lock();
-                try
+                lock (sessionLock)
                 {
                     return context;
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
             set
             {
-                Lock();
-                try
+                lock (sessionLock)
                 {
                     context = (value == null ? FallbackContext : value);
-                }
-                finally
-                {
-                    Unlock();
                 }
             }
         }
@@ -252,8 +242,7 @@ namespace DotCMIS.Client.Impl
 
         public void Connect()
         {
-            Lock();
-            try
+            lock (sessionLock)
             {
                 Binding = CmisBindingHelper.CreateBinding(parameters, AuthenticationProvider);
 
@@ -264,10 +253,6 @@ namespace DotCMIS.Client.Impl
                 }
 
                 RepositoryInfo = Binding.GetRepositoryService().GetRepositoryInfo(repositoryId, null);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -337,15 +322,10 @@ namespace DotCMIS.Client.Impl
 
         public void Clear()
         {
-            Lock();
-            try
+            lock (sessionLock)
             {
                 Cache = CreateCache();
                 Binding.ClearAllCaches();
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -654,17 +634,12 @@ namespace DotCMIS.Client.Impl
         public IChangeEvents GetContentChanges(string changeLogToken, bool includeProperties, long maxNumItems,
                 IOperationContext context)
         {
-            Lock();
-            try
+            lock (sessionLock)
             {
                 IObjectList objectList = Binding.GetDiscoveryService().GetContentChanges(RepositoryId, ref changeLogToken, includeProperties,
                     context.FilterString, context.IncludePolicies, context.IncludeAcls, maxNumItems, null);
 
                 return ObjectFactory.ConvertChangeEvents(changeLogToken, objectList);
-            }
-            finally
-            {
-                Unlock();
             }
         }
 
@@ -959,16 +934,6 @@ namespace DotCMIS.Client.Impl
             {
                 Binding.GetPolicyService().RemovePolicy(RepositoryId, id, objectId.Id, null);
             }
-        }
-
-        protected void Lock()
-        {
-            Monitor.Enter(sessionLock);
-        }
-
-        protected void Unlock()
-        {
-            Monitor.Exit(sessionLock);
         }
     }
 }

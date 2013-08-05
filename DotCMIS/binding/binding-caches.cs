@@ -593,7 +593,7 @@ namespace DotCMIS.Binding
 
             cache = new Cache("Repository Info Cache");
             cache.Initialize(new string[] { 
-                typeof(DictionaryCacheLevel).FullName + " " + DictionaryCacheLevel.Capacity + "=" + repCount });
+                typeof(DictionaryCacheLevel).FullName + " " + DictionaryCacheLevel.Capacity + "=" + repCount.ToString() });
         }
 
         public void Put(IRepositoryInfo repositoryInfo)
@@ -643,8 +643,8 @@ namespace DotCMIS.Binding
 
             cache = new Cache("Type Definition Cache");
             cache.Initialize(new string[] {
-                typeof(DictionaryCacheLevel).FullName + " " + DictionaryCacheLevel.Capacity + "=" + repCount, // repository
-                typeof(LruCacheLevel).FullName + " " + LruCacheLevel.MaxEntries + "=" + typeCount // type
+                typeof(DictionaryCacheLevel).FullName + " " + DictionaryCacheLevel.Capacity + "=" + repCount.ToString(), // repository
+                typeof(LruCacheLevel).FullName + " " + LruCacheLevel.MaxEntries + "=" + typeCount.ToString() // type
         });
         }
 
