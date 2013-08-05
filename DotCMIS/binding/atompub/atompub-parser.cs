@@ -80,56 +80,55 @@ namespace DotCMIS.Binding.AtomPub
             settings.IgnoreWhitespace = true;
             settings.IgnoreComments = true;
 
-            XmlReader reader = XmlReader.Create(stream, settings);
-            try
-            {
-                while (true)
+            try {
+                using (XmlReader reader = XmlReader.Create(stream, settings))
                 {
-                    if (reader.IsStartElement())
+                    while (true)
                     {
-                        if (AtomPubConstants.NamespaceAtom == reader.NamespaceURI)
+                        if (reader.IsStartElement())
                         {
-                            if (AtomPubConstants.TagFeed == reader.LocalName)
+                            if (AtomPubConstants.NamespaceAtom == reader.NamespaceURI)
                             {
-                                parseResult = ParseFeed(reader);
-                                break;
+                                if (AtomPubConstants.TagFeed == reader.LocalName)
+                                {
+                                    parseResult = ParseFeed(reader);
+                                    break;
+                                }
+                                else if (AtomPubConstants.TagEntry == reader.LocalName)
+                                {
+                                    parseResult = ParseEntry(reader);
+                                    break;
+                                }
                             }
-                            else if (AtomPubConstants.TagEntry == reader.LocalName)
+                            else if (AtomPubConstants.NamespaceCMIS == reader.NamespaceURI)
                             {
-                                parseResult = ParseEntry(reader);
-                                break;
+                                if (AtomPubConstants.TagAllowableActions == reader.LocalName)
+                                {
+                                    parseResult = ParseAllowableActions(reader);
+                                    break;
+                                }
+                                else if (AtomPubConstants.TagACL == reader.LocalName)
+                                {
+                                    parseResult = ParseACL(reader);
+                                    break;
+                                }
+                            }
+                            else if (AtomPubConstants.NamespaceAPP == reader.NamespaceURI)
+                            {
+                                if (AtomPubConstants.TagService == reader.LocalName)
+                                {
+                                    parseResult = ParseServiceDoc(reader);
+                                    break;
+                                }
                             }
                         }
-                        else if (AtomPubConstants.NamespaceCMIS == reader.NamespaceURI)
-                        {
-                            if (AtomPubConstants.TagAllowableActions == reader.LocalName)
-                            {
-                                parseResult = ParseAllowableActions(reader);
-                                break;
-                            }
-                            else if (AtomPubConstants.TagACL == reader.LocalName)
-                            {
-                                parseResult = ParseACL(reader);
-                                break;
-                            }
-                        }
-                        else if (AtomPubConstants.NamespaceAPP == reader.NamespaceURI)
-                        {
-                            if (AtomPubConstants.TagService == reader.LocalName)
-                            {
-                                parseResult = ParseServiceDoc(reader);
-                                break;
-                            }
-                        }
-                    }
 
-                    if (!reader.Read()) { break; }
+                        if (!reader.Read()) { break; }
+                    }
                 }
             }
             finally
             {
-                try { reader.Close(); }
-                catch (Exception) { }
                 try { stream.Close(); }
                 catch (Exception) { }
             }
