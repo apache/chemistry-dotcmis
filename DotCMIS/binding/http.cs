@@ -27,6 +27,7 @@ using System.Web;
 using DotCMIS.Enums;
 using DotCMIS.Exceptions;
 using DotCMIS.Util;
+using System.Reflection;
 
 namespace DotCMIS.Binding.Impl
 {
@@ -39,7 +40,7 @@ namespace DotCMIS.Binding.Impl
             return Invoke(url, "GET", null, null, session, null, null, null);
         }
 
-        public static Response InvokeGET(UrlBuilder url, BindingSession session, int? offset, int? length)
+        public static Response InvokeGET(UrlBuilder url, BindingSession session, long? offset, long? length)
         {
             return Invoke(url, "GET", null, null, session, offset, length, null);
         }
@@ -60,7 +61,7 @@ namespace DotCMIS.Binding.Impl
         }
 
         private static Response Invoke(UrlBuilder url, String method, String contentType, Output writer, BindingSession session,
-                int? offset, int? length, IDictionary<string, string> headers)
+                long? offset, long? length, IDictionary<string, string> headers)
         {
             try
             {
@@ -114,11 +115,41 @@ namespace DotCMIS.Binding.Impl
                 // range
                 if (offset != null && length != null)
                 {
-                    conn.AddRange(offset ?? 0, offset + length - 1 ?? 0);
+                    if (offset < Int32.MaxValue && offset + length - 1 < Int32.MaxValue)
+                    {
+                        conn.AddRange((int)offset, (int)offset + (int)length - 1);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            MethodInfo mi = conn.GetType().GetMethod("AddRange", new Type[] { typeof(Int64), typeof(Int64) });
+                            mi.Invoke(conn, new object[] { offset, offset + length - 1 });
+                        }
+                        catch (Exception e)
+                        {
+                            throw new CmisInvalidArgumentException("Offset or length too big!", e);
+                        }
+                    }
                 }
                 else if (offset != null)
                 {
-                    conn.AddRange(offset ?? 0);
+                    if (offset < Int32.MaxValue)
+                    {
+                        conn.AddRange((int)offset);
+                    }
+                    else
+                    {
+                        try
+                        {
+                            MethodInfo mi = conn.GetType().GetMethod("AddRange", new Type[] { typeof(Int64) });
+                            mi.Invoke(conn, new object[] { offset });
+                        }
+                        catch (Exception e)
+                        {
+                            throw new CmisInvalidArgumentException("Offset too big!", e);
+                        }
+                    }
                 }
 
                 // compression
