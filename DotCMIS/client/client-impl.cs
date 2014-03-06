@@ -537,11 +537,11 @@ namespace DotCMIS.Client.Impl
         {
             if (path == null)
             {
-                throw new ArgumentException("Path must be set!");
+                throw new ArgumentNullException("path");
             }
             if (context == null)
             {
-                throw new ArgumentException("Operation context must be set!");
+                throw new ArgumentNullException("context");
             }
 
             ICmisObject result = null;
@@ -570,6 +570,123 @@ namespace DotCMIS.Client.Impl
             }
 
             return result;
+        }
+
+        public IDocument GetLatestDocumentVersion(String objectId)
+        {
+            return GetLatestDocumentVersion(objectId, DefaultContext);
+        }
+
+        public IDocument GetLatestDocumentVersion(String objectId, IOperationContext context)
+        {
+            if (objectId == null)
+            {
+                throw new ArgumentNullException("objectId");
+            }
+
+            return GetLatestDocumentVersion(CreateObjectId(objectId), false, context);
+        }
+
+        public IDocument GetLatestDocumentVersion(IObjectId objectId)
+        {
+            return GetLatestDocumentVersion(objectId, false, DefaultContext);
+        }
+
+        public IDocument GetLatestDocumentVersion(IObjectId objectId, IOperationContext context)
+        {
+            return GetLatestDocumentVersion(objectId, false, context);
+        }
+
+        public IDocument GetLatestDocumentVersion(IObjectId objectId, bool major, IOperationContext context)
+        {
+            if (objectId == null || objectId.Id == null)
+            {
+                throw new ArgumentNullException("objectId");
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+
+            ICmisObject result = null;
+
+            string versionSeriesId = null;
+
+            // first attempt: if we got a Document object, try getting the version
+            // series ID from it
+            if (objectId is IDocument)
+            {
+                versionSeriesId = ((IDocument)objectId).VersionSeriesId;
+            }
+
+            // second attempt: if we have a Document object in the cache, retrieve
+            // the version series ID form there
+            if (versionSeriesId == null)
+            {
+                if (context.CacheEnabled)
+                {
+                    ICmisObject sourceDoc = Cache.GetById(objectId.Id, context.CacheKey);
+                    if (sourceDoc is IDocument)
+                    {
+                        versionSeriesId = ((IDocument)sourceDoc).VersionSeriesId;
+                    }
+                }
+            }
+
+            // third attempt (Web Services only): get the version series ID from the
+            // repository
+            // (the AtomPub and Browser binding don't need the version series ID ->
+            // avoid roundtrip)
+            if (versionSeriesId == null)
+            {
+                string bindingType = Binding.BindingType;
+                if (bindingType == BindingType.WebServices || bindingType == BindingType.Custom)
+                {
+
+                    // get the document to find the version series ID
+                    IObjectData sourceObjectData = Binding.GetObjectService().GetObject(RepositoryId, objectId.Id,
+                            PropertyIds.ObjectId + "," + PropertyIds.VersionSeriesId, false, IncludeRelationshipsFlag.None,
+                            "cmis:none", false, false, null);
+
+                    if (sourceObjectData.Properties != null)
+                    {
+                        IPropertyData verionsSeriesIdProp = sourceObjectData.Properties[PropertyIds.VersionSeriesId];
+                        if (verionsSeriesIdProp != null)
+                        {
+                            versionSeriesId = verionsSeriesIdProp.FirstValue as string;
+                        }
+                    }
+
+                    // the Web Services binding needs the version series ID -> fail
+                    if (versionSeriesId == null)
+                    {
+                        throw new ArgumentException("Object is not a document or not versionable!");
+                    }
+                }
+            }
+
+            // get the object
+            IObjectData objectData = Binding.GetVersioningService().GetObjectOfLatestVersion(RepositoryId,
+                    objectId.Id, versionSeriesId, major, context.FilterString,
+                    context.IncludeAllowableActions, context.IncludeRelationships,
+                    context.RenditionFilterString, context.IncludePolicies, context.IncludeAcls, null);
+
+            result = ObjectFactory.ConvertObject(objectData, context);
+
+            // put into cache
+            if (context.CacheEnabled)
+            {
+                Cache.Put(result, context.CacheKey);
+            }
+
+            // check result
+            if (!(result is IDocument))
+            {
+                throw new ArgumentException("Latest version is not a document!");
+            }
+
+            return result as IDocument;
         }
 
         public void RemoveObjectFromCache(IObjectId objectId)

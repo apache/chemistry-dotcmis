@@ -30,6 +30,7 @@ namespace DotCMIS.Binding
 {
     public interface ICmisBinding : IDisposable
     {
+        string BindingType { get; }
         IRepositoryService GetRepositoryService();
         INavigationService GetNavigationService();
         IObjectService GetObjectService();

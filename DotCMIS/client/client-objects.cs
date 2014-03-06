@@ -253,6 +253,27 @@ namespace DotCMIS.Client.Impl
             return Session.CreateObjectId(newObjectId);
         }
 
+        public ICmisObject Rename(string newName)
+        {
+            if (newName == null || newName.Length == 0)
+            {
+                throw new ArgumentException("New name must not be empty!");
+            }
+
+            IDictionary<string, object> prop = new Dictionary<string, object>();
+            prop[PropertyIds.Name] = newName;
+
+            return UpdateProperties(prop);
+        }
+
+        public IObjectId Rename(string newName, bool refresh)
+        {
+            IDictionary<string, object> prop = new Dictionary<string, object>();
+            prop[PropertyIds.Name] = newName;
+
+            return UpdateProperties(prop, refresh);
+        }
+
         // --- properties ---
 
         public IObjectType BaseType { get { return Session.GetTypeDefinition(GetPropertyValue(PropertyIds.BaseTypeId) as string); } }
@@ -787,31 +808,7 @@ namespace DotCMIS.Client.Impl
 
         public IDocument GetObjectOfLatestVersion(bool major, IOperationContext context)
         {
-            string objectId;
-            string versionSeriesId;
-
-            lock (objectLock)
-            {
-                objectId = ObjectId;
-                versionSeriesId = VersionSeriesId;
-            }
-
-            if (versionSeriesId == null)
-            {
-                throw new CmisRuntimeException("Version series id is unknown!");
-            }
-
-            IObjectData objectData = Binding.GetVersioningService().GetObjectOfLatestVersion(RepositoryId, objectId, versionSeriesId, major,
-                context.FilterString, context.IncludeAllowableActions, context.IncludeRelationships, context.RenditionFilterString,
-                context.IncludePolicies, context.IncludeAcls, null);
-
-            IDocument result = Session.ObjectFactory.ConvertObject(objectData, context) as IDocument;
-            if (result == null)
-            {
-                throw new CmisRuntimeException("Latest version is not a document!");
-            }
-
-            return result;
+            return Session.GetLatestDocumentVersion(this, major, context);
         }
 
         // content operations

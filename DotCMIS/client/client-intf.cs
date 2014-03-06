@@ -113,7 +113,7 @@ namespace DotCMIS.Client
     /// </para>
     /// <para>
     /// (Please refer to the <a href="http://docs.oasis-open.org/cmis/CMIS/v1.0/os/">CMIS specification</a>
-    /// for details about the domain model, terms, concepts, base types, properties, ids and query names, 
+    /// for details about the domain model, terms, concepts, base types, properties, IDs and query names, 
     /// query language, etc.)
     /// </para>
     /// </remarks>
@@ -147,7 +147,7 @@ namespace DotCMIS.Client
             bool cacheEnabled, int maxItemsPerPage);
 
         /// <summary>
-        /// Creates a new <see cref="DotCMIS.Client.IObjectId"/> with the giveb id.
+        /// Creates a new <see cref="DotCMIS.Client.IObjectId"/> with the given ID.
         /// </summary>
         IObjectId CreateObjectId(string id);
 
@@ -179,7 +179,7 @@ namespace DotCMIS.Client
         /// turned off per default <see cref="DotCMIS.Client.IOperationContext"/>, it will load the object 
         /// from the repository and puts it into the cache.
         /// </summary>
-        /// <param name="objectId">the object id</param>
+        /// <param name="objectId">the object ID</param>
         ICmisObject GetObject(IObjectId objectId);
         ICmisObject GetObject(IObjectId objectId, IOperationContext context);
 
@@ -188,7 +188,7 @@ namespace DotCMIS.Client
         /// turned off per default <see cref="DotCMIS.Client.IOperationContext"/>, it will load the object 
         /// from the repository and puts it into the cache.
         /// </summary>
-        /// <param name="objectId">the object id</param>
+        /// <param name="objectId">the object ID</param>
         ICmisObject GetObject(string objectId);
         ICmisObject GetObject(string objectId, IOperationContext context);
 
@@ -202,15 +202,25 @@ namespace DotCMIS.Client
         ICmisObject GetObjectByPath(string path, IOperationContext context);
 
         /// <summary>
+        /// Gets the latest version in a version series.
+        /// </summary>
+        /// <param name="objectId">the document ID of an arbitrary version in the version series</param>
+        IDocument GetLatestDocumentVersion(String objectId);
+        IDocument GetLatestDocumentVersion(String objectId, IOperationContext context);
+        IDocument GetLatestDocumentVersion(IObjectId objectId);
+        IDocument GetLatestDocumentVersion(IObjectId objectId, IOperationContext context);
+        IDocument GetLatestDocumentVersion(IObjectId objectId, bool major, IOperationContext context);
+
+        /// <summary>
         ///  Removes the given object from the cache.
         /// </summary>
-        /// <param name="objectId">the object id</param>
+        /// <param name="objectId">the object ID</param>
         void RemoveObjectFromCache(IObjectId objectId);
 
         /// <summary>
         ///  Removes the given object from the cache.
         /// </summary>
-        /// <param name="objectId">the object id</param>
+        /// <param name="objectId">the object ID</param>
         void RemoveObjectFromCache(string objectId);
 
         // discovery
@@ -459,7 +469,7 @@ namespace DotCMIS.Client
     public interface IObjectId
     {
         /// <summary>
-        /// Gets the object id.
+        /// Gets the object ID.
         /// </summary>
         string Id { get; }
     }
@@ -477,7 +487,7 @@ namespace DotCMIS.Client
     public interface IProperty
     {
         /// <summary>
-        /// Gets the property id.
+        /// Gets the property ID.
         /// </summary>
         string Id { get; }
 
@@ -557,14 +567,14 @@ namespace DotCMIS.Client
         /// <summary>
         /// available
         /// </summary>
-        /// <param name="propertyId">the property id</param>
+        /// <param name="propertyId">the property ID</param>
         /// <returns>the property or <c>null</c> if the property is not available</returns>
         IProperty this[string propertyId] { get; }
 
         /// <summary>
         /// Gets the value of the requested property.
         /// </summary>
-        /// <param name="propertyId">the property id</param>
+        /// <param name="propertyId">the property ID</param>
         /// <returns>the property value or <c>null</c> if the property is not available or not set</returns>
         object GetPropertyValue(string propertyId);
 
@@ -594,7 +604,7 @@ namespace DotCMIS.Client
         DateTime? LastModificationDate { get; }
 
         /// <summary>
-        /// Gets the id of the base type of this CMIS object (CMIS property <c>cmis:baseTypeId</c>).
+        /// Gets the ID of the base type of this CMIS object (CMIS property <c>cmis:baseTypeId</c>).
         /// </summary>
         BaseTypeId BaseTypeId { get; }
 
@@ -657,8 +667,24 @@ namespace DotCMIS.Client
         /// </summary>
         /// <param name="properties">the properties to update</param>
         /// <param name="refresh">indicates if the object should be refresh after the update</param>
-        /// <returns>the object id of the updated object (a repository might have created a new object)</returns>
+        /// <returns>the object ID of the updated object (a repository might have created a new object)</returns>
         IObjectId UpdateProperties(IDictionary<string, object> properties, bool refresh);
+
+        /// <summary>
+        /// Renames the object.
+        /// </summary>
+        /// <param name="newName">the new name</param>
+        /// <returns>the updated object (a repository might have created a new object)</returns>
+        ICmisObject Rename(string newName);
+
+        /// <summary>
+        /// Renames the object.
+        /// </summary>
+        /// <param name="newName">the new name</param>
+        /// <param name="refresh">indicates if the object should be refresh after the update</param>
+        /// <returns>the object ID of the updated object (a repository might have created a new object)</returns>
+        IObjectId Rename(string newName, bool refresh);
+
 
         /// <summary>
         /// Gets the renditions if they have been fetched for this object.
@@ -727,8 +753,8 @@ namespace DotCMIS.Client
         /// <summary>
         /// Moves this object from a source folder to a target folder.
         /// </summary>
-        /// <param name="sourceFolderId">the source folder id</param>
-        /// <param name="targetFolderId">the target folder id</param>
+        /// <param name="sourceFolderId">the source folder ID</param>
+        /// <param name="targetFolderId">the target folder ID</param>
         /// <returns>the object in the new location</returns>
         IFileableCmisObject Move(IObjectId sourceFolderId, IObjectId targetFolderId);
 
@@ -751,14 +777,14 @@ namespace DotCMIS.Client
         /// <summary>
         /// Adds this object to the given folder.
         /// </summary>
-        /// <param name="folderId">the id of the target folder</param>
+        /// <param name="folderId">the ID of the target folder</param>
         /// <param name="allVersions">indicates if only this object or all versions of the object should be added</param>
         void AddToFolder(IObjectId folderId, bool allVersions);
 
         /// <summary>
         /// Removes this object from the given folder.
         /// </summary>
-        /// <param name="folderId">the id of the folder</param>
+        /// <param name="folderId">the ID of the folder</param>
         void RemoveFromFolder(IObjectId folderId);
     }
 
@@ -793,7 +819,7 @@ namespace DotCMIS.Client
         string VersionLabel { get; }
 
         /// <summary>
-        /// Gets the version series id (CMIS property <c>cmis:versionSeriesId</c>).
+        /// Gets the version series ID (CMIS property <c>cmis:versionSeriesId</c>).
         /// </summary>
         string VersionSeriesId { get; }
 
@@ -808,7 +834,7 @@ namespace DotCMIS.Client
         string VersionSeriesCheckedOutBy { get; }
 
         /// <summary>
-        /// Gets the PWC id of this version series (CMIS property <c>cmis:versionSeriesCheckedOutId</c>).
+        /// Gets the PWC ID of this version series (CMIS property <c>cmis:versionSeriesCheckedOutId</c>).
         /// </summary>
         string VersionSeriesCheckedOutId { get; }
 
@@ -833,7 +859,7 @@ namespace DotCMIS.Client
         string ContentStreamFileName { get; }
 
         /// <summary>
-        /// Gets the content stream id or <c>null</c> if the document has no content (CMIS property <c>cmis:contentStreamId</c>).
+        /// Gets the content stream ID or <c>null</c> if the document has no content (CMIS property <c>cmis:contentStreamId</c>).
         /// </summary>
         string ContentStreamId { get; }
     }
@@ -855,15 +881,15 @@ namespace DotCMIS.Client
         IContentStream GetContentStream();
 
         /// <summary>
-        /// Gets the content stream identified by the given stream id.
+        /// Gets the content stream identified by the given stream ID.
         /// </summary>
-        /// <returns>the content stream or <c>null</c> if the stream id is not associated with content</returns>
+        /// <returns>the content stream or <c>null</c> if the stream ID is not associated with content</returns>
         IContentStream GetContentStream(string streamId);
 
         /// <summary>
-        /// Gets the content stream identified by the given stream id with the given offset and length.
+        /// Gets the content stream identified by the given stream ID with the given offset and length.
         /// </summary>
-        /// <returns>the content stream or <c>null</c> if the stream id is not associated with content</returns>
+        /// <returns>the content stream or <c>null</c> if the stream ID is not associated with content</returns>
         IContentStream GetContentStream(string streamId, long? offset, long? length);
 
         /// <summary>
@@ -883,7 +909,7 @@ namespace DotCMIS.Client
         /// <param name="contentStream">the content stream</param>
         /// <param name="overwrite">indicates if the current stream should be overwritten</param>
         /// <param name="refresh">indicates if this object should be refreshed after the new content is set</param>
-        /// <returns>the new document object id</returns>
+        /// <returns>the new document object ID</returns>
         /// <remarks>
         /// Repositories might create a new version if the content is updated.
         /// </remarks>
@@ -902,7 +928,7 @@ namespace DotCMIS.Client
         /// Deletes the current content stream for this document.
         /// </summary>
         /// <param name="refresh">indicates if this object should be refreshed after the content is deleted</param>
-        /// <returns>the new document object id</returns>
+        /// <returns>the new document object ID</returns>
         /// <remarks>
         /// Repositories might create a new version if the content is deleted.
         /// </remarks>
@@ -911,7 +937,7 @@ namespace DotCMIS.Client
         /// <summary>
         /// Checks out this document.
         /// </summary>
-        /// <returns>the object id of the newly created private working copy (PWC).</returns>
+        /// <returns>the object ID of the newly created private working copy (PWC).</returns>
         IObjectId CheckOut();
 
         /// <summary>
@@ -922,14 +948,14 @@ namespace DotCMIS.Client
         /// <summary>
         /// Checks in this private working copy (PWC).
         /// </summary>
-        /// <returns>the object id of the new created document</returns>
+        /// <returns>the object ID of the new created document</returns>
         IObjectId CheckIn(bool major, IDictionary<string, object> properties, IContentStream contentStream, string checkinComment,
                 IList<IPolicy> policies, IList<IAce> addAces, IList<IAce> removeAces);
 
         /// <summary>
         /// Checks in this private working copy (PWC).
         /// </summary>
-        /// <returns>the object id of the new created document</returns>
+        /// <returns>the object ID of the new created document</returns>
         IObjectId CheckIn(bool major, IDictionary<string, object> properties, IContentStream contentStream, string checkinComment);
 
         IDocument GetObjectOfLatestVersion(bool major);
@@ -1081,12 +1107,12 @@ namespace DotCMIS.Client
     public interface IRelationshipProperties
     {
         /// <summary>
-        /// Gets the id of the relationship source object.
+        /// Gets the ID of the relationship source object.
         /// </summary>
         IObjectId SourceId { get; }
 
         /// <summary>
-        /// Gets the id of the relationships target object.
+        /// Gets the ID of the relationships target object.
         /// </summary>
         IObjectId TargetId { get; }
     }
@@ -1100,7 +1126,7 @@ namespace DotCMIS.Client
         /// Gets the relationship source object.
         /// </summary>
         /// <remarks>
-        /// If the source object id is invalid, <c>null</c> will be returned.
+        /// If the source object ID is invalid, <c>null</c> will be returned.
         /// </remarks>
         ICmisObject GetSource();
 
@@ -1108,7 +1134,7 @@ namespace DotCMIS.Client
         /// Gets the relationship source object using the given <see cref="DotCMIS.Client.IOperationContext"/>.
         /// </summary>
         /// <remarks>
-        /// If the source object id is invalid, <c>null</c> will be returned.
+        /// If the source object ID is invalid, <c>null</c> will be returned.
         /// </remarks>
         ICmisObject GetSource(IOperationContext context);
 
@@ -1116,7 +1142,7 @@ namespace DotCMIS.Client
         /// Gets the relationship target object.
         /// </summary>
         /// <remarks>
-        /// If the target object id is invalid, <c>null</c> will be returned.
+        /// If the target object ID is invalid, <c>null</c> will be returned.
         /// </remarks>
         ICmisObject GetTarget();
 
@@ -1124,7 +1150,7 @@ namespace DotCMIS.Client
         /// Gets the relationship target object using the given <see cref="DotCMIS.Client.IOperationContext"/>.
         /// </summary>
         /// <remarks>
-        /// If the target object id is invalid, <c>null</c> will be returned.
+        /// If the target object ID is invalid, <c>null</c> will be returned.
         /// </remarks>
         ICmisObject GetTarget(IOperationContext context);
     }
@@ -1146,11 +1172,11 @@ namespace DotCMIS.Client
         IList<IPropertyData> Properties { get; }
 
         /// <summary>
-        /// Returns a property by id.
+        /// Returns a property by ID.
         /// </summary>
-        /// <param name="propertyId">the property id</param>
+        /// <param name="propertyId">the property ID</param>
         /// <remarks>
-        /// Since repositories are not obligated to add property ids to their
+        /// Since repositories are not obligated to add property IDs to their
         /// query result properties, this method might not always work as expected with
         /// some repositories. Use <see cref="P:this[string]"/> instead.
         /// </remarks>
@@ -1162,7 +1188,7 @@ namespace DotCMIS.Client
         object GetPropertyValueByQueryName(string queryName);
 
         /// <summary>
-        /// Gets the property (single) value by property id.
+        /// Gets the property (single) value by property ID.
         /// </summary>
         object GetPropertyValueById(string propertyId);
 
@@ -1172,7 +1198,7 @@ namespace DotCMIS.Client
         IList<object> GetPropertyMultivalueByQueryName(string queryName);
 
         /// <summary>
-        /// Gets the property value by property id.
+        /// Gets the property value by property ID.
         /// </summary>
         IList<object> GetPropertyMultivalueById(string propertyId);
 

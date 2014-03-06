@@ -93,6 +93,22 @@ namespace DotCMIS.Binding.Impl
             repositoryServiceWrapper = new BindingRepositoryService(session);
         }
 
+        public string BindingType
+        {
+            get
+            {
+                CheckSession();
+
+                string bindingType = session.GetValue(SessionParameter.BindingType) as string;
+
+                if (bindingType == null)
+                {
+                    bindingType = DotCMIS.BindingType.Custom;
+                }
+
+                return bindingType;
+            }
+        }
         public IRepositoryService GetRepositoryService()
         {
             CheckSession();
