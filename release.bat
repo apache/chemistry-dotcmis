@@ -22,10 +22,10 @@ rem
 rem This batch file creates a release.
 rem It requires Cygwin.
 
-set DOTCMISVERSION=0.5
+set DOTCMISVERSION=0.6
 set DOTCMISZIPSRC=chemistry-dotcmis-%DOTCMISVERSION%-src.zip
 set DOTCMISZIPBIN=chemistry-dotcmis-%DOTCMISVERSION%-bin.zip
-set DOTCMISRC=RC2
+set DOTCMISRC=RC1
 
 set CYGWIN=ntea
 
@@ -80,15 +80,11 @@ cd artifacts
 
 gpg --armor --output %DOTCMISZIPSRC%.asc --detach-sig %DOTCMISZIPSRC%
 gpg --print-md MD5 %DOTCMISZIPSRC% > %DOTCMISZIPSRC%.md5
-gpg --print-md SHA1 %DOTCMISZIPSRC% > %DOTCMISZIPSRC%.sha
-gpg --print-md MD5 %DOTCMISZIPSRC%.asc > %DOTCMISZIPSRC%.asc.md5
-gpg --print-md SHA1 %DOTCMISZIPSRC%.asc > %DOTCMISZIPSRC%.asc.sha
+gpg --print-md SHA512 %DOTCMISZIPSRC% > %DOTCMISZIPSRC%.sha
 
 gpg --armor --output %DOTCMISZIPBIN%.asc --detach-sig %DOTCMISZIPBIN%
 gpg --print-md MD5 %DOTCMISZIPBIN% > %DOTCMISZIPBIN%.md5
-gpg --print-md SHA1 %DOTCMISZIPBIN% > %DOTCMISZIPBIN%.sha
-gpg --print-md MD5 %DOTCMISZIPBIN%.asc > %DOTCMISZIPBIN%.asc.md5
-gpg --print-md SHA1 %DOTCMISZIPBIN%.asc > %DOTCMISZIPBIN%.asc.sha
+gpg --print-md SHA512 %DOTCMISZIPBIN% > %DOTCMISZIPBIN%.sha
 
 cd ..
 
