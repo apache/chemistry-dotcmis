@@ -193,6 +193,8 @@ namespace DotCMISUnitTest
         public void Delete(bool allVersions) { }
         public ICmisObject UpdateProperties(IDictionary<string, object> properties) { return null; }
         public IObjectId UpdateProperties(IDictionary<string, object> properties, bool refresh) { return null; }
+        public ICmisObject Rename(string newName) { return null; }
+        public IObjectId Rename(string newName, bool refresh) { return null; }
         public IList<IRendition> Renditions { get { return null; } }
         public void ApplyPolicy(params IObjectId[] policyId) { }
         public void RemovePolicy(params IObjectId[] policyId) { }
