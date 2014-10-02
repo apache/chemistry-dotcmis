@@ -347,6 +347,7 @@ namespace DotCMIS.Enums
             MapEnums(typeof(DecimalPrecision), typeof(enumDecimalPrecision));
             MapEnums(typeof(IncludeRelationshipsFlag), typeof(enumIncludeRelationships));
             MapEnums(typeof(ChangeType), typeof(enumTypeOfChanges));
+            MapEnums(typeof(VersioningState), typeof(enumVersioningState));
         }
 
         private static void MapEnums(Type cmisEnum, Type xsdEnum)
