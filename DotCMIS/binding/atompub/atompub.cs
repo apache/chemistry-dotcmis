@@ -451,6 +451,33 @@ namespace DotCMIS.Binding.AtomPub
             return resp;
         }
 
+        protected void PostAndConsume(UrlBuilder url, string contentType, HttpUtils.Output writer)
+        {
+            HttpUtils.Response resp = HttpUtils.InvokePOST(url, contentType, writer, Session);
+
+            if (resp.StatusCode != HttpStatusCode.Created)
+            {
+                throw ConvertStatusCode(resp.StatusCode, resp.Message, resp.ErrorContent, null);
+            }
+
+            if (resp.Stream != null)
+            {
+                Stream stream = resp.Stream;
+                try
+                {
+                    byte[] buffer = new byte[8 * 1024];
+                    while (stream.Read(buffer, 0, buffer.Length) > 0)
+                    {
+                    }
+                }
+                finally
+                {
+                    try { stream.Close(); }
+                    catch (Exception) { }
+                }
+            }
+        }
+
         protected HttpUtils.Response Put(UrlBuilder url, string contentType, HttpUtils.Output writer)
         {
             HttpUtils.Response resp = HttpUtils.InvokePUT(url, contentType, null, writer, Session);
@@ -2738,7 +2765,7 @@ namespace DotCMIS.Binding.AtomPub
             AtomEntryWriter entryWriter = new AtomEntryWriter(CreateIdObject(objectId));
 
             // post addObjectToFolder request
-            Post(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
+            PostAndConsume(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
         }
 
         public void RemoveObjectFromFolder(string repositoryId, string objectId, string folderId, IExtensionsData extension)
@@ -2763,7 +2790,7 @@ namespace DotCMIS.Binding.AtomPub
             AtomEntryWriter entryWriter = new AtomEntryWriter(CreateIdObject(objectId));
 
             // post removeObjectFromFolder request
-            Post(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
+            PostAndConsume(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
         }
     }
 
@@ -2827,7 +2854,7 @@ namespace DotCMIS.Binding.AtomPub
             AtomEntryWriter entryWriter = new AtomEntryWriter(CreateIdObject(objectId));
 
             // post applyPolicy request
-            Post(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
+            PostAndConsume(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
         }
 
         public void RemovePolicy(string repositoryId, string policyId, string objectId, IExtensionsData extension)
