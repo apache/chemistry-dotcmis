@@ -79,6 +79,8 @@ namespace DotCMIS.Binding.AtomPub
             XmlReaderSettings settings = new XmlReaderSettings();
             settings.IgnoreWhitespace = true;
             settings.IgnoreComments = true;
+            settings.ProhibitDtd = false;
+            settings.MaxCharactersFromEntities = 1024;
 
             try {
                 using (XmlReader reader = XmlReader.Create(stream, settings))
