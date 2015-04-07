@@ -46,17 +46,23 @@ namespace DotCMIS.Binding.AtomPub
         private PolicyService policyService;
         private AclService aclService;
 
-        public void initialize(BindingSession session)
+        public void initialize(IBindingSession session)
         {
-            repositoryService = new RepositoryService(session);
-            navigationService = new NavigationService(session);
-            objectService = new ObjectService(session);
-            versioningService = new VersioningService(session);
-            discoveryService = new DiscoveryService(session);
-            multiFilingService = new MultiFilingService(session);
-            relationshipService = new RelationshipService(session);
-            policyService = new PolicyService(session);
-            aclService = new AclService(session);
+            BindingSession bindingSession = session as BindingSession;
+            if (bindingSession == null)
+            {
+                throw new ArgumentException("Invalid binding session!");
+            }
+
+            repositoryService = new RepositoryService(bindingSession);
+            navigationService = new NavigationService(bindingSession);
+            objectService = new ObjectService(bindingSession);
+            versioningService = new VersioningService(bindingSession);
+            discoveryService = new DiscoveryService(bindingSession);
+            multiFilingService = new MultiFilingService(bindingSession);
+            relationshipService = new RelationshipService(bindingSession);
+            policyService = new PolicyService(bindingSession);
+            aclService = new AclService(bindingSession);
         }
 
         public IRepositoryService GetRepositoryService()

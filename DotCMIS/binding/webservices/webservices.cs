@@ -46,19 +46,25 @@ namespace DotCMIS.Binding.WebServices
         private PolicyService policyService;
         private AclService aclService;
 
-        public void initialize(BindingSession session)
+        public void initialize(IBindingSession session)
         {
-            PortProvider provider = new PortProvider(session);
+            BindingSession bindingSession = session as BindingSession;
+            if (bindingSession == null)
+            {
+                throw new ArgumentException("Invalid binding session!");
+            }
 
-            repositoryService = new RepositoryService(session, provider);
-            navigationService = new NavigationService(session, provider);
-            objectService = new ObjectService(session, provider);
-            versioningService = new VersioningService(session, provider);
-            discoveryService = new DiscoveryService(session, provider);
-            multiFilingService = new MultiFilingService(session, provider);
-            relationshipService = new RelationshipService(session, provider);
-            policyService = new PolicyService(session, provider);
-            aclService = new AclService(session, provider);
+            PortProvider provider = new PortProvider(bindingSession);
+
+            repositoryService = new RepositoryService(bindingSession, provider);
+            navigationService = new NavigationService(bindingSession, provider);
+            objectService = new ObjectService(bindingSession, provider);
+            versioningService = new VersioningService(bindingSession, provider);
+            discoveryService = new DiscoveryService(bindingSession, provider);
+            multiFilingService = new MultiFilingService(bindingSession, provider);
+            relationshipService = new RelationshipService(bindingSession, provider);
+            policyService = new PolicyService(bindingSession, provider);
+            aclService = new AclService(bindingSession, provider);
         }
 
         public IRepositoryService GetRepositoryService()

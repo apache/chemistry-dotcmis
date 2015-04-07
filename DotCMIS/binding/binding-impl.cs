@@ -587,9 +587,9 @@ namespace DotCMIS.Binding.Impl
     /// <summary>
     /// SPI interface.
     /// </summary>
-    internal interface ICmisSpi : IDisposable
+    public interface ICmisSpi : IDisposable
     {
-        void initialize(BindingSession session);
+        void initialize(IBindingSession session);
         IRepositoryService GetRepositoryService();
         INavigationService GetNavigationService();
         IObjectService GetObjectService();
