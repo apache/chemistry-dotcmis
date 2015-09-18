@@ -2857,7 +2857,7 @@ namespace DotCMIS.Binding.AtomPub
             UrlBuilder url = new UrlBuilder(link);
 
             // set up object and writer
-            AtomEntryWriter entryWriter = new AtomEntryWriter(CreateIdObject(objectId));
+            AtomEntryWriter entryWriter = new AtomEntryWriter(CreateIdObject(policyId));
 
             // post applyPolicy request
             PostAndConsume(url, AtomPubConstants.MediatypeEntry, new HttpUtils.Output(entryWriter.Write));
