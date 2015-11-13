@@ -2127,7 +2127,7 @@ namespace DotCMIS.Binding.AtomPub
             HttpUtils.Output output = delegate(Stream stream)
             {
                 int b;
-                byte[] buffer = new byte[4096];
+                byte[] buffer = new byte[64 * 1024];
                 while ((b = contentStream.Stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     stream.Write(buffer, 0, b);

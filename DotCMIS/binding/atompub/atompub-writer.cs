@@ -87,69 +87,72 @@ namespace DotCMIS.Binding.AtomPub
             XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
             xmlWriterSettings.Encoding = new UTF8Encoding(false);
 
-            using (XmlWriter writer = XmlWriter.Create(outStream, xmlWriterSettings))
+            using (BufferedStream bufferedStream = new BufferedStream(outStream, 64 * 1204))
             {
-                // start doc
-                writer.WriteStartDocument();
-
-                // start entry
-                writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagEntry, AtomPubConstants.NamespaceAtom);
-                writer.WriteAttributeString("xmlns", AtomWriter.PrefixAtom, null, AtomPubConstants.NamespaceAtom);
-                writer.WriteAttributeString("xmlns", AtomWriter.PrefixCMIS, null, AtomPubConstants.NamespaceCMIS);
-                writer.WriteAttributeString("xmlns", AtomWriter.PrefixRestAtom, null, AtomPubConstants.NamespaceRestAtom);
-                if (filename != null)
+                using (XmlWriter writer = XmlWriter.Create(bufferedStream, xmlWriterSettings))
                 {
-                    writer.WriteAttributeString("xmlns", AtomWriter.PrefixApacheChemistry, null, AtomPubConstants.NamespaceApacheChemistry);
-                }
+                    // start doc
+                    writer.WriteStartDocument();
 
-                // atom:id
-                writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagAtomId, AtomPubConstants.NamespaceAtom);
-                writer.WriteString("urn:uuid:00000000-0000-0000-0000-00000000000");
-                writer.WriteEndElement();
-
-                // atom:title
-                writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagAtomTitle, AtomPubConstants.NamespaceAtom);
-                writer.WriteString(GetTitle());
-                writer.WriteEndElement();
-
-                // atom:updated
-                writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagAtomUpdated, AtomPubConstants.NamespaceAtom);
-                writer.WriteString(GetUpdated());
-                writer.WriteEndElement();
-
-                // content
-                if (stream != null)
-                {
-                    writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContent, AtomPubConstants.NamespaceRestAtom);
-
-                    writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContentMediatype, AtomPubConstants.NamespaceRestAtom);
-                    writer.WriteString(mediaType);
-                    writer.WriteEndElement();
-
+                    // start entry
+                    writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagEntry, AtomPubConstants.NamespaceAtom);
+                    writer.WriteAttributeString("xmlns", AtomWriter.PrefixAtom, null, AtomPubConstants.NamespaceAtom);
+                    writer.WriteAttributeString("xmlns", AtomWriter.PrefixCMIS, null, AtomPubConstants.NamespaceCMIS);
+                    writer.WriteAttributeString("xmlns", AtomWriter.PrefixRestAtom, null, AtomPubConstants.NamespaceRestAtom);
                     if (filename != null)
                     {
-                        writer.WriteStartElement(AtomWriter.PrefixApacheChemistry, AtomPubConstants.TagContentFilename, AtomPubConstants.NamespaceApacheChemistry);
-                        writer.WriteString(filename);
+                        writer.WriteAttributeString("xmlns", AtomWriter.PrefixApacheChemistry, null, AtomPubConstants.NamespaceApacheChemistry);
+                    }
+
+                    // atom:id
+                    writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagAtomId, AtomPubConstants.NamespaceAtom);
+                    writer.WriteString("urn:uuid:00000000-0000-0000-0000-00000000000");
+                    writer.WriteEndElement();
+
+                    // atom:title
+                    writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagAtomTitle, AtomPubConstants.NamespaceAtom);
+                    writer.WriteString(GetTitle());
+                    writer.WriteEndElement();
+
+                    // atom:updated
+                    writer.WriteStartElement(AtomWriter.PrefixAtom, AtomPubConstants.TagAtomUpdated, AtomPubConstants.NamespaceAtom);
+                    writer.WriteString(GetUpdated());
+                    writer.WriteEndElement();
+
+                    // content
+                    if (stream != null)
+                    {
+                        writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContent, AtomPubConstants.NamespaceRestAtom);
+
+                        writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContentMediatype, AtomPubConstants.NamespaceRestAtom);
+                        writer.WriteString(mediaType);
+                        writer.WriteEndElement();
+
+                        if (filename != null)
+                        {
+                            writer.WriteStartElement(AtomWriter.PrefixApacheChemistry, AtomPubConstants.TagContentFilename, AtomPubConstants.NamespaceApacheChemistry);
+                            writer.WriteString(filename);
+                            writer.WriteEndElement();
+                        }
+
+                        writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContentBase64, AtomPubConstants.NamespaceRestAtom);
+                        WriteContent(writer);
+                        writer.WriteEndElement();
+
                         writer.WriteEndElement();
                     }
 
-                    writer.WriteStartElement(AtomWriter.PrefixRestAtom, AtomPubConstants.TagContentBase64, AtomPubConstants.NamespaceRestAtom);
-                    WriteContent(writer);
+                    // object
+                    AtomWriter.ObjectSerializer.Serialize(writer, cmisObject);
+
+                    // end entry
                     writer.WriteEndElement();
 
-                    writer.WriteEndElement();
+                    // end document
+                    writer.WriteEndDocument();
+
+                    writer.Flush();
                 }
-
-                // object
-                AtomWriter.ObjectSerializer.Serialize(writer, cmisObject);
-
-                // end entry
-                writer.WriteEndElement();
-
-                // end document
-                writer.WriteEndDocument();
-
-                writer.Flush();
             }
         }
 
