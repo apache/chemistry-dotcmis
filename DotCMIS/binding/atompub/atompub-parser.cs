@@ -82,7 +82,8 @@ namespace DotCMIS.Binding.AtomPub
             settings.ProhibitDtd = false;
             settings.MaxCharactersFromEntities = 1024;
 
-            try {
+            try
+            {
                 using (XmlReader reader = XmlReader.Create(stream, settings))
                 {
                     while (true)
@@ -392,6 +393,10 @@ namespace DotCMIS.Binding.AtomPub
                         {
                             Skip(reader);
                         }
+                    }
+                    else if (AtomPubConstants.NamespaceApacheChemistry == reader.NamespaceURI)
+                    {
+                        feed.AddElement(ParseText(reader));
                     }
                     else
                     {
